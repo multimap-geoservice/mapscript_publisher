@@ -1,7 +1,7 @@
 
-#import mapscript
-from mapublisher import PubMap
+import mapscript
 import json
+import inspect
 
 
 def upd_temp(_super, _sub):
@@ -14,6 +14,95 @@ def upd_temp(_super, _sub):
     _modify.update(_sub)
     return _modify
 
+
+
+# Create mapscript mapfile Object
+
+"""
+OBJ = name of class for this dict
+OBJ_VAR = class object for this class
+SUB_OBJ = point transfer this object to another object
+OBJS = all objects mapscript in list - map index 0
+TEMP = path to up json templates or variable
+"""
+OBJS = []
+
+def line_processing(OBJ, method, value):
+    #processing script line
+    """
+    test type
+    
+    import inspect
+    a = mapscript.mapObj()
+    
+    type(a.name)
+    <type 'str'>
+    inspect.ismethod(a.name)
+    False
+    
+    type(a.setSize)
+    <type 'instancemethod'>
+    inspect.ismethod(a.setSize)
+    True
+    """
+    # tests value
+    if isinstance(value, str):
+        value = '\'{}\''.format(value)
+    elif isinstance(value, dict):
+        if value.has_key('OBJ'):
+            value = 'eval(\'{}\')'.format(value['OBJ'])
+    
+    # test assigment
+    if inspect.ismethod(eval('{0}.{1}'.format(OBJ, method))):
+        if isinstance(value, dict):
+            assigment = '(**{})'.format(value)
+        elif isinstance(value, list):
+            assigment = '(*{})'.format(value)
+        else:
+            assigment = '({})'.format(value)
+    else:
+        assigment = ' = {}'.format(value)
+    
+    # create script string
+    script_str = '{0}.{1}{2}'.format(
+        OBJ, 
+        method, 
+        assigment
+    )
+    print script_str
+    exec(script_str)
+
+
+def temp_engine(_dict, SUB_OBJ=''):
+    if not _dict.has_key('OBJ_VAR'):
+        # add OBJ Variable to OBJS list
+        str_obj = '{0}({1})'.format(_dict['OBJ'], SUB_OBJ)
+        OBJS.append(eval(str_obj))
+        _dict['OBJ_VAR'] = 'OBJS[{}]'.format(len(OBJS) - 1)
+    for line in _dict:
+        if line == 'SUB_OBJ':
+            # recursive function for Sub Objects
+            for subline in _dict[line]:
+                temp_engine(subline, _dict['OBJ_VAR'])
+        elif line not in ['OBJ', 'OBJ_VAR']:
+            # got to lines for processing
+            if type(_dict[line]) == list:
+                # loop in list
+                for subline in _dict[line]:
+                    line_processing(
+                        _dict['OBJ_VAR'], 
+                        line,
+                        subline
+                    )
+            else:
+                # one line
+                line_processing(
+                    _dict['OBJ_VAR'], 
+                    line,
+                    _dict[line]
+                )
+
+    
 #wms web metadata
 wms_projs = [
     'EPSG:32638', 
@@ -60,7 +149,7 @@ pg_data_str = 'PG:{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}'.format(
     pg_mode
 )
 
-layer_dict = {
+layer_obj = {
     'OBJ': 'mapscript.layerObj',  #name object of mapscript
     'name': None,  # if data is None to return Exeption Template Error
     'status': {'OBJ': 'mapscript.MS_ON'}, 
@@ -74,7 +163,7 @@ layer_dict = {
     ] 
 }
 
-map_dict = {
+map_obj = {
     'OBJ': 'mapscript.mapObj', #name object of mapscript
     'name': 'Rasters',  # if variable to key_name = data
     'setSize': [[932, 870]],  # if function and data len > 1 to key_name(*data)
@@ -91,7 +180,7 @@ map_dict = {
     ], 
     'SUB_OBJ': [  # this(self) MS_OBJ to next MS_OBJ ex: layerObj(mapObj)
         upd_temp(
-            layer_dict,
+            layer_obj,
             {
                 'name': 'rst1',
                 'data': 'PG: rst1',
@@ -100,7 +189,7 @@ map_dict = {
             }
         ), 
         upd_temp(
-            layer_dict,
+            layer_obj,
             {
                 'name': 'rst2',
                 'data': 'PG: rst2',
@@ -111,15 +200,12 @@ map_dict = {
     ],
 }    
 
+
     
 if __name__ == '__main__':
-    #_json = json.dumps(map_dict, sort_keys=True, indent=4, separators=(',', ': '))
-    #print _json
-    debug_path = '/home/oldbay/GIS/mapserver/debug'
-    _map = PubMap()
-    _map.mapdict = map_dict
-    _map.get_json(debug_path)
-    _map.get_mapscript(debug_path)
-    _map.get_mapfile(debug_path)
+    #print map_obj
+    print json.dumps(map_obj, sort_keys=True, indent=4, separators=(',', ': '))
+    temp_engine(map_obj)
+    OBJS[0].save('templates/debug.map')
     
 
