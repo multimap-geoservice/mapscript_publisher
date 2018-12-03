@@ -10,13 +10,34 @@ class PubMap(object):
     """
     Publisher Engine
     
+    dict keys:
+    ----------
     OBJS = all objects mapscript in list - map index 0
     {'OBJ': str} = name of class for this dict
     {'OBJ_VAR': OBJS[int]} = index number for calss object OBJS
     {'SUB_OBJ': [{},{}]} = list subclss objects
     {'<key>: None'} - if key value = None to create exteption
+    {'PRE_OBJ': str } - prestart script of create mapscript OBJ
+    {'POST_OBJ': str } - poststart script of create mapscript OBJ
+    
+    variables:
+    ----------
+    engine_keys = technikal key(see up) for mapdict
+    mapdict = mapscript dict
+    mapfile = path template mapfile for mapOBJ (default '')
+    debug_def_path = default path for debug file
+    OBJS = list mapscript objects
+    textOBJS = text name list mapscript objects
     """
+    engine_keys = [
+        'OBJ',
+        'OBJ_VAR',
+        'SUB_OBJ',
+        'PRE_OBJ',
+        'POST_OBJ', 
+    ]
     mapdict = {'OBJ': 'mapscript.layerObj'}
+    mapfile = ''
     debug_def_path = '.'
     OBJS = []
     textOBJS = 'self.OBJS'
@@ -82,10 +103,32 @@ class PubMap(object):
             )
         else:
             exec(script_str)
+            
+    def script_processing(self, script):
+        if type(script) is str:
+            script = script.split('\n')
+        if type(script) is not list:
+            raise Exception('Failed tipe from script')
+        for line in script:
+            exec('{}\n'.format(line), globals())
+            # create scrip debug
+            if self.debug_mapscript:
+                self.debug_mapscript.append(
+                    '{0}{1}\n'.format(
+                        ' '*8,
+                        line
+                    )
+                )
     
-    def engine(self, _dict=None, SUB_OBJ=''):
+    def engine(self, _dict=None, SUB_OBJ=None):
         if _dict is None:
             _dict = self.mapdict
+        if SUB_OBJ is None:
+            SUB_OBJ = self.mapfile
+        # prestart script operation
+        if _dict.has_key('PRE_OBJ'):
+            self.script_processing(_dict['PRE_OBJ'])
+        # object operation
         if not _dict.has_key('OBJ_VAR'):
             # add OBJ Variable to OBJS list
             str_obj = '{0}({1})'.format(_dict['OBJ'], SUB_OBJ)
@@ -103,12 +146,13 @@ class PubMap(object):
                         str_obj
                     )
                 )
+        # loop objects method operations
         for line in _dict:
             if line == 'SUB_OBJ':
                 # recursive function for Sub Objects
                 for subline in _dict[line]:
                     self.engine(subline, _dict['OBJ_VAR'])
-            elif line not in ['OBJ', 'OBJ_VAR']:
+            elif line not in self.engine_keys:
                 # got to lines for processing
                 if type(_dict[line]) == list:
                     # loop in list
@@ -125,6 +169,9 @@ class PubMap(object):
                         line,
                         _dict[line]
                     )
+        # poststart script operation
+        if _dict.has_key('POST_OBJ'):
+            self.script_processing(_dict['POST_OBJ'])
                 
     def get_json(self, path=debug_def_path, filename='debug.json'):
         """
