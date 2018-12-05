@@ -1,0 +1,55 @@
+{
+    "OBJ": "mapscript.mapObj",
+    "name": "{{name}}",
+    "imagecolor.setRGB": [
+        [
+            255,
+            255,
+            255
+        ]
+    ],
+    "setExtent": [
+        [
+            630027.311698621,
+            5328559.3147829,
+            657977.792312785,
+            5354655.55868648
+        ]
+    ],
+    "setProjection": "init=epsg:32638",
+    "setSize": [
+        [
+            932,
+            870
+        ]
+    ],
+    "units": {
+        "OBJ": "mapscript.MS_DD"
+    },
+    "web.metadata.set": [
+        [
+            "ows_enable_request",
+            "*"
+        ],
+        [
+            "labelcache_map_edge_buffer",
+            "-10"
+        ],
+        [
+            "wms_srs", "{{wms_srs}}"
+        ],
+        [
+            "wms_title",
+            "Rasters"
+        ],
+        [
+            "wms_enable_request",
+            "*"
+        ]
+    ],
+    "SUB_OBJ": [
+        {% for layer_vars in layer_dicts %}
+            {% include layer_vars['TEMP'] %},
+        {% endfor %}
+    ],
+}

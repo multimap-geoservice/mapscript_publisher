@@ -1,0 +1,19 @@
+{
+    "OBJ": "mapscript.layerObj",
+    "name": "{{layer_vars['name']}}",
+    "status": {"OBJ": "mapscript.MS_ON"}, 
+    "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
+    "data": "{{layer_vars['data']}}",
+    "units": {"OBJ": "mapscript.MS_METERS"},
+    "tileitem": "location",
+    "setProcessing": [
+        "NODATA=-999", 
+        "SCALE=AUTO",
+    ], 
+    "metadata.set": [
+        [
+            "wms_abstract",
+            "{{layer_vars['wms_abstract']}}"
+        ]
+    ],
+}

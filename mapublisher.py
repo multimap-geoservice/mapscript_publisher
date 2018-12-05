@@ -19,6 +19,7 @@ class PubMap(object):
     {'<key>: None'} - if key value = None to create exteption
     {'PRE_OBJ': str } - prestart script of create mapscript OBJ
     {'POST_OBJ': str } - poststart script of create mapscript OBJ
+    {'MAP': str} - path to map file, for inhert mapscript.mapObj
     
     variables:
     ----------
@@ -34,9 +35,10 @@ class PubMap(object):
         'OBJ_VAR',
         'SUB_OBJ',
         'PRE_OBJ',
-        'POST_OBJ', 
+        'POST_OBJ',
+        'MAP', 
     ]
-    mapdict = {'OBJ': 'mapscript.layerObj'}
+    mapdict = {'OBJ': 'mapscript.mapObj'}
     mapfile = ''
     debug_def_path = '.'
     OBJS = []
@@ -46,7 +48,7 @@ class PubMap(object):
     def __init__(self):
         self.debug_mapscript = False
         
-    def line_processing(self, OBJ, method, value):
+    def method_processing(self, OBJ, method, value):
         """
         processing script line:
         
@@ -123,8 +125,12 @@ class PubMap(object):
     def engine(self, _dict=None, SUB_OBJ=None):
         if _dict is None:
             _dict = self.mapdict
+        # inhert map file: _dict['MAP'] or self.mapfile    
         if SUB_OBJ is None:
-            SUB_OBJ = self.mapfile
+            if _dict.has_key('MAP'):
+                SUB_OBJ = _dict['MAP']
+            else:
+                SUB_OBJ = self.mapfile
         # prestart script operation
         if _dict.has_key('PRE_OBJ'):
             self.script_processing(_dict['PRE_OBJ'])
@@ -157,14 +163,14 @@ class PubMap(object):
                 if type(_dict[line]) == list:
                     # loop in list
                     for subline in _dict[line]:
-                        self.line_processing(
+                        self.method_processing(
                             _dict['OBJ_VAR'], 
                             line,
                             subline
                         )
                 else:
                     # one line
-                    self.line_processing(
+                    self.method_processing(
                         _dict['OBJ_VAR'], 
                         line,
                         _dict[line]
