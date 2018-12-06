@@ -63,9 +63,42 @@ class psqldb(object):
         # self.close()
 
 
-class gdaldb(object):
+class gdal2db(object):
     
-    pg_defaults = {
+    db_keys = {}
+    nonstr_keys = [] 
+
+    def __init__(self, **kwargs):
+        self.update_db_keys(**kwargs)
+   
+    def update_db_keys(self, **kwargs):
+        for _key in kwargs:
+            self.db_keys[_key] = kwargs[_key]
+
+    def create_conString(self):
+        self.connString = 'PG:'
+        str_temp = '{0}{1}=\\\\\'{2}\\\\\' ' 
+        nonstr_temp = '{0}{1}={2} ' 
+        for _key in self.db_keys:
+            if _key in self.nonstr_keys:
+                key_temp = nonstr_temp
+            else:
+                key_temp = str_temp
+            if self.db_keys[_key]:
+                self.connString = key_temp.format(
+                    self.connString,
+                    _key,
+                    self.db_keys[_key]
+                )
+                
+    def __call__(self):
+        self.create_conString()
+        return self.connString
+
+
+class gdal2pg(gdal2db):
+    
+    db_keys = {
         'host': config.databaseHost,
         'port': config.databasePort,
         'dbname': config.databaseName,
@@ -74,31 +107,20 @@ class gdaldb(object):
         'schema': 'public',
         'table': False,
         'column': False,
-        'mode': '2',
+        'where': False,
+        'mode': 2,
     }
-
-    def __init__(self, **kwargs):
-        self.gdaldb_create(**kwargs)
     
-    def gdaldb_create(self, **kwargs):
-        self.connString = 'PG:'
-        str_temp = '{0}{1}=\'{2}\' ' 
-        for _key in self.pg_defaults:
-            if kwargs.has_key(_key):
-                self.connString = str_temp.format(
-                    self.connString,
-                    _key,
-                    kwargs[_key]
-                )
-            elif self.pg_defaults[_key]:
-                self.connString = str_temp.format(
-                    self.connString,
-                    _key,
-                    self.pg_defaults[_key]
-                )
-        
+    nonstr_keys = [
+        'host', 
+        'port', 
+        'mode', 
+    ] 
+    def __init__(self, **kwargs):
+        gdal2db.__init__(self, **kwargs)
+
     def __call__(self):
-        return self.connString
+        return gdal2db.__call__(self)
 
 
 class comstring(object):

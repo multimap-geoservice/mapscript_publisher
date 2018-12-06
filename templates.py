@@ -1,9 +1,11 @@
 
 #import mapscript
-from mapublisher import PubMap
 import json
 from jinja2 import Environment, DictLoader
 import ast
+
+from interface import gdal2pg
+from mapublisher import PubMap
 
 wms_projs = [
     'EPSG:32638', 
@@ -27,29 +29,6 @@ wms_projs = [
     'EPSG:2986'
 ]
 wms_srs = ' '.join(wms_projs)
-
-pg_host = 'host={}'.format('localhost')
-pg_port = 'port={}'.format(5432)
-pg_base = 'dbname=\'{}\''.format('dinamo')
-pg_user = 'user=\'{}\''.format('gis')
-pg_pass = 'password=\'{}\''.format('gis')
-pg_shema = 'schema=\'{}\''.format('public')
-pg_table = 'table=\'{}\''.format('rasters')
-pg_column = 'column=\'{}\''.format('geom')
-pg_where = 'where=\'{}\''.format('rid=%s')
-pg_mode = 'mode=\'{}\''.format(2)
-pg_data_str = "PG: {0} {1} {2} {3} {4} {5} {6} {7} {8} {9}".format(
-    pg_host, 
-    pg_port,
-    pg_base,
-    pg_user,
-    pg_pass,
-    pg_shema,
-    pg_table,
-    pg_column,
-    pg_where,
-    pg_mode
-)
 
 layer_dict = """
 {
@@ -77,28 +56,10 @@ map_dict = """
 {
     "OBJ": "mapscript.mapObj",
     "name": "{{name}}",
-    "imagecolor.setRGB": [
-        [
-            255,
-            255,
-            255
-        ]
-    ],
-    "setExtent": [
-        [
-            630027.311698621,
-            5328559.3147829,
-            657977.792312785,
-            5354655.55868648
-        ]
-    ],
-    "setProjection": "init=epsg:32638",
-    "setSize": [
-        [
-            932,
-            870
-        ]
-    ],
+    "imagecolor.setRGB": [{{imagecolor}}],
+    "setExtent": [{{extent}}],
+    "setProjection": "init=epsg:{{epsg_id}}",
+    "setSize": [{{size}}],
     "units": {
         "OBJ": "mapscript.MS_DD"
     },
@@ -133,21 +94,41 @@ map_dict = """
 
     
 if __name__ == '__main__':
-
+    
     name = 'rasters'
+    imagecolor = [255, 255, 255] 
+    extent = [
+        630027.311698621,
+        5328559.3147829,
+        657977.792312785,
+        5354655.55868648
+    ]
+    size = [932, 870]
+    epsg_id = 32638
+    gdal_pgdata_str = gdal2pg(
+        #host = 'localhost', 
+        #port = 5432, 
+        #base = 'dinamo', 
+        #user = 'gis', 
+        #password='gis', 
+        #shema = 'public', 
+        table = 'rasters', 
+        column = 'geom', 
+        #where = 'rid=%s', 
+        mode = 2
+    )
+    gdal_pgdata_str.db_keys['where'] = 'rid=%s'
     layer_dicts = [
         {
             'TEMP': 'raster_layer.json',
             'name': 'rst1',
-            #'data': pg_data_str % str(1),
-            'data': 'PG: \'rrr1\'',
+            'data': gdal_pgdata_str() % str(1),
             'wms_abstract': 'raster1',
         }, 
         {
             'TEMP': 'raster_layer.json',
             'name': 'rst2',
-            #'data': pg_data_str % str(2),
-            'data': 'PG: \'rrr2\'',
+            'data': gdal_pgdata_str() % str(2),
             'wms_abstract': 'raster2',
         }, 
     ]
@@ -163,6 +144,10 @@ if __name__ == '__main__':
     template = env.get_template('map.json')
     map_txt = template.render(
         name=name,
+        imagecolor=imagecolor, 
+        extent=extent, 
+        size=size,
+        epsg_id=epsg_id, 
         wms_srs=wms_srs, 
         layer_dicts=layer_dicts
     )
@@ -176,8 +161,8 @@ if __name__ == '__main__':
     debug_path = '/home/oldbay/GIS/mapserver/debug'
     _map = PubMap()
     _map.mapdict = map_dict
-    _map.get_json(debug_path)
-    _map.get_mapscript(debug_path)
-    _map.get_mapfile(debug_path)
+    _map.debug_json_file(debug_path)
+    _map.debug_python_mapscript(debug_path)
+    _map.debug_map_file(debug_path)
     
 

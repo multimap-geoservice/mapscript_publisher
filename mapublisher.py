@@ -7,6 +7,7 @@ from wsgiref.simple_server import make_server
 
 
 class PubMap(object):
+    
     """
     Publisher Engine
     
@@ -30,6 +31,7 @@ class PubMap(object):
     OBJS = list mapscript objects
     textOBJS = text name list mapscript objects
     """
+    
     engine_keys = [
         'OBJ',
         'OBJ_VAR',
@@ -178,8 +180,13 @@ class PubMap(object):
         # poststart script operation
         if _dict.has_key('POST_OBJ'):
             self.script_processing(_dict['POST_OBJ'])
+         
+    def get_mapobj(self):
+        self.debug_mapscript = False
+        self.engine()
+        return self.OBJS[0]
                 
-    def get_json(self, path=debug_def_path, filename='debug.json'):
+    def debug_json_file(self, path=debug_def_path, filename='debug.json'):
         """
         if path = False to output to stdout
         """
@@ -196,7 +203,7 @@ class PubMap(object):
         else:
             print(_json)
         
-    def get_mapscript(self, path=debug_def_path, filename='debug.py'):
+    def debug_python_mapscript(self, path=debug_def_path, filename='debug.py'):
         """
         if path = False to output to stdout
         """
@@ -224,19 +231,17 @@ class PubMap(object):
         else:
             for _line in self.debug_mapscript:
                 print(_line)
-         
-    def get_mapobj(self):
-        self.debug_mapscript = False
-        self.engine()
-        return self.OBJS[0]
                     
-    def get_mapfile(self, path=debug_def_path, filename='debug.map'): 
+    def debug_map_file(self, path=debug_def_path, filename='debug.map'): 
         _map = self.get_mapobj()
         _map.save('{0}/{1}'.format(path, filename))
 
-    def get_mapimg(self, path=debug_def_path, filename='debug.png'): 
+    def debug_map_img(self, path=debug_def_path, filename='debug.png'): 
         _map = self.get_mapobj()
         _map.write('{0}/{1}'.format(path, filename))
+    
+    def __call__(self):
+        return self.get_mapobj()
 
 
 ########################################################################
@@ -319,7 +324,7 @@ class PubMapCache(object):
         """
         pass
   
-    def get_xml(self):
+    def debug_xml(self):
         """
         return xml config MapCache
         """
@@ -353,7 +358,7 @@ class PubTinyOWS(object):
         """
         pass
   
-    def get_xml(self):
+    def debug_xml(self):
         """
         return xml config TinyOWS
         """
