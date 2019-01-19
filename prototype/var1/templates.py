@@ -10,7 +10,7 @@ from mapublisher import PubMap
 from tools import MapTools
 
 
-_layer_dict = """
+layer_dict = """
 {
     "OBJ": "mapscript.layerObj",
     "name": "{{layer_vars['name']}}",
@@ -29,31 +29,6 @@ _layer_dict = """
             "{{layer_vars['wms_abstract']}}"
         ]
     ],
-}
-"""
-
-layer_dict = """
-{
-    "1-6":{
-        "OBJ": "mapscript.layerObj",
-        "name": "{{layer_vars['name']}}",
-        "status": {"OBJ": "mapscript.MS_ON"}, 
-        "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
-        "data": "{{layer_vars['data']}}",
-        "units": {"OBJ": "mapscript.MS_METERS"},
-        "tileitem": "location",
-        "setProcessing": [
-            {"1-3": "NODATA=-999"}, 
-            {"4-6": "NODATA=-555"}, 
-            "SCALE=AUTO",
-        ], 
-        "metadata.set": [
-            [
-                "wms_abstract",
-                "{{layer_vars['wms_abstract']}}"
-            ]
-        ],
-    }
 }
 """
 

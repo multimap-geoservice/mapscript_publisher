@@ -5,7 +5,8 @@ import inspect
 import sys
 from wsgiref.simple_server import make_server
 
-#from tools import MapTools
+from tools import MapTools
+
 
 ########################################################################
 class PubMap(object):
@@ -15,17 +16,14 @@ class PubMap(object):
     
     dict keys:
     ----------
-    * OBJS = all objects mapscript in list - map index 0
+    OBJS = all objects mapscript in list - map index 0
     {'OBJ': str} = name of class for this dict
-    * {'OBJ_VAR': OBJS[int]} = index number for calss object OBJS
+    {'OBJ_VAR': OBJS[int]} = index number for calss object OBJS
     {'SUB_OBJ': [{},{}]} = list subclss objects
     {'<key>: None'} - if key value = None to create exteption
     {'PRE_OBJ': str } - prestart script of create mapscript OBJ
     {'POST_OBJ': str } - poststart script of create mapscript OBJ
     {'MAP': str} - path to map file, for inhert mapscript.mapObj
-    {'SCALES': list} - list for scale map
-    
-    * - use for engine only
     
     variables:
     ----------
@@ -43,79 +41,17 @@ class PubMap(object):
         'SUB_OBJ',
         'PRE_OBJ',
         'POST_OBJ',
-        'MAP',
-        'SCALES', 
+        'MAP', 
     ]
     mapdict = {'OBJ': 'mapscript.mapObj'}
     mapfile = ''
     debug_def_path = '.'
+    OBJS = []
     textOBJS = 'self.OBJS'
-    
-    # layer scale division symbol
-    lsd = '-'
-
-    """
-    scales default (0)1-16
-    [
-    index 0 - all map scale
-    index 1..n - scale number
-    ]
-    """
-    scales = [
-        999999999, 
-        268435456, 
-        134217728, 
-        67108864, 
-        33554432, 
-        16777216, 
-        8388608, 
-        4194304, 
-        2097152, 
-        1048576, 
-        524288, 
-        262144, 
-        131072, 
-        65536, 
-        32768, 
-        16384, 
-        8192, 
-    ]
-    
 
     #----------------------------------------------------------------------
     def __init__(self):
         self.debug_mapscript = False
-        
-    def find_level_scale(self, _value, _level=False):
-        """
-        _value - value for method object mapscript, for level: {"1-2": value}
-        return:
-        type.tuple = for loop layers (minscale, maxscale, list layer data)
-        false = error data for layer
-        other = all correct data
-        """
-        
-        # test level for value operations
-        if isinstance(_value, dict):
-            if len(_value.keys()) == 1 and isinstance(_value.keys()[0], str):
-                if len(_value.keys()[0].split(self.lsd)) == 2:
-                    try:
-                        minlevel = int(_value.keys()[0].split(self.lsd)[0]) 
-                        maxlevel = int(_value.keys()[0].split(self.lsd)[-1])
-                    except:
-                        pass
-                    else:
-                        value = _value.copy()
-                        value = value.popitem()[-1]
-                        if _level: 
-                            if minlevel <= _level <= maxlevel:
-                                return value
-                            else:
-                                return False
-                        else:
-                            return minlevel, maxlevel, value
-        return _value
-        
         
     def method_processing(self, OBJ, method, value):
         """
@@ -124,7 +60,6 @@ class PubMap(object):
         OBJ - mapscript object name
         method - method for object mapscript
         value - value for method object mapscript
-        
         
         example processing:
         
@@ -141,8 +76,7 @@ class PubMap(object):
         inspect.ismethod(a.setSize)
         True
         """
-
-        # tests value as type
+        # tests value
         if isinstance(value, str):
             value = '\'{}\''.format(value)
         elif isinstance(value, dict):
@@ -177,8 +111,6 @@ class PubMap(object):
         else:
             exec(script_str)
             
-        return True
-            
     def script_processing(self, script):
         if type(script) is str:
             script = script.split('\n')
@@ -195,23 +127,15 @@ class PubMap(object):
                     )
                 )
     
-    def engine(self, _dict=None, SUB_OBJ=None, _level=False):
+    def engine(self, _dict=None, SUB_OBJ=None):
         if _dict is None:
-            # insert dase value for mapdict
-            _dict = self.mapdict.copy()
-            self.OBJS = []
+            _dict = self.mapdict
         # inhert map file: _dict['MAP'] or self.mapfile    
         if SUB_OBJ is None:
-            # find base obj for map
             if _dict.has_key('MAP'):
                 SUB_OBJ = _dict['MAP']
             else:
                 SUB_OBJ = self.mapfile
-            # find scale list
-            if _dict.has_key('SCALES'):
-                self.scales = _dict['SCALES']
-            else:
-                _dict['SCALES'] = self.scales
         # prestart script operation
         if _dict.has_key('PRE_OBJ'):
             self.script_processing(_dict['PRE_OBJ'])
@@ -227,9 +151,9 @@ class PubMap(object):
             # create scrip debug
             if self.debug_mapscript:
                 self.debug_mapscript.append(
-                    '{0}{1}.append({2})\n'.format(
+                    '{0}{1} = {2}\n'.format(
                         ' '*8,
-                        self.textOBJS, 
+                        _dict['OBJ_VAR'], 
                         str_obj
                     )
                 )
@@ -238,59 +162,24 @@ class PubMap(object):
             if line == 'SUB_OBJ':
                 # recursive function for Sub Objects
                 for subline in _dict[line]:
-                    # levels procedure
-                    obj_scale = self.find_level_scale(subline, _level)
-                    if isinstance(obj_scale, tuple):
-                        minlevel = obj_scale[0]
-                        maxlevel = obj_scale[1]
-                        levelline = obj_scale[-1]
-                        # layer level scale objects
-                        if levelline['OBJ'] == "mapscript.layerObj":
-                            for numlevel in range(minlevel, maxlevel+1):
-                                loopline = levelline.copy()
-                                loopline['name'] = '{0}{1}'.format(
-                                    loopline['name'],
-                                    numlevel
-                                )
-                                loopline['maxscaledenom'] = self.scales[
-                                    numlevel-1
-                                ]
-                                loopline['minscaledenom'] = self.scales[
-                                    numlevel
-                                ]
-                                self.engine(
-                                    loopline, 
-                                    _dict['OBJ_VAR'],
-                                    numlevel
-                                )
-                    # other objects 
-                    elif obj_scale:
-                        self.engine(
-                            obj_scale,
-                            _dict['OBJ_VAR'], 
-                            _level
-                        )
+                    self.engine(subline, _dict['OBJ_VAR'])
             elif line not in self.engine_keys:
-                line_scale = self.find_level_scale(_dict[line], _level)
-                if line_scale and not isinstance(line_scale, tuple):
-                    # got to lines for processing
-                    if isinstance(line_scale, list):
-                        # loop in list
-                        for subline in line_scale:
-                            loop_scale = self.find_level_scale(subline, _level)
-                            if loop_scale and not isinstance(loop_scale, tuple):
-                                self.method_processing(
-                                    _dict['OBJ_VAR'], 
-                                    line,
-                                    loop_scale
-                                )
-                    else:
-                        # one line
+                # got to lines for processing
+                if type(_dict[line]) == list:
+                    # loop in list
+                    for subline in _dict[line]:
                         self.method_processing(
                             _dict['OBJ_VAR'], 
                             line,
-                            line_scale
+                            subline
                         )
+                else:
+                    # one line
+                    self.method_processing(
+                        _dict['OBJ_VAR'], 
+                        line,
+                        _dict[line]
+                    )
         # poststart script operation
         if _dict.has_key('POST_OBJ'):
             self.script_processing(_dict['POST_OBJ'])
