@@ -1,0 +1,129 @@
+{
+    "IMODS":["interface"],
+    "VARS":{
+        "name": "rasters",
+        "imagecolor": [255, 255, 255], 
+        "extent": [
+            630027.311698621,
+            5328559.3147829,
+            657977.792312785,
+            5354655.55868648
+        ],
+        "size": [932, 870],
+        "wms_srs": {
+            "RUN":{
+                "interface.proj2str": [
+                "EPSG:32638",
+                "EPSG:4326",
+                "EPSG:3857",
+                "EPSG:2154",
+                "EPSG:310642901",
+                "EPSG:4171",
+                "EPSG:310024802",
+                "EPSG:310915814",
+                "EPSG:310486805",
+                "EPSG:310702807",
+                "EPSG:310700806",
+                "EPSG:310547809",
+                "EPSG:310706808",
+                "EPSG:310642810",
+                "EPSG:310642801",
+                "EPSG:310642812",
+                "EPSG:310032811",
+                "EPSG:310642813",
+                "EPSG:2986"
+                ]
+            }
+        },
+        "epsg_id": "32638",
+        "raster_table": "rasters",
+        "raster_column": "geom",
+        "layer_dicts": [
+            {
+                "layer_temp": "layer_temp",
+                "name": "rst1",
+                "data": {
+                    "RUN":{
+                        "interface.gdal2pg":{
+                                "table": {"VAR":"raster_table"},
+                                "column": {"VAR":"raster_column"},
+                                "where": "rid=1",
+                                "mode": 2
+                            }
+                        }
+                    },
+                "wms_abstract": "raster1"
+            }, 
+            {
+                "layer_temp": "layer_temp",
+                "name": "rst2",
+                "data": {
+                    "RUN":{
+                        "interface.gdal2pg":{
+                                "table": {"VAR":"raster_table"},
+                                "column": {"VAR":"raster_column"},
+                                "where": "rid=2",
+                                "mode": 2
+                            }
+                        }
+                    },
+                "wms_abstract": "raster2"
+            } 
+        ]
+    },
+    "TEMPS":{
+        "layer_temp":{
+                "1-6":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "{{layer_var['name']}}"},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
+                    "data": {"TEMP": "{{layer_var['data']}}"},
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "setProcessing":{
+                        "2-5": [
+                            {"1-3": "NODATA=-999"}, 
+                            {"4-6": "NODATA=-555"}, 
+                            "SCALE=AUTO"
+                        ]
+                    }, 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "{{layer_var['wms_abstract']}}"}
+                        ]
+                    ]
+                }
+        },
+        "map_temp":{
+            "OBJ": "mapscript.mapObj",
+            "name": {"VAR": "name"},
+            "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
+            "setExtent": [{"VAR": "extent"}],
+            "setProjection": "init=epsg:32638",
+            "setSize": [{"VAR": "size"}],
+            "units": {
+                "OBJ": "mapscript.MS_DD"
+            },
+            "web.metadata.set": [
+                ["ows_enable_request", "*"],
+                ["labelcache_map_edge_buffer", "-10"],
+                ["wms_srs", {"VAR": "wms_srs"}],
+                ["wms_title", "Rasters"],
+                ["wms_enable_request", "*"]
+            ],
+            "SUB_OBJ": [
+                {"TEMP": [
+                        "{% for layer_var in layer_dicts %}",
+                        "    {% include layer_var['layer_temp'] %},",
+                        "{% endfor %}"
+                    ]
+                }
+            ]
+        }
+    },
+    "MAP":{
+        "TEMP":"map_temp"
+    }
+}

@@ -123,6 +123,39 @@ class gdal2pg(gdal2db):
         return gdal2db.__call__(self)
 
 
+class proj2str(object):
+    """
+    projs - list default projections
+    """
+    projs = [
+        'EPSG:32638', 
+        'EPSG:4326',
+        'EPSG:3857',
+        'EPSG:2154',
+        'EPSG:310642901',
+        'EPSG:4171',
+        'EPSG:310024802',
+        'EPSG:310915814',
+        'EPSG:310486805',
+        'EPSG:310702807',
+        'EPSG:310700806',
+        'EPSG:310547809',
+        'EPSG:310706808',
+        'EPSG:310642810',
+        'EPSG:310642801',
+        'EPSG:310642812',
+        'EPSG:310032811',
+        'EPSG:310642813',
+        'EPSG:2986'
+    ]
+    def __init__(self, _projs=None):
+        if _projs is not None:
+            self.projs = _projs
+            
+    def __call__(self):
+        return ' '.join(self.projs)
+
+
 class comstring(object):
 
     def __init__(self):
