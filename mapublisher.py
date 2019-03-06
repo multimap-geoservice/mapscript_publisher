@@ -155,7 +155,7 @@ class PubMap(object):
         if inspect.ismethod(eval('{0}.{1}'.format(OBJ, method))):
             if isinstance(value, dict):
                 assigment = '(**{})'.format(value)
-            elif isinstance(value, list):
+            elif isinstance(value, (list, tuple)):
                 assigment = '(*{})'.format(value)
             else:
                 assigment = '({})'.format(value)

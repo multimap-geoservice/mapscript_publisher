@@ -148,8 +148,8 @@ class proj2str(object):
         'EPSG:310642813',
         'EPSG:2986'
     ]
-    def __init__(self, _projs=None):
-        if _projs is not None:
+    def __init__(self, *args):
+        if args is ():
             self.projs = _projs
             
     def __call__(self):
