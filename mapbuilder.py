@@ -60,6 +60,9 @@ class BuildMap(object):
         print(_debug)
    
     def var_proc(self, data):
+        """
+        enter VAR:{} keys 
+        """
         if self.VARS.has_key(data):
             if isinstance(data, (str, unicode)):
                 return self.VARS[data]
@@ -68,22 +71,14 @@ class BuildMap(object):
         else:
             raise Exception('VAR:{} not found'.format(data))
 
-    def run_proc(self, data):
-        if isinstance(data, (dict, str, unicode)):
-            # import modules IMODS    
-            for module in self.IMODS:
-                exec('import {}'.format(module))
-            if isinstance(data, dict):
-                if len(data) == 1:
+    def run_proc_item(self, item):
+        if isinstance(item, (dict, str, unicode)):
+            if isinstance(item, dict):
+                if len(item) == 1:
                     # obj
-                    obj = data.keys()[0]
-                    # prefix (kostil!!!, add class.method to RUN in future)
-                    if inspect.isclass(eval(obj)):
-                        prefix = '()'
-                    else:
-                        prefix = ''
+                    obj = item.keys()[0]
                     # options
-                    options = data[obj]
+                    options = item[obj]
                     if isinstance(options, dict):
                         options = '(**{})'.format(options)
                     elif isinstance(options, (list, tuple)):
@@ -91,22 +86,49 @@ class BuildMap(object):
                     else:
                         options = '({})'.format(options)
                     # all
-                    eval_string = '{0}{1}{2}'.format(
+                    eval_item = '{0}{1}'.format(
                         obj, 
-                        options, 
-                        prefix
+                        options 
                     )
                 else:
                     raise Exception(
-                        'All keys RUN:{} > 1, accesable 1 only'.format(data.keys())
+                        'All keys RUN:{} > 1, accesable 1 only'.format(item.keys())
                     )
             else:
-                eval_string = data
-            return eval(eval_string)
+                eval_item = item
+            return eval_item
         else:
             raise Exception(
-                'VAR:{} is not dict or str or unicode type'.format(data)
+                'VAR:{} is not dict or str or unicode type'.format(item)
             )
+        
+    def run_proc(self, data):
+        """
+        enter RUN:[] keys
+        variants: "":str
+                  {}:dict
+        """
+        # import modules IMODS    
+        for module in self.IMODS:
+            exec('import {}'.format(module))
+        # data is not list or tuple
+        if not isinstance(data, (list, tuple)):
+            if isinstance(data, dict):
+                if inspect.isclass(eval(data.keys()[0])):
+                    data = [data, "__call__()"]
+                else:
+                    data = [data]
+            elif isinstance(data, (str, unicode)):
+                data = [data]
+            else:
+                raise Exception('RUN data is not correct (dict or srt or unicode)')
+        # RUN list
+        separator = ''
+        eval_data = ''
+        for item in data:
+            eval_data += '{0}{1}'.format(separator, self.run_proc_item(item))
+            separator = '.'
+        return eval(eval_data)
 
     def temp_proc(self, data):
         pass
