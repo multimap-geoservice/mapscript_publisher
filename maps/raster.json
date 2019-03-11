@@ -77,7 +77,7 @@
         "layer_temp":{
                 "1-6":{
                     "OBJ": "mapscript.layerObj",
-                    "name": {"TEMP": "{{layer_var['name']}}"},
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
                     "data": {"TEMP": "{{layer_var['data']}}"},

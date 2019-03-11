@@ -131,7 +131,10 @@ class BuildMap(object):
         return eval(eval_data)
 
     def temp_proc(self, data):
-        pass
+        if isinstance(data, (list, tuple)):
+            return {"TEMP":"\n".join(data)}
+        else:
+            return {"TEMP":data}
     
     def recurs_proc(self, val, key, proc):
         if isinstance(val[key], list):
@@ -215,7 +218,57 @@ class BuildMap(object):
         """
         if key "TEMPS" to step 2
         """
-        pass
+        # step 0: list temp to text
+        for key in self.TEMPS:
+            self.recurs_proc(self.TEMPS, key, 'TEMP')
+        # step 1: temp to str to list
+        for key in self.TEMPS:
+            temp2json = json.dumps(
+                    self.TEMPS[key],
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ).split("\n")
+            temp2text = []
+            post_temp_cont = False
+            temp_index = -1
+            for string in temp2json:
+                temp_index += 1
+                if post_temp_cont:
+                    post_temp_cont = False
+                    continue
+                temp_pos = string.find("TEMP") - 1
+                if temp_pos != -2:
+                    # find template
+                    data = ast.literal_eval(
+                        "{%s}"%string[temp_pos:]
+                        )['TEMP'].split("\n")
+                    # find pre template
+                    pre_temp = temp2json[temp_index-1]
+                    pre_pos = pre_temp.find("{")
+                    if ": {" in pre_temp:
+                        pre_temp = pre_temp[:pre_temp.find(": {")+2]
+                    else:
+                        pre_temp = " " * pre_pos
+                    del temp2text[-1]
+                    # find post template
+                    post_temp = temp2json[temp_index+1]
+                    if "}," in post_temp:
+                        post_temp = ','
+                    else:
+                        post_temp = ''
+                    post_temp_cont = True
+                    # append template
+                    for pos in data:
+                        temp2text.append('{0}{1}{2}'.format(
+                            pre_temp, 
+                            pos, 
+                            post_temp
+                        ))
+                else:
+                    temp2text.append(string)
+            self.TEMPS[key] = temp2text
+        
     
     def build(self):
         """
@@ -248,4 +301,3 @@ class BuildMap(object):
     def __call__(self):
         self.build()
         return self.mapdict
-

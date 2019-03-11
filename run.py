@@ -1,5 +1,6 @@
 from mapbuilder import BuildMap
 from mapublisher import PubMap
+import json
 
 if __name__ == "__main__":
     mapjsonfile = "./maps/raster.json"
@@ -15,5 +16,9 @@ if __name__ == "__main__":
     print builder.vars_queue
     print "TEMPS"
     print builder.TEMPS
+    for temp in builder.TEMPS:
+        print temp
+        for string in builder.TEMPS[temp]:
+            print string
     print "MAP"
     print builder.MAP
