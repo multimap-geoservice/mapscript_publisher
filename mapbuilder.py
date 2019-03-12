@@ -28,9 +28,15 @@ class BuildMap(object):
     
     variables:
     ----------
+    debug - False|True|filename - view debug build process
     mapjson - source json for building
-    mapdict - output map dict for PubMap 
+    mapdict - output map dict for PubMap
+    IMODS - list import modules
+    VARS - dict variables
+    TEMPS - dict templates
+    MAP - TEMP|VAR|dict - mapfile
     """
+    debug = False
     mapjson = False
     mapdict = {}
     IMODS = []
@@ -45,19 +51,31 @@ class BuildMap(object):
             "RUN": self.run_proc,
             "TEMP": self.temp_proc,
         }
+        self.mapdict = self.MAP
     
     def load_mapjson(self, jsonfile):
         with open(jsonfile) as json_file:  
-            self.mapjson = json.load(json_file)        
-   
-    def debug_mapjson(self):
-        _debug = json.dumps(
-            self.mapjson,
-            sort_keys=True,
-            indent=4,
-            separators=(',', ': ')
-        )
-        print(_debug)
+            self.mapjson = json.load(json_file)
+            
+    def debug_out(self, log, description, first=False):
+        if isinstance(log, dict):
+            log = json.dumps(
+                log,
+                sort_keys=True,
+                indent=4,
+                separators=(',', ': ')
+            )
+        log = "\n{0}\nSTEP: {1}\n{0}\n{2}".format("-"*60, description, log)
+        if isinstance(self.debug, (str, unicode)):
+            if first:
+                write_mode = 'w'
+            else:
+                write_mode = 'a'
+            _file = open(self.debug, write_mode)
+            _file.write(log)
+            _file.close()
+        else:
+            print (log)
    
     def var_proc(self, data):
         """
@@ -259,17 +277,65 @@ class BuildMap(object):
                         post_temp = ''
                     post_temp_cont = True
                     # append template
+                    first = 1
+                    last = len(data)
+                    index = 0
                     for pos in data:
+                        index += 1
+                        if index == first:
+                            prefix = pre_temp
+                        else:
+                            prefix = " " * len(pre_temp)
+                        if index == last:
+                            postfix = post_temp
+                        else:
+                            postfix = ""
                         temp2text.append('{0}{1}{2}'.format(
-                            pre_temp, 
+                            prefix, 
                             pos, 
-                            post_temp
+                            postfix
                         ))
                 else:
                     temp2text.append(string)
-            self.TEMPS[key] = temp2text
-        
-    
+            self.TEMPS[key] = "\n".join(temp2text)
+            
+    def build_map(self):
+        """
+        build map - step 3
+            variants: MAP: TEMP
+                      MAP: VAR
+                      MAP: {}
+        """
+        if self.MAP.has_key('TEMP'):
+            # MAP from section TEMPS
+            maptemp = self.MAP['TEMP']
+            if self.TEMPS.has_key(maptemp):
+                env = Environment(
+                    loader=DictLoader(self.TEMPS)
+                )
+                template = env.get_template(maptemp)
+                map_txt = template.render(**self.VARS)
+                self.MAP = ast.literal_eval(map_txt)
+            else:
+                raise Exception(
+                    'TEMPS: "{}" for MAP not found'.format(maptemp)
+                )
+        elif self.MAP.has_key('VAR'):
+            # MAP from section VAR
+            mapvar = self.MAP['VAR']
+            if self.TEMPS.has_key(mapvar):
+                self.MAP = self.VARS[mapvar]
+            else:
+                raise Exception(
+                    'VARS: "{}" for MAP not found'.format(mapvar)
+                )
+        # init VAR
+        for key in self.MAP:
+            self.recurs_proc(self.MAP, key, 'VAR')
+        # init RUN
+        for key in self.MAP:
+            self.recurs_proc(self.MAP, key, 'RUN')
+            
     def build(self):
         """
         Build for key "MAP":
@@ -280,23 +346,51 @@ class BuildMap(object):
                 2 step use RUN
                 3 render TEMP
         """
+        # trst load map json
+        if self.mapjson:
+            if self.debug:
+                self.debug_out(self.mapjson, 'Load Map JSON file', first=True)
+        else:
+            raise Exception('Map JSON is not loaded')
+        # init import modules  
         if self.mapjson.has_key('IMODS'):
             if isinstance(self.mapjson['IMODS'], list):
                 self.IMODS = self.mapjson['IMODS'][:]
-
+                if self.debug:
+                    self.debug_out(self.IMODS, 'List import Modules')
+        # VARS build - etap 1
         if self.mapjson.has_key('VARS'):
             if isinstance(self.mapjson['VARS'], dict):
                 self.VARS = self.mapjson['VARS'].copy()
+                if self.debug:
+                    self.debug_out(self.VARS, 'Input VARS')
                 self.build_vars()
-   
+                if self.debug:
+                    self.debug_out(self.VARS, 'Output VARS')
+        # TEMPS build - etap 2
         if self.mapjson.has_key('TEMPS'):
             if isinstance(self.mapjson['TEMPS'], dict):
                 self.TEMPS = self.mapjson['TEMPS'].copy()
+                if self.debug:
+                    self.debug_out(self.TEMPS, 'Input TEMPS')
                 self.build_temps()
-                
+                if self.debug:
+                    for temp in self.TEMPS:
+                        self.debug_out(self.TEMPS[temp], 'Output TEMP: {}'.format(temp))
+        # MAP build - etap 3
         if self.mapjson.has_key('MAP'):
             if isinstance(self.mapjson['MAP'], dict):
                 self.MAP = self.mapjson['MAP'].copy()
+                if self.debug:
+                    self.debug_out(self.MAP, 'Input MAP')
+                self.build_map()
+                if self.debug:
+                    self.debug_out(self.MAP, 'Output MAP')
+                self.mapdict = self.MAP
+            else:
+                raise Exception('Section MAP is not dict')
+        else:
+            raise Exception('Section MAP not found')
     
     def __call__(self):
         self.build()
