@@ -324,7 +324,7 @@ class BuildMap(object):
             # MAP from section VAR
             mapvar = self.MAP['VAR']
             if self.TEMPS.has_key(mapvar):
-                self.MAP = self.VARS[mapvar]
+                self.MAP = self.VARS[mapvar].copy()
             else:
                 raise Exception(
                     'VARS: "{}" for MAP not found'.format(mapvar)

@@ -62,27 +62,15 @@ class PubMap(object):
     """
     scales = [
         999999999, 
-        268435456, 
-        134217728, 
-        67108864, 
-        33554432, 
-        16777216, 
-        8388608, 
-        4194304, 
-        2097152, 
-        1048576, 
-        524288, 
-        262144, 
-        131072, 
-        65536, 
-        32768, 
-        16384, 
-        8192, 
-    ]
+        268435456
+    ] 
 
     #----------------------------------------------------------------------
     def __init__(self):
         self.debug_mapscript = False
+        # add all scales 
+        while not self.scales[-1] == 1:
+            self.scales.append(self.scales[-1]/2)
         
     def find_level_scale(self, _value, _level=False):
         """

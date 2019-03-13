@@ -38,17 +38,23 @@
             ]
         },
         "epsg_id": "32638",
-        "raster_table": "rasters",
-        "raster_column": "geom",
+        "db_table": "rasters",
+        "db_column": "geom",
+        "db_host": "william",
+        "db_user": "gis",
+        "db_pass": "gis",
         "layer_dicts": [
             {
                 "layer_temp": "layer_temp",
-                "name": "rst1",
+                "name": "rst_one",
                 "data": {
                     "RUN":{
                         "interface.gdal2pg":{
-                                "table": {"VAR":"raster_table"},
-                                "column": {"VAR":"raster_column"},
+                                "table": {"VAR":"db_table"},
+                                "column": {"VAR":"db_column"},
+                                "host": {"VAR":"db_host"},
+                                "user": {"VAR":"db_user"},
+                                "password": {"VAR":"db_pass"},
                                 "where": "rid=1",
                                 "mode": 2
                             }
@@ -58,12 +64,15 @@
             }, 
             {
                 "layer_temp": "layer_temp",
-                "name": "rst2",
+                "name": "rst_two",
                 "data": {
                     "RUN":{
                         "interface.gdal2pg":{
-                                "table": {"VAR":"raster_table"},
-                                "column": {"VAR":"raster_column"},
+                                "table": {"VAR":"db_table"},
+                                "column": {"VAR":"db_column"},
+                                "host": {"VAR":"db_host"},
+                                "user": {"VAR":"db_user"},
+                                "password": {"VAR":"db_pass"},
                                 "where": "rid=2",
                                 "mode": 2
                             }
@@ -75,7 +84,7 @@
     },
     "TEMPS":{
         "layer_temp":{
-                "1-6":{
+                "1-25":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
@@ -84,9 +93,9 @@
                     "units": {"OBJ": "mapscript.MS_METERS"},
                     "tileitem": "location",
                     "setProcessing":{
-                        "2-5": [
-                            {"1-3": "NODATA=-999"}, 
-                            {"4-6": "NODATA=-555"}, 
+                        "1-25": [
+                            {"1-3": "NODATA=0"}, 
+                            {"4-25": "NODATA=-999"}, 
                             "SCALE=AUTO"
                         ]
                     }, 
