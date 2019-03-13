@@ -18,13 +18,10 @@ class PubMap(object):
     * {'OBJ_VAR': OBJS[int]} = index number for calss object OBJS
     {'SUB_OBJ': [{},{}]} = list subclss objects
     {'<key>: None'} - if key value = None to create exteption
-    ** {'PRE_OBJ': str } - prestart script of create mapscript OBJ
-    ** {'POST_OBJ': str } - poststart script of create mapscript OBJ
     {'MAP': str} - path to mapfile, for inhert mapscript.mapObj
     {'SCALES': list} - list for scale map
     
     * - use for engine only
-    ** - deprecated
     
     variables:
     ----------
@@ -40,8 +37,6 @@ class PubMap(object):
         'OBJ',
         'OBJ_VAR',
         'SUB_OBJ',
-        #'PRE_OBJ',
-        #'POST_OBJ',
         'MAP',
         'SCALES', 
     ]
@@ -71,6 +66,7 @@ class PubMap(object):
         # add all scales 
         while not self.scales[-1] == 1:
             self.scales.append(self.scales[-1]/2)
+        self.scales.append(0)
         
     def find_level_scale(self, _value, _level=False):
         """
@@ -198,9 +194,6 @@ class PubMap(object):
                 self.scales = _dict['SCALES']
             else:
                 _dict['SCALES'] = self.scales
-        # prestart script operation
-        #if _dict.has_key('PRE_OBJ'):
-            #self.script_processing(_dict['PRE_OBJ'])
         # object operation
         if not _dict.has_key('OBJ_VAR'):
             # add OBJ Variable to OBJS list
@@ -277,9 +270,6 @@ class PubMap(object):
                             line,
                             line_scale
                         )
-        # poststart script operation
-        #if _dict.has_key('POST_OBJ'):
-            #self.script_processing(_dict['POST_OBJ'])
          
     def get_mapobj(self):
         self.debug_mapscript = False
