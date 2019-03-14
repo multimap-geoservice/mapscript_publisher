@@ -50,7 +50,7 @@
     },
     "TEMPS":{
         "buildings":{
-                "15-25":{
+                "15-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
@@ -82,19 +82,21 @@
                                 {
                                     "OBJ": "mapscript.styleObj",
                                     "outlinecolor": "#333333",
-                                    "width": {
-                                         "15-16": 0,
-                                         "16-25": 0.5
-                                    }
+                                    "width": [
+                                         {"15-16": 0},
+                                         {"17-20": 0.5}
+                                    ]
                                 }
                             ],
-                            "add_label":{
-                                "SUB_OBJ":{
-                                    "OBJ": "mapscript.labelObj",
-                                    "font": "sc",
-                                    "partials": "FALSE"
-                                }
-                            }
+                            "addLabel": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": "FALSE"
+                                        }
+                                    }
+                            ]
                         }
                     ]
                 }

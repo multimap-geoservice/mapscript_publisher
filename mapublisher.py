@@ -2,6 +2,7 @@
 import mapscript
 import json
 import inspect
+import copy
 
 #from tools import MapTools
 
@@ -93,7 +94,7 @@ class PubMap(object):
                             if minlevel <= _level <= maxlevel:
                                 return value
                             else:
-                                return False
+                                return None
                         else:
                             return minlevel, maxlevel, value
         return _value
@@ -165,7 +166,7 @@ class PubMap(object):
         if type(script) is str:
             script = script.split('\n')
         if type(script) is not list:
-            raise Exception('Failed tipe from script')
+            raise Exception('Failed type from script')
         for line in script:
             exec('{}\n'.format(line), globals())
             # create scrip debug
@@ -180,7 +181,7 @@ class PubMap(object):
     def engine(self, _dict=None, SUB_OBJ=None, _level=False):
         if _dict is None:
             # insert dase value for mapdict
-            _dict = self.mapdict.copy()
+            _dict = copy.deepcopy(self.mapdict)
             self.OBJS = []
         # inhert map file: _dict['MAP'] or self.mapfile    
         if SUB_OBJ is None:
@@ -203,7 +204,7 @@ class PubMap(object):
                 self.textOBJS, 
                 len(self.OBJS) - 1
             )
-            # create scrip debug
+            # create script debug
             if self.debug_mapscript:
                 self.debug_mapscript.append(
                     '{0}{1}.append({2})\n'.format(
@@ -251,13 +252,21 @@ class PubMap(object):
                         )
             elif line not in self.engine_keys:
                 line_scale = self.find_level_scale(_dict[line], _level)
-                if line_scale and not isinstance(line_scale, tuple):
+                line_tests = []
+                line_tests.append(line_scale is not None)
+                line_tests.append(line_scale is not False)
+                line_tests.append(not isinstance(line_scale, tuple))
+                if False not in line_tests:
                     # got to lines for processing
                     if isinstance(line_scale, list):
                         # loop in list
                         for subline in line_scale:
                             loop_scale = self.find_level_scale(subline, _level)
-                            if loop_scale and not isinstance(loop_scale, tuple):
+                            loop_tests = []
+                            loop_tests.append(loop_scale is not None)
+                            loop_tests.append(loop_scale is not False)
+                            loop_tests.append(not isinstance(loop_scale, tuple))
+                            if False not in loop_tests:
                                 self.method_processing(
                                     _dict['OBJ_VAR'], 
                                     line,

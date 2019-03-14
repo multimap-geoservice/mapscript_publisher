@@ -4,6 +4,7 @@ import json
 from jinja2 import Environment, DictLoader
 import ast
 import inspect
+import copy
 
 
 ########################################################################
@@ -361,7 +362,7 @@ class BuildMap(object):
         # VARS build - etap 1
         if self.mapjson.has_key('VARS'):
             if isinstance(self.mapjson['VARS'], dict):
-                self.VARS = self.mapjson['VARS'].copy()
+                self.VARS = copy.deepcopy(self.mapjson['VARS'])
                 if self.debug:
                     self.debug_out(self.VARS, 'Input VARS')
                 self.build_vars()
@@ -370,7 +371,7 @@ class BuildMap(object):
         # TEMPS build - etap 2
         if self.mapjson.has_key('TEMPS'):
             if isinstance(self.mapjson['TEMPS'], dict):
-                self.TEMPS = self.mapjson['TEMPS'].copy()
+                self.TEMPS = copy.deepcopy(self.mapjson['TEMPS'])
                 if self.debug:
                     self.debug_out(self.TEMPS, 'Input TEMPS')
                 self.build_temps()
@@ -380,7 +381,7 @@ class BuildMap(object):
         # MAP build - etap 3
         if self.mapjson.has_key('MAP'):
             if isinstance(self.mapjson['MAP'], dict):
-                self.MAP = self.mapjson['MAP'].copy()
+                self.MAP = copy.deepcopy(self.mapjson['MAP'])
                 if self.debug:
                     self.debug_out(self.MAP, 'Input MAP')
                 self.build_map()
