@@ -16,8 +16,9 @@ class PubMap(object):
     ----------
     * OBJS = all objects mapscript in list - map index 0
     {'OBJ': str} = name of class for this dict
+    {'OBJ_ARG': str|list|dict} - args for assigment constructor OBJ
     * {'OBJ_VAR': OBJS[int]} = index number for calss object OBJS
-    {'SUB_OBJ': [{},{}]} = list subclss objects
+    {'SUB_OBJ': [{},{}]} - list subclss container or assigment objects
     {'<key>: None'} - if key value = None to create exteption
     {'MAP': str} - path to mapfile, for inhert mapscript.mapObj
     {'SCALES': list} - list for scale map
@@ -36,6 +37,7 @@ class PubMap(object):
     
     engine_keys = [
         'OBJ',
+        'OBJ_ARG', 
         'OBJ_VAR',
         'SUB_OBJ',
         'MAP',
@@ -131,6 +133,28 @@ class PubMap(object):
         elif isinstance(value, dict):
             if value.has_key('OBJ'):
                 value = 'eval(\'{}\')'.format(value['OBJ'])
+            elif value.has_key('SUB_OBJ'):
+                if isinstance(value['SUB_OBJ'], dict):
+                    if not value['SUB_OBJ'].has_key('OBJ'):
+                        raise Exception(
+                            'in {} OBJ: not found'.format(value['SUB_OBJ'])
+                        )
+                    elif value['SUB_OBJ'].has_key('OBJ_ARG'):
+                        OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
+                        if isinstance(OBJ_ARG, dict):
+                            OBJ_ARG = '**{}'.format(OBJ_ARG)
+                        elif isinstance(OBJ_ARG, (list, tuple)):
+                            OBJ_ARG = '*{}'.format(OBJ_ARG)
+                        else:
+                            OBJ_ARG = '{}'.format(OBJ_ARG)
+                    else:
+                        OBJ_ARG = ''
+                    OBJ_VAR = self.engine(value['SUB_OBJ'], OBJ_ARG)
+                    value = OBJ_VAR
+                else:
+                    raise Exception(
+                        'SUB_OBJ: {} is not dict'.format(value['SUB_OBJ'])
+                    )
         elif value == None:
             raise Exception('None value in Template')
         
@@ -158,7 +182,16 @@ class PubMap(object):
                 '{0}{1}\n'.format(' '*8, script_str)
             )
         else:
-            exec(script_str)
+            # run method processing and tracking exeptions
+            try:
+                exec(script_str)
+            except Exception as err:
+                raise Exception( 
+                    "SINTAX\nFOR:\n{0}\nERROR:\n{1}".format(
+                        script_str, 
+                        err
+                    )
+                )
             
         return True
             
@@ -179,6 +212,15 @@ class PubMap(object):
                 )
     
     def engine(self, _dict=None, SUB_OBJ=None, _level=False):
+        """
+        recursive engine for dict
+        _dict - working dict
+        SUB_OBJ - object for constructor _dict['OBJ'](SUB_OBJ):
+            None - first start SUB_OBJ in MAP
+            '' - first start SUB_OBJ in assigment
+            self.OBJS[] - recursive start over self.engine
+        _level - loop level for this _dict
+        """
         if _dict is None:
             # insert dase value for mapdict
             _dict = copy.deepcopy(self.mapdict)
@@ -190,6 +232,7 @@ class PubMap(object):
                 SUB_OBJ = _dict['MAP']
             else:
                 SUB_OBJ = self.mapfile
+        if SUB_OBJ is None or SUB_OBJ == '':
             # find scale list
             if _dict.has_key('SCALES'):
                 self.scales = _dict['SCALES']
@@ -279,6 +322,7 @@ class PubMap(object):
                             line,
                             line_scale
                         )
+        return _dict['OBJ_VAR']
          
     def get_mapobj(self):
         self.debug_mapscript = False

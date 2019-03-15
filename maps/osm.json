@@ -76,12 +76,22 @@
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
-                                    "color": "#bbbbbb",
+                                    "color": {
+                                        "SUB_OBJ":{
+                                            "OBJ": "mapscript.colorObj",
+                                            "setHex": "#bbbbbb"
+                                        }
+                                    },
                                     "opacity": 50
                                 },
                                 {
                                     "OBJ": "mapscript.styleObj",
-                                    "outlinecolor": "#333333",
+                                    "outlinecolor":{
+                                        "SUB_OBJ":{
+                                            "OBJ": "mapscript.colorObj",
+                                            "setHex": "#333333"
+                                        }
+                                    },
                                     "width": [
                                          {"15-16": 0},
                                          {"17-20": 0.5}
@@ -93,7 +103,13 @@
                                         "SUB_OBJ": {
                                             "OBJ": "mapscript.labelObj",
                                             "font": "sc",
-                                            "partials": "FALSE"
+                                            "partials": 0,
+                                            "outlinecolor":{
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.colorObj",
+                                                    "OBJ_ARG": [255,255,255]
+                                                }
+                                            }
                                         }
                                     }
                             ]
