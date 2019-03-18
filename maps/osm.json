@@ -99,19 +99,19 @@
                                 }
                             ],
                             "addLabel": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": 0,
-                                            "outlinecolor":{
-                                                "SUB_OBJ":{
-                                                    "OBJ": "mapscript.colorObj",
-                                                    "OBJ_ARG": [255,255,255]
-                                                }
+                                {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": 0,
+                                        "outlinecolor":{
+                                            "SUB_OBJ":{
+                                                "OBJ": "mapscript.colorObj",
+                                                "OBJ_ARG": [255,255,255]
                                             }
                                         }
                                     }
+                                }
                             ]
                         }
                     ]

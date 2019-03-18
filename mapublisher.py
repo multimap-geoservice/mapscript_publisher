@@ -90,7 +90,7 @@ class PubMap(object):
                     except:
                         pass
                     else:
-                        value = _value.copy()
+                        value = copy.deepcopy(_value)
                         value = value.popitem()[-1]
                         if _level: 
                             if minlevel <= _level <= maxlevel:
@@ -232,11 +232,12 @@ class PubMap(object):
                 SUB_OBJ = _dict['MAP']
             else:
                 SUB_OBJ = self.mapfile
-        if SUB_OBJ is None or SUB_OBJ == '':
             # find scale list
             if _dict.has_key('SCALES'):
                 self.scales = _dict['SCALES']
             else:
+                _dict['SCALES'] = self.scales
+        elif self.textOBJS not in SUB_OBJ:
                 _dict['SCALES'] = self.scales
         # object operation
         if not _dict.has_key('OBJ_VAR'):
@@ -270,7 +271,7 @@ class PubMap(object):
                         # layer level scale objects
                         if levelline['OBJ'] == "mapscript.layerObj":
                             for numlevel in range(minlevel, maxlevel+1):
-                                loopline = levelline.copy()
+                                loopline = copy.deepcopy(levelline)
                                 loopline['name'] = '{0}{1}'.format(
                                     loopline['name'],
                                     numlevel
