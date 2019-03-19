@@ -151,9 +151,22 @@ class BuildMap(object):
 
     def temp_proc(self, data):
         if isinstance(data, (list, tuple)):
-            return {"TEMP":"\n".join(data)}
+            out_str = []
+            for line in data:
+                if isinstance(line, (str, unicode)):
+                    out_str.append(line)
+                elif isinstance(line, dict):
+                    out_str.append(self.temp_str_parser(line))
+                else:
+                    out_str.append("{}".format(line))
+            out_str='\n'.join(out_str)
+        elif isinstance(data, (str, unicode)):
+            out_str = data
+        elif isinstance(data, dict):
+            out_str = self.temp_str_parser(data)
         else:
-            return {"TEMP":data}
+            out_str = "{}".format(data)
+        return {"TEMP":out_str}
     
     def recurs_proc(self, val, key, proc):
         if isinstance(val[key], list):
@@ -232,6 +245,78 @@ class BuildMap(object):
         # init RUN
         for key in self.vars_queue:
             self.recurs_proc(self.VARS, key, 'RUN')
+            
+    def temp_str_parser(self, in_dict):
+        if not isinstance(in_dict, dict):
+            raise Exception(
+                "Parser ERROR: \"{}\" is not dict".format(in_dict)
+            )
+        temp2json = json.dumps(
+                in_dict,
+                sort_keys=True,
+                indent=4,
+                separators=(',', ': ')
+            ).split("\n")
+        temp2text = []
+        post_temp_cont = False
+        temp_index = -1
+        for string in temp2json:
+            temp_index += 1
+            if post_temp_cont:
+                post_temp_cont = False
+                continue
+            temp_pos = string.find("TEMP") - 1
+            if temp_pos != -2:
+                # find template
+                try:
+                    data = ast.literal_eval(
+                        "{%s}"%string[temp_pos:]
+                        )['TEMP'].split("\n")
+                except Exception as err:
+                    raise Exception( 
+                        "TEMP PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                            '\n'.join(temp2json),
+                            "{%s}"%string[temp_pos:], 
+                            err
+                        )
+                    )
+                # find pre template
+                pre_temp = temp2json[temp_index-1]
+                pre_pos = pre_temp.find("{")
+                if ": {" in pre_temp:
+                    pre_temp = pre_temp[:pre_temp.find(": {")+2]
+                else:
+                    pre_temp = " " * pre_pos
+                del temp2text[-1]
+                # find post template
+                post_temp = temp2json[temp_index+1]
+                if "}," in post_temp:
+                    post_temp = ','
+                else:
+                    post_temp = ''
+                post_temp_cont = True
+                # append template
+                first = 1
+                last = len(data)
+                index = 0
+                for pos in data:
+                    index += 1
+                    if index == first:
+                        prefix = pre_temp
+                    else:
+                        prefix = " " * len(pre_temp)
+                    if index == last:
+                        postfix = post_temp
+                    else:
+                        postfix = ""
+                    temp2text.append('{0}{1}{2}'.format(
+                        prefix, 
+                        pos, 
+                        postfix
+                    ))
+            else:
+                temp2text.append(string)
+        return "\n".join(temp2text)    
     
     def build_temps(self):
         """
@@ -242,63 +327,8 @@ class BuildMap(object):
             self.recurs_proc(self.TEMPS, key, 'TEMP')
         # step 1: temp to str to list
         for key in self.TEMPS:
-            temp2json = json.dumps(
-                    self.TEMPS[key],
-                    sort_keys=True,
-                    indent=4,
-                    separators=(',', ': ')
-                ).split("\n")
-            temp2text = []
-            post_temp_cont = False
-            temp_index = -1
-            for string in temp2json:
-                temp_index += 1
-                if post_temp_cont:
-                    post_temp_cont = False
-                    continue
-                temp_pos = string.find("TEMP") - 1
-                if temp_pos != -2:
-                    # find template
-                    data = ast.literal_eval(
-                        "{%s}"%string[temp_pos:]
-                        )['TEMP'].split("\n")
-                    # find pre template
-                    pre_temp = temp2json[temp_index-1]
-                    pre_pos = pre_temp.find("{")
-                    if ": {" in pre_temp:
-                        pre_temp = pre_temp[:pre_temp.find(": {")+2]
-                    else:
-                        pre_temp = " " * pre_pos
-                    del temp2text[-1]
-                    # find post template
-                    post_temp = temp2json[temp_index+1]
-                    if "}," in post_temp:
-                        post_temp = ','
-                    else:
-                        post_temp = ''
-                    post_temp_cont = True
-                    # append template
-                    first = 1
-                    last = len(data)
-                    index = 0
-                    for pos in data:
-                        index += 1
-                        if index == first:
-                            prefix = pre_temp
-                        else:
-                            prefix = " " * len(pre_temp)
-                        if index == last:
-                            postfix = post_temp
-                        else:
-                            postfix = ""
-                        temp2text.append('{0}{1}{2}'.format(
-                            prefix, 
-                            pos, 
-                            postfix
-                        ))
-                else:
-                    temp2text.append(string)
-            self.TEMPS[key] = "\n".join(temp2text)
+            temp2text = self.temp_str_parser(self.TEMPS[key])
+            self.TEMPS[key] = temp2text
             
     def build_map(self):
         """

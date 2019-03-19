@@ -49,6 +49,30 @@
         ]
     },
     "TEMPS":{
+        "macros":{
+            "TEMP":[
+                "{% macro color_rgb(r, g, b) -%}",
+                {
+                    "SUB_OBJ":{
+                        "OBJ": "mapscript.colorObj",
+                        "OBJ_ARG": [
+                            {"TEMP": "{{r}}"},
+                            {"TEMP": "{{g}}"},
+                            {"TEMP": "{{b}}"}
+                        ]
+                    }
+                },
+                "{%- endmacro -%}",
+                "{% macro color_hex(hex) -%}",
+                {
+                    "SUB_OBJ":{
+                        "OBJ": "mapscript.colorObj",
+                        "setHex": {"TEMP": "\"{{hex}}\""}
+                    }
+                },
+                "{%- endmacro -%}"
+            ]
+        },
         "buildings":{
                 "15-20":{
                     "OBJ": "mapscript.layerObj",
@@ -76,12 +100,7 @@
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
-                                    "color": {
-                                        "SUB_OBJ":{
-                                            "OBJ": "mapscript.colorObj",
-                                            "setHex": "#bbbbbb"
-                                        }
-                                    },
+                                    "color": {"TEMP": "{{ macros.color_hex('#bbbbbb') }}"},
                                     "opacity": 50
                                 },
                                 {
