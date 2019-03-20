@@ -43,37 +43,37 @@
             {
                 "layer_temp": "buildings",
                 "name": "buildings",
-                "data": "select * from aaa",
+                "data": "select way from planet_osm_polygon where building != \\\\'\\\\'",
                 "wms_abstract": "buildings"
             } 
         ]
     },
     "TEMPS":{
-        "macros":{
-            "TEMP":[
-                "{% macro color_rgb(r, g, b) -%}",
-                {
-                    "SUB_OBJ":{
-                        "OBJ": "mapscript.colorObj",
-                        "OBJ_ARG": [
-                            {"TEMP": "{{r}}"},
-                            {"TEMP": "{{g}}"},
-                            {"TEMP": "{{b}}"}
-                        ]
-                    }
-                },
-                "{%- endmacro -%}",
-                "{% macro color_hex(hex) -%}",
-                {
-                    "SUB_OBJ":{
-                        "OBJ": "mapscript.colorObj",
-                        "setHex": {"TEMP": "\"{{hex}}\""}
-                    }
-                },
-                "{%- endmacro -%}"
-            ]
-        },
-        "buildings":{
+        "macros":[
+            { "TEMP": "{% macro color_rgb(r, g, b) -%}"},
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.colorObj",
+                    "OBJ_ARG": [
+                        {"TEMP": "{{r}}"},
+                        {"TEMP": "{{g}}"},
+                        {"TEMP": "{{b}}"}
+                    ]
+                }
+            },
+            { "TEMP": "{%- endmacro -%}"},
+            { "TEMP": "{% macro color_hex(hex) -%}"},
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.colorObj",
+                    "setHex": {"TEMP": "\"{{hex}}\""}
+                }
+            },
+            { "TEMP": "{%- endmacro -%}"}
+        ],
+        "buildings":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
                 "15-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
@@ -100,16 +100,15 @@
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
-                                    "color": {"TEMP": "{{ macros.color_hex('#bbbbbb') }}"},
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#bbbbbb') }}"
+                                    },
                                     "opacity": 50
                                 },
                                 {
                                     "OBJ": "mapscript.styleObj",
-                                    "outlinecolor":{
-                                        "SUB_OBJ":{
-                                            "OBJ": "mapscript.colorObj",
-                                            "setHex": "#333333"
-                                        }
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#333333') }}"
                                     },
                                     "width": [
                                          {"15-16": 0},
@@ -124,10 +123,7 @@
                                         "font": "sc",
                                         "partials": 0,
                                         "outlinecolor":{
-                                            "SUB_OBJ":{
-                                                "OBJ": "mapscript.colorObj",
-                                                "OBJ_ARG": [255,255,255]
-                                            }
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
                                         }
                                     }
                                 }
@@ -135,7 +131,8 @@
                         }
                     ]
                 }
-        },
+            }
+        ],
         "map_temp":{
             "OBJ": "mapscript.mapObj",
             "name": {"VAR": "name"},

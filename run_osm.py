@@ -18,4 +18,4 @@ if __name__ == "__main__":
     pubmap.debug_json_file(debug_path)
     pubmap.debug_python_mapscript(debug_path)
     pubmap.debug_map_file(debug_path)
-    #pubmap.wsgi()
+    pubmap.wsgi()

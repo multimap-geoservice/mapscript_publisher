@@ -248,8 +248,8 @@ class BuildMap(object):
             
     def temp_str_parser(self, in_dict):
         if not isinstance(in_dict, dict):
-            raise Exception(
-                "Parser ERROR: \"{}\" is not dict".format(in_dict)
+            raise Exception( 
+                "TEMP PARSER\nFOR:\n{}\nERROR:\nis not dict".format(in_dict)
             )
         temp2json = json.dumps(
                 in_dict,
@@ -327,8 +327,19 @@ class BuildMap(object):
             self.recurs_proc(self.TEMPS, key, 'TEMP')
         # step 1: temp to str to list
         for key in self.TEMPS:
-            temp2text = self.temp_str_parser(self.TEMPS[key])
-            self.TEMPS[key] = temp2text
+            if isinstance(self.TEMPS[key], dict):
+                temp2text = self.temp_str_parser(self.TEMPS[key])
+                full_template = temp2text
+            elif isinstance(self.TEMPS[key], list):
+                full_template = ''
+                for block in self.TEMPS[key]:
+                    if isinstance(block, dict):
+                        temp2text = self.temp_str_parser(block)
+                    else:
+                        temp2text = block
+                    full_template = "{0}\n{1}".format(full_template, temp2text)
+            self.TEMPS[key] = full_template
+                    
             
     def build_map(self):
         """
