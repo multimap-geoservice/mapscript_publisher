@@ -43,7 +43,7 @@
             {
                 "layer_temp": "buildings",
                 "name": "buildings",
-                "data": "select way from planet_osm_polygon where building != \\\\'\\\\'",
+                "data": "geometry from (select way as geometry, osm_id, name as name from planet_osm_polygon where building != \\\\'\\\\') as foo using unique osm_id using srid=3857",
                 "wms_abstract": "buildings"
             } 
         ]
@@ -78,12 +78,14 @@
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
                     "units": {"OBJ": "mapscript.MS_METERS"},
                     "tileitem": "location",
                     "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
                     "connection": {"VAR": "db_connection"},
                     "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "labelitem": "name",
                     "setProcessing":[
                             "LABEL_NO_CLIP=ON", 
                             "CLOSE_CONNECTION=DEFER"
@@ -136,9 +138,10 @@
         "map_temp":{
             "OBJ": "mapscript.mapObj",
             "name": {"VAR": "name"},
+            "setFontSet":["maps/fonts/fonts.lst"],
             "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
             "setExtent": [{"VAR": "extent"}],
-            "setProjection": "init=epsg:32638",
+            "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},
             "setSize": [{"VAR": "size"}],
             "units": {
                 "OBJ": "mapscript.MS_DD"
