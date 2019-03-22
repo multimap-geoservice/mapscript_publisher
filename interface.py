@@ -123,37 +123,103 @@ class gdal2pg(gdal2db):
         return gdal2db.__call__(self)
 
 
-class proj2str(object):
+class lst2str(object):
     """
-    projs - list default projections
+    str construction(str|unicode):
+    -----------------
+    pre_str - start string
+    meso_lst
+    pre_lst
+    lst[line] -list iteration
+    post_lst
+    mseo_lst
+    pre_lst
+    lst[line] -list iteration
+    post_lst
+    meso_lst
+    post_str - end string
+    
+    hook - string hook (' - default)
+    fix_hook - \\\\ for string parser
+    """
+    pre_str = ""
+    post_str = ""
+    pre_lst = ""
+    post_lst = ""
+    meso_lst = " "
+    hook = "'"
+    fix_hook = "\\\\'"
+    
+    def __init__(self, *args):
+        self.lst = args
+        
+    def create_str(self):
+        all_str = "{0}{1}".format(self.post_str, self.meso_lst)
+        for line in self.lst:
+            if isinstance(line, (str, unicode, int, float)):
+                if isinstance(line, (int, float)):
+                    line = str(line)
+                if line.find(self.hook) != -1 and line.find(self.fix_hook) == -1:
+                    line = line.replace(
+                        self.hook,
+                        self.fix_hook
+                    )
+                all_str = "{0}{1}{2}{3}{4}".format(
+                    all_str, 
+                    self.pre_lst, 
+                    line, 
+                    self.post_lst, 
+                    self.meso_lst
+                )
+            else:
+                raise Exception(
+                    "lst2str PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        '\n'.join(self.lst),
+                        "{%s}"%string[line], 
+                        "not srr or unicode type"
+                    )
+                )
+        all_str = "{0}{1}".format(all_str, self.post_str)
+        return all_str
+    
+    def __call__(self):
+        return self.create_str()
+
+
+class proj2str(lst2str):
+    """
+    projs :int - list default projections
     """
     projs = [
-        'EPSG:32638', 
-        'EPSG:4326',
-        'EPSG:3857',
-        'EPSG:2154',
-        'EPSG:310642901',
-        'EPSG:4171',
-        'EPSG:310024802',
-        'EPSG:310915814',
-        'EPSG:310486805',
-        'EPSG:310702807',
-        'EPSG:310700806',
-        'EPSG:310547809',
-        'EPSG:310706808',
-        'EPSG:310642810',
-        'EPSG:310642801',
-        'EPSG:310642812',
-        'EPSG:310032811',
-        'EPSG:310642813',
-        'EPSG:2986'
+        32638,
+        4326,
+        3857,
+        2154,
+        310642901,
+        4171,
+        310024802,
+        310915814,
+        310486805,
+        310702807,
+        310700806,
+        310547809,
+        310706808,
+        310642810,
+        310642801,
+        310642812,
+        310032811,
+        310642813,
+        2986
     ]
     def __init__(self, *args):
+        self.pre_lst = "EPSG:" 
         if args is ():
-            self.projs = _projs
+            self.lst = args
+        else:
+            self.lst = self.projs
             
     def __call__(self):
-        return ' '.join(self.projs)
+        return lst2str.__call__(self)
 
 
 class comstring(object):
