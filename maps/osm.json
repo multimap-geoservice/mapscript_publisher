@@ -14,9 +14,9 @@
         "wms_srs": {
             "RUN":{
                 "interface.proj2str": [
-                    32638,
-                    4326,
                     3857,
+                    4326,
+                    32638,
                     2154,
                     310642901,
                     4171,
@@ -37,7 +37,7 @@
                 
             }
         },
-        "db_connection": "host=william dbname=RU-SPE user=gis password=gis port=5432",
+        "db_connection": "",
         "epsg_id": 3857,
         "layer_dicts": [
             {
