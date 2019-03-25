@@ -41,6 +41,57 @@
         "epsg_id": 3857,
         "layer_dicts": [
             {
+                "layer_temp": "landuse",
+                "name": "landuse",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "landuse as type,",
+                            "\\\"natural\\\" as type1,",
+                            "leisure as type2,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "'forest',",
+                            "'wood',",
+                            "'pedestrian',",
+                            "'cemetery',",
+                            "'industrial',",
+                            "'commercial',",
+                            "'brownfield',",
+                            "'residential',",
+                            "'school',",
+                            "'college',",
+                            "'university',",
+                            "'military',",
+                            "'park',",
+                            "'golf_course',",
+                            "'hospital',",
+                            "'parking',",
+                            "'stadium',",
+                            "'sports_center',",
+                            "'pitch'",
+                            ")",
+                            "or \\\"natural\\\" in ('wood')",
+                            "or leisure in",
+                            "(",
+                            "'park',",
+                            "'golf_course'",
+                            ")",
+                            "order by area desc",
+                            ")",
+                            "as foo using unique osm_id using srid=3857"
+                        ]
+                    }
+                },
+                "wms_abstract": "landuse"
+            }, 
+            {
                 "layer_temp": "buildings",
                 "name": "buildings",
                 "data": {
@@ -84,6 +135,190 @@
                 }
             },
             { "TEMP": "{%- endmacro -%}"}
+        ],
+        "landuse":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "4-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{forest,wood}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(203,216,195) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["residential"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{industrial,commercial,parking}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(209,208,205) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "11-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 2
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{park,golf_course}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(181,210,156) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "11-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 2,
+                                            "position": {"OBJ": "mapscript.MS_CC"}
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
         ],
         "buildings":[
             { "TEMP": "{% import 'macros' as macros %}"},

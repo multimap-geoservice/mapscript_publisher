@@ -1,0 +1,2120 @@
+MAP
+FONTSET "fonts.lst"
+IMAGETYPE png
+MAXSIZE 4000
+SIZE 800 800
+EXTENT 3276111.5 8318651.22 3424131.14 8454451.02
+UNITS meters
+IMAGECOLOR 153 179 204
+WEB
+   METADATA
+      "ows_enable_request" "*"
+      "wms_srs" "EPSG:4326 EPSG:3857 EPSG:2154 EPSG:310642901 EPSG:4171 EPSG:310024802 EPSG:310915814 EPSG:310486805 EPSG:310702807 EPSG:310700806 EPSG:310547809 EPSG:310706808 EPSG:310642810 EPSG:310642801 EPSG:310642812 EPSG:310032811 EPSG:310642813 EPSG:2986"
+      "labelcache_map_edge_buffer" "-10"
+      "wms_title" "OpenStreetMap"
+   END
+END
+DEBUG 1
+CONFIG "MS_ERRORFILE" "stderr"
+CONFIG "PROJ_LIB" "/home/oldbay/GIS/mapserver/basemaps/build/basemaps"
+PROJECTION
+   "init=epsg:3857"
+END
+OUTPUTFORMAT
+  NAME "png_bw"
+  DRIVER "AGG/PNG"
+  MIMETYPE "image/png;mode=8bit,grayscale"
+  IMAGEMODE RGB
+  EXTENSION "png"
+  TRANSPARENT FALSE
+  FORMATOPTION "PALETTE=grey.txt"
+  FORMATOPTION "PALETTE_FORCE=on"
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse4"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen0)            as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 41601025
+    MINSCALEDENOM 20800512
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse5"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen0)            as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 20800512
+    MINSCALEDENOM 10400256
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse6"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen0)            as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 10400256
+    MINSCALEDENOM 5200128
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse7"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen0)            as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 5200128
+    MINSCALEDENOM 2600064
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse8"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen0)            as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 2600064
+    MINSCALEDENOM 1300032
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse9"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen1       where type in ('forest','wood','industrial','commercial','residential')) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 1300032
+    MINSCALEDENOM 650016
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse10"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen1       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 650016
+    MINSCALEDENOM 325008
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse11"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages_gen1       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 325008
+    MINSCALEDENOM 162504
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse12"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 162504
+    MINSCALEDENOM 81252
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 0
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse13"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 81252
+    MINSCALEDENOM 40626
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 0
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse14"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 40626
+    MINSCALEDENOM 20313
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 0
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse15"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 20313
+    MINSCALEDENOM 10156
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse16"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 10156
+    MINSCALEDENOM 5078
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse17"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 5078
+    MINSCALEDENOM 2539
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+LAYER
+    TYPE POLYGON
+    STATUS ON
+    PROJECTION
+        "init=epsg:3857"
+    END
+    NAME "landuse18"
+    GROUP "default"
+    CONNECTIONTYPE POSTGIS
+    CONNECTION "host=localhost dbname=osm_mapserver user=gis password=gis port=5432"
+    DATA "geometry from (select geometry ,osm_id, type, name as name from osm_new_landusages       where type in ('forest','wood','pedestrian','cemetery','industrial','commercial',      'brownfield','residential','school','college','university',      'military','park','golf_course','hospital','parking','stadium','sports_center',      'pitch') order by area desc) as foo using unique osm_id using srid=3857"
+    PROCESSING "LABEL_NO_CLIP=ON"
+    PROCESSING "CLOSE_CONNECTION=DEFER"
+    MAXSCALEDENOM 2539
+    MINSCALEDENOM 0
+    CLASSITEM "type"
+    LABELITEM "name"
+    CLASS
+       EXPRESSION {forest,wood}
+       STYLE
+          COLOR 203 216 195
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+    END
+    CLASS
+       EXPRESSION 'residential'
+       STYLE
+          COLOR 242 239 233
+          OUTLINECOLOR "#E3DED4"
+          OUTLINEWIDTH 0
+       END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR 0 0 0
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+   CLASS
+     EXPRESSION {industrial,commercial,parking}
+     STYLE
+       COLOR 209 208 205
+       OUTLINECOLOR "#d1d1d1"
+       OUTLINEWIDTH 0
+     END
+     LABEL
+       ENCODING "utf-8"
+       TYPE TRUETYPE
+       FONT sc
+       SIZE 8
+       COLOR 0 0 0
+       OUTLINECOLOR 255 255 255
+       OUTLINEWIDTH 2
+       PRIORITY 2
+       WRAP ' '
+       MAXLENGTH 6
+       ALIGN CENTER
+       MINFEATURESIZE AUTO
+       PARTIALS FALSE
+     END
+    END
+    CLASS
+        EXPRESSION {park,golf_course}
+        STYLE
+            COLOR 181 210 156
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 2
+          POSITION cc
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION 'cemetery'
+        STYLE
+          COLOR "#d1d1d1"
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+       ENCODING "utf-8"
+            SIZE 8
+            COLOR 0 0 0
+            OUTLINECOLOR 255 255 255
+            OUTLINEWIDTH 2
+            PRIORITY 2
+            WRAP ' '
+            MAXLENGTH 6
+            ALIGN CENTER
+            MINFEATURESIZE AUTO
+        END
+    END
+   CLASS
+      EXPRESSION 'pedestrian'
+      STYLE
+         COLOR 250 250 245
+      END
+      LABEL
+         TYPE TRUETYPE
+         FONT sc
+         SIZE 8
+         COLOR "#333333"
+         OUTLINECOLOR 255 255 255
+         OUTLINEWIDTH 2
+         WRAP ' '
+         MAXLENGTH 6
+         ALIGN CENTER
+         MINFEATURESIZE AUTO
+         PARTIALS FALSE
+      END
+   END
+    CLASS
+        EXPRESSION 'hospital'
+        STYLE
+            COLOR 229 198 195
+        END
+         LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+        EXPRESSION {school,college,university}
+        STYLE
+            COLOR 222 210 172
+        END
+        LABEL
+          TYPE TRUETYPE
+          PARTIALS FALSE
+          FONT sc
+          SIZE 8
+       ENCODING "utf-8"
+          COLOR 0 0 0
+          OUTLINECOLOR 255 255 255
+          OUTLINEWIDTH 2
+          PRIORITY 1
+          WRAP ' '
+          MAXLENGTH 6
+          ALIGN CENTER
+          MINFEATURESIZE AUTO
+        END
+    END
+    CLASS
+      EXPRESSION {sports_center,stadium,pitch}
+      STYLE
+          COLOR "#DED1AB"
+      END
+      LABEL
+        TYPE TRUETYPE
+        PARTIALS FALSE
+        FONT sc
+        SIZE 8
+        COLOR 0 0 0
+        OUTLINECOLOR 255 255 255
+       ENCODING "utf-8"
+        OUTLINEWIDTH 2
+        PRIORITY 1
+        WRAP ' '
+        MAXLENGTH 6
+        ALIGN CENTER
+        MINFEATURESIZE AUTO
+      END
+    END
+END
+SYMBOL
+ name "citycircle"
+ type ellipse
+ points 1 1 end
+ filled true
+END
+END
