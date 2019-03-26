@@ -52,7 +52,7 @@
                             "osm_id,",
                             "concat(",
                             "    landuse,",
-                            "    \\\"natural\\\",",
+                            "    \"natural\",",
                             "    leisure,",
                             "    highway,",
                             "    amenity",
@@ -85,7 +85,7 @@
                             "    'university',",
                             "    'parking'",
                             ")",
-                            "or \\\"natural\\\" = 'wood'",
+                            "or \"natural\" = 'wood'",
                             "or highway = 'pedestrian'",
                             "order by area desc",
                             ")",
@@ -179,27 +179,25 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -218,27 +216,25 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -257,29 +253,27 @@
                                 }
                             ],
                             "addLabel": {
-                                "11-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 2
-                                        }
+                                "11-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 2
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -294,30 +288,28 @@
                                 }
                             ],
                             "addLabel": {
-                                "11-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 2,
-                                            "position": {"OBJ": "mapscript.MS_CC"}
-                                        }
+                                "11-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 2,
+                                        "position": {"OBJ": "mapscript.MS_CC"}
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -332,30 +324,28 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 2,
-                                            "position": {"OBJ": "mapscript.MS_CC"}
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 2,
+                                        "position": {"OBJ": "mapscript.MS_CC"}
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -370,26 +360,24 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":0,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_hex('#333333') }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":0,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#333333') }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -404,29 +392,27 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 1
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 1
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -441,29 +427,27 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 1
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 1
                                     }
-                                ]
+                                }
                             }
                         },
                         {
@@ -478,29 +462,27 @@
                                 }
                             ],
                             "addLabel": {
-                                "12-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                            "encoding": "utf-8",
-                                            "priority": 1
-                                        }
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                        "encoding": "utf-8",
+                                        "priority": 1
                                     }
-                                ]
+                                }
                             }
                         }
                     ]
@@ -555,27 +537,25 @@
                                 }
                             ],
                             "addLabel": {
-                                "17-20": [
-                                    {
-                                        "SUB_OBJ": {
-                                            "OBJ": "mapscript.labelObj",
-                                            "font": "sc",
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "minfeaturesize":1,
-                                            "size":8,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                            },
-                                            "outlinecolor":{
-                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                            },
-                                            "outlinewidth":2,
-                                            "wrap": " ",
-                                            "maxlength":6,
-                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
-                                        }
+                                "17-20": {
+                                    "SUB_OBJ": {
+                                        "OBJ": "mapscript.labelObj",
+                                        "font": "sc",
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "minfeaturesize":1,
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        },
+                                        "outlinewidth":2,
+                                        "wrap": " ",
+                                        "maxlength":6,
+                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
                                     }
-                                ]
+                                }
                             }
                         }
                     ]

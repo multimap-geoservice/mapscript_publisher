@@ -133,6 +133,12 @@ class PubMap(object):
 
         # tests value as type
         if isinstance(value, (str, unicode)):
+            # fix hooks in str value
+            hook = "'"
+            fix_hook = "\\'"
+            if value.find(hook) != -1 and value.find(fix_hook) == -1:
+                value = value.replace(hook, fix_hook)
+            # insert str value
             value = '\'{}\''.format(value)
         elif isinstance(value, dict):
             if value.has_key('OBJ'):
@@ -172,7 +178,6 @@ class PubMap(object):
                 assigment = '({})'.format(value)
         else:
             assigment = ' = {}'.format(value)
-        
         # create script string
         script_str = '{0}.{1}{2}'.format(
             OBJ, 

@@ -77,7 +77,7 @@ class gdal2db(object):
 
     def create_conString(self):
         self.connString = 'PG:'
-        str_temp = '{0}{1}=\\\\\'{2}\\\\\' ' 
+        str_temp = '{0}{1}=\'{2}\' ' 
         nonstr_temp = '{0}{1}={2} ' 
         for _key in self.db_keys:
             if _key in self.nonstr_keys:
@@ -139,16 +139,21 @@ class lst2str(object):
     meso_lst
     post_str - end string
     
-    hook - string hook (' - default)
-    fix_hook - \\\\ for string parser
+    hooks - list hook array [<hook>, <fix hook> ]
+    idents - list idents 
     """
     pre_str = ""
     post_str = ""
     pre_lst = ""
     post_lst = ""
     meso_lst = " "
-    hook = "'"
-    fix_hook = "\\\\'"
+    hooks = [
+        ["'", "\\'"], 
+        ['"', '\\"']
+    ]
+    indents = [
+        " ", 
+    ]
     
     def __init__(self, *args):
         self.lst = args
@@ -159,11 +164,25 @@ class lst2str(object):
             if isinstance(line, (str, unicode, int, float)):
                 if isinstance(line, (int, float)):
                     line = str(line)
-                if line.find(self.hook) != -1 and line.find(self.fix_hook) == -1:
-                    line = line.replace(
-                        self.hook,
-                        self.fix_hook
-                    )
+                # fix hooks
+                for hook_lst in self.hooks:
+                    hook = hook_lst[0]
+                    fix_hook = hook_lst[-1]
+                    if line.find(hook) != -1 and line.find(fix_hook) == -1:
+                        line = line.replace(hook, fix_hook)
+                #fix indent
+                start_indent = True
+                end_indent = True
+                while start_indent or end_indent:
+                    if line[0] in self.indents:
+                        line = line[1:]
+                    else:
+                        start_indent = False
+                    if line[-1] in self.indents:
+                        line = line[:-1]
+                    else:
+                        end_indent = False
+                # create all line string        
                 all_str = "{0}{1}{2}{3}{4}".format(
                     all_str, 
                     self.pre_lst, 
