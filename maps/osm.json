@@ -53,38 +53,40 @@
                             "concat(",
                             "    landuse,",
                             "    \\\"natural\\\",",
-                            "    leisure",
+                            "    leisure,",
+                            "    highway,",
+                            "    amenity",
                             ") as type,",
                             "name as name",
                             "from planet_osm_polygon",
                             "where landuse in",
                             "(",
                             "    'forest',",
-                            "    'wood',",
-                            "    'pedestrian',",
                             "    'cemetery',",
                             "    'industrial',",
                             "    'commercial',",
                             "    'brownfield',",
                             "    'residential',",
-                            "    'school',",
-                            "    'college',",
-                            "    'university',",
-                            "    'military',",
+                            "    'military'",
+                            ")",
+                            "or leisure in",
+                            "(",
                             "    'park',",
                             "    'golf_course',",
-                            "    'hospital',",
-                            "    'parking',",
                             "    'stadium',",
                             "    'sports_center',",
                             "    'pitch'",
                             ")",
-                            "or \\\"natural\\\" in ('wood')",
-                            "or leisure in",
+                            "or amenity in",
                             "(",
-                            "    'park',",
-                            "    'golf_course'",
+                            "    'hospital',",
+                            "    'school',",
+                            "    'college',",
+                            "    'university',",
+                            "    'parking'",
                             ")",
+                            "or \\\"natural\\\" = 'wood'",
+                            "or highway = 'pedestrian'",
                             "order by area desc",
                             ")",
                             "as foo using unique osm_id using srid=3857"
@@ -313,6 +315,189 @@
                                             "encoding": "utf-8",
                                             "priority": 2,
                                             "position": {"OBJ": "mapscript.MS_CC"}
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["cemetery"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 2,
+                                            "position": {"OBJ": "mapscript.MS_CC"}
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["pedestrian"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(250,250,245) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":0,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["hospital"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(229,198,195) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{school,college,university}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(222,210,172) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{sports_center,stadium,pitch}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#ded1ab') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": [
+                                    {
+                                        "SUB_OBJ": {
+                                            "OBJ": "mapscript.labelObj",
+                                            "font": "sc",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "minfeaturesize":1,
+                                            "size":8,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                            },
+                                            "outlinecolor":{
+                                                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                            },
+                                            "outlinewidth":2,
+                                            "wrap": " ",
+                                            "maxlength":6,
+                                            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                            "encoding": "utf-8",
+                                            "priority": 1
                                         }
                                     }
                                 ]
