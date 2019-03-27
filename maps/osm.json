@@ -39,6 +39,24 @@
         },
         "db_connection": "",
         "epsg_id": 3857,
+        "label_dict": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "partials": {"OBJ": "mapscript.MS_FALSE"},
+            "minfeaturesize":1,
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":2,
+            "wrap": " ",
+            "maxlength":6,
+            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+        },
+        "end_qury_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
             {
                 "layer_temp": "landuse",
@@ -89,7 +107,12 @@
                             "or highway = 'pedestrian'",
                             "order by area desc",
                             ")",
-                            "as foo using unique osm_id using srid=3857"
+                            {
+                                "VAR": "end_qury_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
                         ]
                     }
                 },
@@ -362,20 +385,12 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
+                                        "VAR": "label_dict",
                                         "size":0,
                                         "color":{
                                             "TEMP": "{{ macros.color_hex('#333333') }}"
                                         },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6
+                                        "-": "align"
                                     }
                                 }
                             }
@@ -393,22 +408,8 @@
                             ],
                             "addLabel": {
                                 "12-20": {
-                                    "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                    "SUB_OBJ":{
+                                        "VAR": "label_dict",
                                         "encoding": "utf-8",
                                         "priority": 1
                                     }
@@ -428,22 +429,8 @@
                             ],
                             "addLabel": {
                                 "12-20": {
-                                    "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                    "SUB_OBJ":{
+                                        "VAR": "label_dict",
                                         "encoding": "utf-8",
                                         "priority": 1
                                     }
@@ -463,22 +450,8 @@
                             ],
                             "addLabel": {
                                 "12-20": {
-                                    "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+                                    "SUB_OBJ":{
+                                        "VAR": "label_dict",
                                         "encoding": "utf-8",
                                         "priority": 1
                                     }

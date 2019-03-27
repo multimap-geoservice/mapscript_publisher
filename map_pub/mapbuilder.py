@@ -23,9 +23,20 @@ class BuildMap(object):
     
     dict last keys for VARS, TEMPS or MAP:
     ----------
+    {'VAR':str, 'arg1':'foo1', 'arg2':'foo2' }-variable in VARS declare(MAP|VARS|TEMPS): 
+        VAR - variable name (in VARS)
+        'arg' - argument for VARS[VAR] as var in format (var - arg:foo):
+            str|unicode - '{}':str|list|dict text format, as: var.format(str|*list|**dict)
+            int|float - '=':'str' math axpression as: '(1+{})/2'.format(var)
+            dict - 'key':data - all data for dict, as: var['key'] = data
+                   '-': key|[key] - delete key from dict as: del(var[key])
+            list - for priority:
+                int:data - data for index, as: var[index] = data
+                '-':int|[int] - delete from index, as: del(var[index])
+                   :data|[data] - delete from content, as: var.remove(data)
+                '+':data|[data] - append data from list, as: var.append(data)
     {'RUN': any } - start module class or methos to MAP, VARS or TEMPS
-    {'VAR': str } - variable in VARS declare, to MAP, VARS or TEMPS
-    {'TEMP': } - jinja2 sintaksis template to TEMPS
+    {'TEMP': } - jinja2 sintax template to TEMPS
     
     variables:
     ----------
@@ -78,17 +89,162 @@ class BuildMap(object):
         else:
             print (log)
    
-    def var_proc(self, data):
+    def var_proc(self, proc_data):
         """
         enter VAR:{} keys 
         """
-        if self.VARS.has_key(data):
-            if isinstance(data, (str, unicode)):
-                return self.VARS[data]
+        #init
+        proc_nam = 'VAR'
+        args = copy.deepcopy(proc_data)
+        var = args.pop(proc_nam)
+        if args == {}:
+            args = None
+        #proc
+        if self.VARS.has_key(var):
+            if isinstance(var, (str, unicode)):
+                var_data = copy.deepcopy(self.VARS[var])
+                # init arguments
+                if args is not None:
+                    # pre-processing arguments in method recurs_proc
+                    for argkey in args:
+                        self.recurs_proc(args, argkey, 'VAR')
+                        self.recurs_proc(args, argkey, 'RUN')
+                    # string args processing
+                    if isinstance(var_data, (str, unicode)):
+                        args_key = '{}'
+                        format_data = args[args_key]
+                        try:
+                            if isinstance(format_data, (str, unicode, int, float)):
+                                var_data = var_data.format(format_data)
+                            elif isinstance(format_data, list):
+                                var_data = var_data.format(*format_data)
+                            elif isinstance(format_data, dict):
+                                var_data = var_data.format(**format_data)
+                        except Exception as err:
+                            raise Exception( 
+                                "STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
+                                    var_data,
+                                    format_data, 
+                                    err
+                                )
+                            )
+                    # numeric args processing (need TEST!!!)
+                    elif isinstance(var_data, (int, float)):
+                        args_key = '='
+                        formula = args[args_key]
+                        try:
+                            formula = formula.format(var_data)
+                        except Exception as err:
+                            raise Exception( 
+                                "STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
+                                    formula,
+                                    var_data, 
+                                    err
+                                )
+                            )
+                        try:
+                            var_data = eval(formula)
+                        except Exception as err:
+                            raise Exception( 
+                                "MATH\nFORMULA:\n{0}\nERROR:\n{1}".format(
+                                    formula,
+                                    err
+                                )
+                            )
+                    # dict pargs processing 
+                    elif isinstance(var_data, dict):
+                        # delete dict key
+                        args_key = '-'
+                        if args.has_key(args_key):
+                            keys_to_del = args[args_key]
+                            if not isinstance(keys_to_del, list):
+                                keys_to_del = [keys_to_del]
+                            for del_key in keys_to_del:
+                                if var_data.has_key(del_key):
+                                    del(var_data[del_key])
+                                else:
+                                    raise Exception( 
+                                        "FOR DICT:\n{0}\nKEY:\n{1}\nnot found".format(
+                                            var_data,
+                                            del_key 
+                                        )
+                                    )
+                            del(args[args_key])
+                        # all dict procs 
+                        try:
+                            var_data.update(args)
+                        except Exception as err:
+                            raise Exception( 
+                                "UPDATE\nDICT:\n{0}\nUPD DICT:\n{1}\nERROR:\n{2}".format(
+                                    var_data,
+                                    args, 
+                                    err
+                                )
+                            )
+                    # list args processing (need TEST!!!)
+                    elif isinstance(var_data, list):
+                        # int args_key
+                        for args_key in [arg for arg in args if isinstance(arg, int)]:
+                            try:
+                                var_data[args_key] = args[args_key]
+                            except Exception as err:
+                                raise Exception( 
+                                    "LIST\nLIST:\n{0}\nINDEX:\n{1}\nERROR:\n{2}".format(
+                                        var_data,
+                                        args_key, 
+                                        err
+                                    )
+                                )
+                        # '-' args_key
+                        args_key = '-'
+                        if args.has_key(args_key):
+                            list_data = args[args_key]
+                            if not isinstance(list_data, list):
+                                list_data = [list_data]
+                            for next_data in list_data:
+                                if isinstance(next_data, int):
+                                    if next_data >= len(var_data) or next_data < 0:
+                                        raise Exception( 
+                                            "FOR:\n{0}\nINDEX:\n{1}\nout of range".format(
+                                                var_data,
+                                                next_data 
+                                            )
+                                        )
+                                    else:
+                                        del(var_data[next_data])
+                                else:
+                                    if next_data not in var_data:
+                                        raise Exception( 
+                                            "IN:\n{0}\nDATA:\n{1}\nnot found".format(
+                                                var_data,
+                                                next_data 
+                                            )
+                                        )
+                                    else:
+                                        var_data.remove(next_data)
+                        # '+' args_key
+                        args_key = '+'
+                        if args.has_key(args_key):
+                            list_data = args[args_key]
+                            if not isinstance(list_data, list):
+                                list_data = [list_data]
+                            for next_data in list_data:
+                                try:
+                                    var_data.append(next_data)
+                                except Exception as err:
+                                    raise Exception( 
+                                        "APPEND\nLIST:\n{0}\nDATA:\n{1}\nERROR:\n{2}".format(
+                                            var_data,
+                                            next_data, 
+                                            err
+                                        )
+                                    )
+                # return var_data
+                return var_data
             else:
-                raise Exception('VAR:{} is not str or unicode'.format(data))
+                raise Exception('VAR:{} is not str or unicode'.format(var))
         else:
-            raise Exception('VAR:{} not found'.format(data))
+            raise Exception('VAR:{} not found'.format(var))
 
     def run_proc_item(self, item):
         if isinstance(item, (dict, str, unicode)):
@@ -121,12 +277,15 @@ class BuildMap(object):
                 'VAR:{} is not dict or str or unicode type'.format(item)
             )
         
-    def run_proc(self, data):
+    def run_proc(self, proc_data):
         """
         enter RUN:[] keys
         variants: "":str
                   {}:dict
         """
+        #init
+        proc_nam = 'RUN'
+        data = proc_data[proc_nam]
         # import modules IMODS    
         for module in self.IMODS:
             exec('import {}'.format(module))
@@ -149,7 +308,11 @@ class BuildMap(object):
             separator = '.'
         return eval(eval_data)
 
-    def temp_proc(self, data):
+    def temp_proc(self, proc_data):
+        #init
+        proc_nam = 'TEMP'
+        data = proc_data[proc_nam]
+        #proc
         if isinstance(data, (list, tuple)):
             out_str = []
             for line in data:
@@ -174,6 +337,7 @@ class BuildMap(object):
                 self.recurs_proc(val[key], new_key, proc)
         elif isinstance(val[key], dict):
             if isinstance(proc, int) and val[key].has_key('VAR'):
+                # create vars_queue
                 next_var = val[key]['VAR']
                 if next_var == self.vars_queue[proc][0]:
                     # find copy VARS to sub-VARS
@@ -188,7 +352,7 @@ class BuildMap(object):
                     self.vars_queue[proc].append(next_var)
             elif val[key].has_key(proc):
                 # all key
-                val[key] = self.procs[proc](val[key][proc])
+                val[key] = self.procs[proc](val[key])
             else: 
                 for new_key in val[key]:
                     self.recurs_proc(val[key], new_key, proc)
@@ -322,10 +486,13 @@ class BuildMap(object):
         """
         if key "TEMPS" to step 2
         """
-        # step 0: list temp to text
+        # init VAR
+        for key in self.TEMPS:
+            self.recurs_proc(self.TEMPS, key, 'VAR')
+        # temp step: list temp to text
         for key in self.TEMPS:
             self.recurs_proc(self.TEMPS, key, 'TEMP')
-        # step 1: temp to str to list
+        # temp step: temp to str to list
         for key in self.TEMPS:
             if isinstance(self.TEMPS[key], dict):
                 temp2text = self.temp_str_parser(self.TEMPS[key])
