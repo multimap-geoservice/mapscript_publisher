@@ -52,28 +52,35 @@ class PubMap(object):
     lsd = '-'
 
     """
-    scales default (0)1-16
+    scales list:
     [
     index 0 - all map scale
     index 1..n - scale number
     ]
+    
+    default(index =1)
+    up_scale - scale first level
     """
-    scales = []
+    up_scale = 268435456
 
     #----------------------------------------------------------------------
     def __init__(self, mapdict=None):
         self.debug_mapscript = False
-        # add all scales
+        # init mapdict
+        if isinstance(mapdict, dict):
+            self.mapdict = mapdict
+            
+    def create_scales(self, up_scale=None):
+        if not isinstance(up_scale, (int, float)):
+            up_scale = self.up_scale
+        # add scales 2 to down
         self.scales = [
-            999999999, 
-            268435456
+            999999999,
+            int(up_scale)
         ] 
         while not self.scales[-1] == 1:
             self.scales.append(self.scales[-1]/2)
         self.scales.append(0)
-        # init mapdict
-        if isinstance(mapdict, dict):
-            self.mapdict = mapdict
         
     def find_level_scale(self, _value, _level=False):
         """
@@ -106,7 +113,7 @@ class PubMap(object):
         return _value
         
         
-    def method_processing(self, OBJ, method, value):
+    def method_processing(self, OBJ, method, value, _level):
         """
         processing script line:
         
@@ -159,7 +166,7 @@ class PubMap(object):
                             OBJ_ARG = '{}'.format(OBJ_ARG)
                     else:
                         OBJ_ARG = ''
-                    OBJ_VAR = self.engine(value['SUB_OBJ'], OBJ_ARG)
+                    OBJ_VAR = self.engine(value['SUB_OBJ'], OBJ_ARG, _level)
                     value = OBJ_VAR
                 else:
                     raise Exception(
@@ -243,9 +250,17 @@ class PubMap(object):
                 SUB_OBJ = self.mapfile
             # find scale list
             if _dict.has_key('SCALES'):
-                self.scales = _dict['SCALES']
+                if isinstance(_dict['SCALES'], list):
+                    self.scales = _dict['SCALES']
+                if isinstance(_dict['SCALES'], (int, float)):
+                    self.create_scales(_dict['SCALES'])
+                    _dict['SCALES'] = copy.deepcopy(self.scales)
+                else:
+                    self.create_scales()
+                    _dict['SCALES'] = copy.deepcopy(self.scales)
             else:
-                _dict['SCALES'] = self.scales
+                self.create_scales()
+                _dict['SCALES'] = copy.deepcopy(self.scales)
         elif self.textOBJS not in SUB_OBJ:
                 _dict['SCALES'] = self.scales
         # object operation
@@ -259,11 +274,13 @@ class PubMap(object):
             )
             # create script debug
             if self.debug_mapscript:
+                append_index = len(self.OBJS) - 1
                 self.debug_mapscript.append(
-                    '{0}{1}.append({2})\n'.format(
+                    '{0}{1}.append({2}) #create {1}[{3}]\n'.format(
                         ' '*8,
                         self.textOBJS, 
-                        str_obj
+                        str_obj,
+                        append_index
                     )
                 )
         # loop objects method operations
@@ -286,10 +303,10 @@ class PubMap(object):
                                     numlevel
                                 )
                                 loopline['maxscaledenom'] = self.scales[
-                                    numlevel-1
+                                    numlevel
                                 ]
                                 loopline['minscaledenom'] = self.scales[
-                                    numlevel
+                                    numlevel + 1
                                 ]
                                 self.engine(
                                     loopline, 
@@ -323,14 +340,16 @@ class PubMap(object):
                                 self.method_processing(
                                     _dict['OBJ_VAR'], 
                                     line,
-                                    loop_scale
+                                    loop_scale,
+                                    _level
                                 )
                     else:
                         # one line
                         self.method_processing(
                             _dict['OBJ_VAR'], 
                             line,
-                            line_scale
+                            line_scale,
+                            _level
                         )
         return _dict['OBJ_VAR']
          

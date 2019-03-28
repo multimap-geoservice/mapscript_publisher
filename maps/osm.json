@@ -3,6 +3,7 @@
     "VARS":{
         "name": "osm-spb",
         "wms_title": "Open Street Map S.Peterburg",
+        "up_scale": 332808204,
         "imagecolor": [153, 179, 204], 
         "extent": [
             3276111.5,
@@ -766,6 +767,7 @@
             }
         ],
         "map_temp":{
+            "SCALES": {"VAR": "up_scale"},
             "OBJ": "mapscript.mapObj",
             "name": {"VAR": "name"},
             "setFontSet":["maps/fonts/fonts.lst"],
