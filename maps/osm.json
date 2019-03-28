@@ -39,9 +39,10 @@
         },
         "db_connection": "",
         "epsg_id": 3857,
-        "label_dict": {
+        "label_polygon": {
             "OBJ": "mapscript.labelObj",
             "font": "sc",
+            "encoding": "utf-8",
             "partials": {"OBJ": "mapscript.MS_FALSE"},
             "minfeaturesize":1,
             "size":8,
@@ -56,11 +57,64 @@
             "maxlength":6,
             "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
         },
-        "end_qury_str": "as foo using unique osm_id using srid={}",
+        "label_line": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "encoding": "utf-8",
+            "partials": {"OBJ": "mapscript.MS_FALSE"},
+            "minfeaturesize":1,
+            "mindistance": 200,
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":2,
+            "repeatdistance": 400,
+            "anglemode":{"OBJ": "mapscript.MS_FOLLOW"},
+            "position": {"OBJ": "mapscript.MS_AUTO"}
+        },
+        "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
+            {
+                "layer_temp": "transport_areas",
+                "name": "transport_areas",
+                "wms_abstract": "transport areas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where railway = 'station'",
+                            "or aeroway in",
+                            "(",
+                            "    'aerodrome',",
+                            "    'terminal',",
+                            "    'helipad',",
+                            "    'apron'",
+                            ")",
+                            "order by area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
             {
                 "layer_temp": "landuse",
                 "name": "landuse",
+                "wms_abstract": "landuse",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -108,19 +162,89 @@
                             "order by area desc",
                             ")",
                             {
-                                "VAR": "end_qury_str",
+                                "VAR": "end_query_str",
                                 "{}": {
                                     "VAR":"epsg_id"
                                 }
                             }
                         ]
                     }
-                },
-                "wms_abstract": "landuse"
+                }
+            }, 
+            {
+                "layer_temp": "waterareas",
+                "name": "waterareas",
+                "wms_abstract": "waterareas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "concat(",
+                            "    landuse,",
+                            "    \"natural\",",
+                            "    waterway",
+                            ") as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'basin',",
+                            "    'reservoir'",
+                            ")",
+                            "or \"natural\" = 'water'",
+                            "or waterway = 'riverbank'",
+                            "order by area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "layer_temp": "waterways",
+                "name": "waterways",
+                "wms_abstract": "waterways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "waterway as type,",
+                            "name as name",
+                            "from planet_osm_line",
+                            "where waterway in",
+                            "(",
+                            "    'stream',",
+                            "    'river',",
+                            "    'canal',",
+                            "    'drain'",
+                            ")",
+                            "order by area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
             }, 
             {
                 "layer_temp": "buildings",
                 "name": "buildings",
+                "wms_abstract": "buildings",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -130,13 +254,17 @@
                             "osm_id,",
                             "name as name",
                             "from planet_osm_polygon",
-                            "where building != ''",
+                            "where building is not null",
                             ")",
-                            "as foo using unique osm_id using srid=3857"
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
                         ]
                     }
-                },
-                "wms_abstract": "buildings"
+                }
             } 
         ]
     },
@@ -177,8 +305,6 @@
                     "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
                     "connection": {"VAR": "db_connection"},
                     "data": {"TEMP": "\"{{layer_var['data']}}\""},
-                    "classitem": "type",
-                    "labelitem": "name",
                     "setProcessing":[
                             "LABEL_NO_CLIP=ON", 
                             "CLOSE_CONNECTION=DEFER"
@@ -189,6 +315,8 @@
                             {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
                         ]
                     ],
+                    "classitem": "type",
+                    "labelitem": "name",
                     "SUB_OBJ":[
                         {
                             "OBJ": "mapscript.classObj",
@@ -204,21 +332,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+                                        "VAR": "label_polygon"
                                     }
                                 }
                             }
@@ -241,21 +355,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+                                        "VAR": "label_polygon"
                                     }
                                 }
                             }
@@ -278,22 +378,7 @@
                             "addLabel": {
                                 "11-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 2
                                     }
                                 }
@@ -313,22 +398,7 @@
                             "addLabel": {
                                 "11-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 2,
                                         "position": {"OBJ": "mapscript.MS_CC"}
                                     }
@@ -349,22 +419,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 2,
                                         "position": {"OBJ": "mapscript.MS_CC"}
                                     }
@@ -385,7 +440,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ": {
-                                        "VAR": "label_dict",
+                                        "VAR": "label_polygon",
                                         "size":0,
                                         "color":{
                                             "TEMP": "{{ macros.color_hex('#333333') }}"
@@ -409,8 +464,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ":{
-                                        "VAR": "label_dict",
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 1
                                     }
                                 }
@@ -430,8 +484,7 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ":{
-                                        "VAR": "label_dict",
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 1
                                     }
                                 }
@@ -451,9 +504,200 @@
                             "addLabel": {
                                 "12-20": {
                                     "SUB_OBJ":{
-                                        "VAR": "label_dict",
-                                        "encoding": "utf-8",
+                                        "VAR": "label_polygon",
                                         "priority": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "transport_areas":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "11-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "11-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "waterareas":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "4-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["riverbank"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#b3c6d4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ]
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "6-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "waterways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "6-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["river"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-6":0.15},
+                                        {"7-7":0.25},
+                                        {"8-8":0.5},
+                                        {"8-8":0.5},
+                                        {"9-10":1},
+                                        {"11-12":2},
+                                        {"13-14":3},
+                                        {"15-15":4},
+                                        {"16-16":5},
+                                        {"17-17":6},
+                                        {"18-20":7}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "6-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size": [
+                                            {"6-14":8},
+                                            {"15-16":9},
+                                            {"17-20":10}
+                                        ],
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
                                     }
                                 }
                             }
@@ -476,7 +720,6 @@
                     "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
                     "connection": {"VAR": "db_connection"},
                     "data": {"TEMP": "\"{{layer_var['data']}}\""},
-                    "labelitem": "name",
                     "setProcessing":[
                             "LABEL_NO_CLIP=ON", 
                             "CLOSE_CONNECTION=DEFER"
@@ -487,6 +730,7 @@
                             {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
                         ]
                     ],
+                    "labelitem": "name",
                     "SUB_OBJ":[
                         {
                             "OBJ": "mapscript.classObj",
@@ -512,21 +756,7 @@
                             "addLabel": {
                                 "17-20": {
                                     "SUB_OBJ": {
-                                        "OBJ": "mapscript.labelObj",
-                                        "font": "sc",
-                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                        "minfeaturesize":1,
-                                        "size":8,
-                                        "color":{
-                                            "TEMP": "{{ macros.color_rgb(0,0,0) }}"
-                                        },
-                                        "outlinecolor":{
-                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        },
-                                        "outlinewidth":2,
-                                        "wrap": " ",
-                                        "maxlength":6,
-                                        "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+                                        "VAR": "label_polygon"
                                     }
                                 }
                             }
