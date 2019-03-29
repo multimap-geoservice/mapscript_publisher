@@ -62,7 +62,6 @@
             "OBJ": "mapscript.labelObj",
             "font": "sc",
             "encoding": "utf-8",
-            "partials": {"OBJ": "mapscript.MS_FALSE"},
             "minfeaturesize":1,
             "mindistance": 200,
             "size":8,
@@ -75,7 +74,8 @@
             "outlinewidth":2,
             "repeatdistance": 400,
             "anglemode":{"OBJ": "mapscript.MS_FOLLOW"},
-            "position": {"OBJ": "mapscript.MS_AUTO"}
+            "position": {"OBJ": "mapscript.MS_AUTO"},
+            "priority": 2
         },
         "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
@@ -243,6 +243,42 @@
                 }
             }, 
             {
+                "layer_temp": "railways",
+                "name": "railways",
+                "wms_abstract": "railways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "railway as type,",
+                            "name as name",
+                            "from planet_osm_line",
+                            "where railway in",
+                            "(",
+                            "    'rail',",
+                            "    'light_rail',",
+                            "    'subway',",
+                            "    'narrow_gauge',",
+                            "    'preserved',",
+                            "    'funicular',",
+                            "    'monorail'",
+                            ")",
+                            "order by area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
                 "layer_temp": "buildings",
                 "name": "buildings",
                 "wms_abstract": "buildings",
@@ -298,6 +334,7 @@
                 "4-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
@@ -521,6 +558,7 @@
                 "11-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
@@ -570,6 +608,7 @@
                 "4-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
@@ -609,6 +648,32 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
+                            "setExpression": ["water"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "15-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
@@ -642,6 +707,7 @@
                 "6-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
@@ -673,17 +739,16 @@
                                         "TEMP": "{{ macros.color_rgb(153,179,204) }}"
                                     },
                                     "width": [
-                                        {"6-6":0.15},
-                                        {"7-7":0.25},
-                                        {"8-8":0.5},
-                                        {"8-8":0.5},
-                                        {"9-10":1},
-                                        {"11-12":2},
-                                        {"13-14":3},
-                                        {"15-15":4},
-                                        {"16-16":5},
-                                        {"17-17":6},
-                                        {"18-20":7}
+                                        {"6-6": 0.15},
+                                        {"7-7": 0.25},
+                                        {"8-8": 0.5},
+                                        {"9-10": 1},
+                                        {"11-12": 2},
+                                        {"13-14": 3},
+                                        {"15-15": 4},
+                                        {"16-16": 5},
+                                        {"17-17": 6},
+                                        {"18-20": 7}
                                     ]
                                 }
                             ],
@@ -692,10 +757,76 @@
                                     "SUB_OBJ": {
                                         "VAR": "label_line",
                                         "size": [
-                                            {"6-14":8},
-                                            {"15-16":9},
-                                            {"17-20":10}
+                                            {"6-14": 8},
+                                            {"15-16": 9},
+                                            {"17-20": 10}
                                         ],
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        },
+                                        "priority": 3
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["stream"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-9": 0},
+                                        {"10-11": 0.5},
+                                        {"12-13": 1},
+                                        {"14-20": 2}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "15-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["canal"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-9": 0},
+                                        {"10-11": 0.5},
+                                        {"12-13": 1},
+                                        {"14-14": 2},
+                                        {"15-15": 4},
+                                        {"16-16": 8},
+                                        {"17-17": 16},
+                                        {"18-18": 30},
+                                        {"19-19": 60},
+                                        {"20-20": 120}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "14-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size":8,
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
                                         "color":{
                                             "TEMP": "{{ macros.color_hex('#6b94b0') }}"
                                         }
@@ -707,12 +838,92 @@
                 }
             }
         ],
+        "railways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "8-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "15-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["subway"],
+                                "SUB_OBJ": [
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"15-18": 0.5},
+                                            {"19-20": 1}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                        },
+                                        "outlinewidth": 0,
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                        },
+                                        "pattern":[
+                                            [2, 5]
+                                        ],
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{rail,light_rail,narrow_gauge,preserved,funicular,monorail}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"8-10": 0.5},
+                                        {"11-20": 1}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#777777') }}"
+                                    },
+                                    "pattern":[
+                                        [2, 2, 0]
+                                    ],
+                                    "opacity": 40,
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
         "buildings":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "15-20":{
                     "OBJ": "mapscript.layerObj",
                     "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
                     "status": {"OBJ": "mapscript.MS_ON"}, 
                     "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
                     "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
@@ -757,7 +968,8 @@
                             "addLabel": {
                                 "17-20": {
                                     "SUB_OBJ": {
-                                        "VAR": "label_polygon"
+                                        "VAR": "label_polygon",
+                                        "size": 7
                                     }
                                 }
                             }
