@@ -74,8 +74,7 @@
             "outlinewidth":2,
             "repeatdistance": 400,
             "anglemode":{"OBJ": "mapscript.MS_FOLLOW"},
-            "position": {"OBJ": "mapscript.MS_AUTO"},
-            "priority": 2
+            "position": {"OBJ": "mapscript.MS_AUTO"}
         },
         "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
@@ -188,14 +187,31 @@
                             "    \"natural\",",
                             "    waterway",
                             ") as type,",
-                            "name as name",
+                            "case",
+                            "     when \"name\" in (",
+                            "         select name",
+                            "         from planet_osm_line",
+                            "         where waterway in (",
+                            "             'stream',",
+                            "             'river',",
+                            "             'canal',",
+                            "             'drain'",
+                            "         )",
+                            "     )",
+                            "     then NULL",
+                            "     else \"name\"",
+                            "end \"name\"",
                             "from planet_osm_polygon",
                             "where landuse in",
                             "(",
                             "    'basin',",
                             "    'reservoir'",
                             ")",
-                            "or \"natural\" = 'water'",
+                            "or \"natural\" in",
+                            "(",
+                            "    'water',",
+                            "    'bay'",
+                            ")",
                             "or waterway = 'riverbank'",
                             "order by area desc",
                             ")",
@@ -632,7 +648,7 @@
                     "SUB_OBJ":[
                         {
                             "OBJ": "mapscript.classObj",
-                            "setExpression": ["riverbank"],
+                            "setExpression": ["{riverbank, waterriverbank}"],
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
@@ -764,7 +780,7 @@
                                         "color":{
                                             "TEMP": "{{ macros.color_hex('#6b94b0') }}"
                                         },
-                                        "priority": 3
+                                        "priority": 2
                                     }
                                 }
                             }
