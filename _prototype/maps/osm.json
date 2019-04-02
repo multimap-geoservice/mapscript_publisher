@@ -99,7 +99,7 @@
                             "    'helipad',",
                             "    'apron'",
                             ")",
-                            "order by way_area desc",
+                            "order by area desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -159,7 +159,7 @@
                             ")",
                             "or \"natural\" = 'wood'",
                             "or highway = 'pedestrian'",
-                            "order by way_area desc",
+                            "order by area desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -213,7 +213,7 @@
                             "    'bay'",
                             ")",
                             "or waterway = 'riverbank'",
-                            "order by way_area desc",
+                            "order by area desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -247,7 +247,7 @@
                             "    'canal',",
                             "    'drain'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -284,7 +284,7 @@
                             "    'funicular',",
                             "    'monorail'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -317,7 +317,7 @@
                             "    'trunk',",
                             "    'motorway'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -347,7 +347,7 @@
                             "    'primary',",
                             "    'primary_link'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -381,7 +381,7 @@
                             "    'secondary',",
                             "    'secondary_link'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -429,7 +429,7 @@
                             "    'unclassified',",
                             "    'residential'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -489,7 +489,7 @@
                             "    'unclassified',",
                             "    'residential'",
                             ")",
-                            "order by z_order",
+                            "order by z_order desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -1090,25 +1090,25 @@
                     "labelitem": "name",
                     "SUB_OBJ":[
                         {
-                            "18-20":{
+                            "15-20":{
                                 "OBJ": "mapscript.classObj",
                                 "setExpression": ["subway"],
                                 "SUB_OBJ": [
                                     {
                                         "OBJ": "mapscript.styleObj",
                                         "width": [
-                                            {"18-18": 0.5},
-                                            {"19-20": 1}
+                                            {"15-10": 0.5},
+                                            {"11-20": 1}
                                         ],
                                         "color": {
                                             "TEMP": "{{ macros.color_hex('#ffffff') }}"
                                         },
                                         "outlinewidth": [
-                                            {"18-18": 0.1},
-                                            {"19-20": 0.5}
+                                            {"15-10": 0.1},
+                                            {"11-20": 0.5}
                                         ],
                                         "outlinecolor": {
-                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                            "TEMP": "{{ macros.color_hex('#cccccc') }}"
                                         },
                                         "opacity": 40,
                                         "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
@@ -1116,11 +1116,11 @@
                                     {
                                         "OBJ": "mapscript.styleObj",
                                         "width": [
-                                            {"18-18": 0.5},
-                                            {"19-20": 1}
+                                            {"15-10": 0.5},
+                                            {"11-20": 1}
                                         ],
                                         "color": {
-                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                            "TEMP": "{{ macros.color_hex('#cccccc') }}"
                                         },
                                         "pattern":[
                                             [2, 10]
@@ -1293,7 +1293,7 @@
                                                 "12-14":{"TEMP": "{{ macros.color_hex('#aaaaaa') }}"}
                                             },
                                             {
-                                                "15-20":{"TEMP": "{{ macros.color_hex('#ffffff') }}"}
+                                                "15-20":{"TEMP": "{{ macros.color_hex('#dddddd') }}"}
                                             }
                                         ]                                    
                                     }
@@ -1465,24 +1465,6 @@
                             }
                         },
                         {
-                            "15-20":{
-                                "OBJ": "mapscript.classObj",
-                                "setExpression": "{footway00,path00}",
-                                "SUB_OBJ":[
-                                    {
-                                        "OBJ": "mapscript.styleObj",
-                                        "width": 1,
-                                        "pattern":[
-                                            [2, 3]
-                                        ],
-                                        "color":{
-                                            "TEMP": "{{ macros.color_hex('#ffffff') }}"
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
                             "8-20":{
                                 "OBJ": "mapscript.classObj",
                                 "setExpression":[
@@ -1547,70 +1529,6 @@
                                                 {"13-14": 8},
                                                 {"15-20": 9}
                                             ],
-                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
-                                            "buffer": 3,
-                                            "color":{
-                                                "TEMP": "{{ macros.color_hex('#333333') }}"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "12-20":{
-                                "OBJ": "mapscript.classObj",
-                                "setExpression":[
-                                    {"12-13": ["pedestrian"]},
-                                    {"14-20": ["pedestrian00"]}
-                                ] ,
-                                "SUB_OBJ":[
-                                    {
-                                        "13-20":
-                                        {
-                                            "OBJ": "mapscript.styleObj",
-                                            "width": [
-                                                {"13-13": 1},
-                                                {"14-14": 1.5},
-                                                {"15-15": 2},
-                                                {"16-16": 2.5},
-                                                {"17-17": 3},
-                                                {"18-18": 3.5},
-                                                {"19-19": 4},
-                                                {"20-20": 4.5}
-                                            ],
-                                            "outlinewidth": [
-                                                {"13-16": 0.5},
-                                                {"17-20": 1}
-                                            ],
-                                            "outlinecolor": {
-                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
-                                            }                                    
-                                        }
-                                    },
-                                    {
-                                        "OBJ": "mapscript.styleObj",
-                                        "width": [
-                                            {"12-12": 0.75},
-                                            {"13-13": 1},
-                                            {"14-14": 1.5},
-                                            {"15-15": 2},
-                                            {"16-16": 2.5},
-                                            {"17-17": 3},
-                                            {"18-18": 3.5},
-                                            {"19-19": 4},
-                                            {"20-20": 4.5}
-                                        ],
-                                        "color": {
-                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
-                                        }                                    
-                                    }
-                                ],
-                                "addLabel": {
-                                    "15-20": {
-                                        "SUB_OBJ": {
-                                            "VAR": "label_line",
-                                            "size":8,
                                             "partials": {"OBJ": "mapscript.MS_FALSE"},
                                             "buffer": 3,
                                             "color":{
@@ -2040,46 +1958,6 @@
                         {
                             "14-20":{
                                 "OBJ": "mapscript.classObj",
-                                "setExpression": "{pedestrian10,footway10,path10}",
-                                "SUB_OBJ":[
-                                    {
-                                        "OBJ": "mapscript.styleObj",
-                                        "width": [
-                                            {"14-14": 1.5},
-                                            {"15-15": 2},
-                                            {"16-16": 2.5},
-                                            {"17-17": 3},
-                                            {"18-18": 3.5},
-                                            {"19-19": 4},
-                                            {"20-20": 4.5}
-                                        ],
-                                        "outlinewidth": 1,
-                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
-                                        "outlinecolor": {
-                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
-                                        }                                    
-                                    },
-                                    {
-                                        "OBJ": "mapscript.styleObj",
-                                        "width": [
-                                            {"14-14": 1.5},
-                                            {"15-15": 2},
-                                            {"16-16": 2.5},
-                                            {"17-17": 3},
-                                            {"18-18": 3.5},
-                                            {"19-19": 4},
-                                            {"20-20": 4.5}
-                                        ],
-                                        "color": {
-                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
-                                        }                                    
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "14-20":{
-                                "OBJ": "mapscript.classObj",
                                 "setExpression": "motorway10",
                                 "SUB_OBJ":[
                                     {
@@ -2253,30 +2131,6 @@
                                         "opacity": 40,
                                         "color": {
                                             "TEMP": "{{ macros.color_rgb(255,255,255) }}"
-                                        }                                    
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "14-20":{
-                                "OBJ": "mapscript.classObj",
-                                "setExpression": "{pedestrian01,footway01,path01}",
-                                "SUB_OBJ":[
-                                    {
-                                        "OBJ": "mapscript.styleObj",
-                                        "width": [
-                                            {"14-14": 1.5},
-                                            {"15-15": 2},
-                                            {"16-16": 2.5},
-                                            {"17-17": 3},
-                                            {"18-18": 3.5},
-                                            {"19-19": 4},
-                                            {"20-20": 4.5}
-                                        ],
-                                        "opacity": 40,
-                                        "color": {
-                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
                                         }                                    
                                     }
                                 ]
