@@ -502,6 +502,38 @@
                 }
             }, 
             {
+                "layer_temp": "aeroways",
+                "name": "aeroways",
+                "wms_abstract": "aeroways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "aeroway as type,",
+                            "name as name,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where aeroway in",
+                            "(",
+                            "    'runway',",
+                            "    'taxiway'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
                 "layer_temp": "buildings",
                 "name": "buildings",
                 "wms_abstract": "buildings",
@@ -2449,6 +2481,102 @@
                                     }
                                 ]
                             }
+                        }
+                    ]
+                }
+            }
+        ],
+        "aeroways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "10-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["runway"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-10": 1},
+                                        {"11-11": 2},
+                                        {"12-12": 3},
+                                        {"13-13": 5},
+                                        {"14-14": 7},
+                                        {"15-15": 11},
+                                        {"16-16": 15},
+                                        {"17-17": 19},
+                                        {"18-18": 23},
+                                        {"19-19": 29},
+                                        {"20-20": 36}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(180,180,180) }}"
+                                    },
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                    "linejoin": {"OBJ": "mapscript.MS_CJC_MITER"}
+                                },
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-14": 0},
+                                        {"15-20": 1}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(80,80,80) }}"
+                                    },
+                                    "pattern":[
+                                        [2, 2]
+                                    ],
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                }
+                            ]
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["taxiway"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-12": 0.2},
+                                        {"13-13": 1},
+                                        {"14-14": 1.5},
+                                        {"15-15": 2},
+                                        {"16-16": 3},
+                                        {"17-17": 4},
+                                        {"18-18": 5},
+                                        {"19-19": 6},
+                                        {"20-20": 7}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(180,180,180) }}"
+                                    }
+                                }
+                            ]
                         }
                     ]
                 }
