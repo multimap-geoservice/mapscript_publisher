@@ -76,6 +76,25 @@
             "anglemode":{"OBJ": "mapscript.MS_FOLLOW"},
             "position": {"OBJ": "mapscript.MS_AUTO"}
         },
+        "label_point": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "encoding": "utf-8",
+            "partials": {"OBJ": "mapscript.MS_FALSE"},
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":1,
+            "wrap": " ",
+            "maxlength":8,
+            "buffer":4,
+            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+            "position": {"OBJ": "mapscript.MS_AUTO"}
+        },
         "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
             {
@@ -547,6 +566,166 @@
                             "name as name",
                             "from planet_osm_polygon",
                             "where building is not null",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "layer_temp": "places",
+                "name": "places",
+                "wms_abstract": "places",
+                "data1to2": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'continent'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data3to7": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'continent',",
+                            "    'city'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data8to10": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'city',",
+                            "    'town'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data11to12": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'city',",
+                            "    'town',",
+                            "    'village'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data13to20": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'state',",
+                            "    'region',",
+                            "    'county',",
+                            "    'city',",
+                            "    'town',",
+                            "    'village',",
+                            "    'hamlet',",
+                            "    'suburb',",
+                            "    'locality'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -2635,6 +2814,117 @@
                                     "SUB_OBJ": {
                                         "VAR": "label_polygon",
                                         "size": 7
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "places":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "1-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POINT"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": [
+                        {"1-2":{"TEMP": "\"{{layer_var['data1to2']}}\""}},
+                        {"3-7":{"TEMP": "\"{{layer_var['data3to7']}}\""}},
+                        {"8-10":{"TEMP": "\"{{layer_var['data8to10']}}\""}},
+                        {"11-12":{"TEMP": "\"{{layer_var['data11to12']}}\""}},
+                        {"13-20":{"TEMP": "\"{{layer_var['data13to20']}}\""}}
+                    ],
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "1-2":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["continents"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "font": "scb",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(100,100,100) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(-1,-1,-1) }}"
+                                        },
+                                        "position": {"OBJ": "mapscript.MS_CC"},
+                                        "-":"wrap"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "2-7":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["country"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "font": "scb",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(100,100,100) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(-1,-1,-1) }}"
+                                        },
+                                        "position": {"OBJ": "mapscript.MS_CC"},
+                                        "-":"wrap"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "3-15":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["city"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"3-7":8},
+                                            {"8-9":9},
+                                            {"10-10":10},
+                                            {"11-12":11},
+                                            {"13-14":12},
+                                            {"15-20":13}
+                                        ],
+                                        "outlinewidth":[
+                                            {"3-9":2},
+                                            {"10-20":3}
+                                        ],
+                                        "color":[
+                                            {
+                                                "3-7":{"TEMP": "{{ macros.color_rgb(68,68,68) }}"}
+                                            },
+                                            {
+                                                "8-20":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ]
                                     }
                                 }
                             }
