@@ -174,9 +174,23 @@ class PubMap(object):
                     )
         elif value == None:
             raise Exception('None value in Template')
-        
+
+        # test syntax assigment method        
+        try:
+            test_assigment = eval('{0}.{1}'.format(OBJ, method))
+        except Exception as err:
+            raise Exception( 
+                "ASSIGMENT METHOD\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
+                    '{0}.{1}'.format(OBJ, method), 
+                    "type({0}) = {1}".format(
+                        OBJ, 
+                        eval("type({})".format(OBJ))
+                        ), 
+                    err
+                )
+            )
         # test assigment
-        if inspect.ismethod(eval('{0}.{1}'.format(OBJ, method))):
+        if inspect.ismethod(test_assigment):
             if isinstance(value, dict):
                 assigment = '(**{})'.format(value)
             elif isinstance(value, (list, tuple)):
@@ -203,8 +217,12 @@ class PubMap(object):
                 exec(script_str)
             except Exception as err:
                 raise Exception( 
-                    "SINTAX\nFOR:\n{0}\nERROR:\n{1}".format(
+                    "SINTAX\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
                         script_str, 
+                        "type({0}) = {1}".format(
+                            OBJ, 
+                            eval("type({})".format(OBJ))
+                            ), 
                         err
                     )
                 )
@@ -267,7 +285,40 @@ class PubMap(object):
         if not _dict.has_key('OBJ_VAR'):
             # add OBJ Variable to OBJS list
             str_obj = '{0}({1})'.format(_dict['OBJ'], SUB_OBJ)
-            self.OBJS.append(eval(str_obj))
+            try:
+                eval_str_obj = eval(str_obj)
+            except Exception as err:
+                raise Exception( 
+                    "SYNTAX\nIN:\n{0}\nFOR:\n{1}\nERROR:\n{2}".format(
+                        json.dumps(
+                            _dict,
+                            sort_keys=True,
+                            indent=4,
+                            separators=(',', ': ')
+                        ), 
+                        str_obj, 
+                        err
+                    )
+                )
+            try:
+                self.OBJS.append(eval_str_obj)
+            except Exception as err:
+                raise Exception( 
+                    "STRUCTURE\nFOR:\n{0}\nIN:\n{1}\nASSIGMENT:\n{2}\nERROR:\n{3}".format(
+                        json.dumps(
+                            _dict,
+                            sort_keys=True,
+                            indent=4,
+                            separators=(',', ': ')
+                        ), 
+                        "type({0}) = {1}".format(
+                            SUB_OBJ, 
+                            eval("type({})".format(SUB_OBJ))
+                            ), 
+                        str_obj, 
+                        err
+                    )
+                )
             _dict['OBJ_VAR'] = '{0}[{1}]'.format(
                 self.textOBJS, 
                 len(self.OBJS) - 1

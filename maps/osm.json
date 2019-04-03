@@ -2924,7 +2924,22 @@
                                             {
                                                 "8-20":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
                                             }
-                                        ]
+                                        ],
+                                        "insertStyle":{
+                                            "3-9": {
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.styleObj",
+                                                    "size": 5,
+                                                    "symbolname": "citycircle",
+                                                    "color": {
+                                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                                    },
+                                                    "outlinecolor": {
+                                                        "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -2951,6 +2966,16 @@
                 ["wms_srs", {"VAR": "wms_srs"}],
                 ["wms_title", {"VAR": "wms_title"}],
                 ["wms_enable_request", "*"]
+            ],
+            "symbolset.appendSymbol": [
+                {
+                    "SUB_OBJ":{
+                        "OBJ": "mapscript.symbolObj",
+                        "OBJ_ARG": "'citycircle'",
+                        "type": {"OBJ": "mapscript.MS_SYMBOL_ELLIPSE"},
+                        "filled": {"OBJ": "mapscript.MS_TRUE"}
+                    }
+                }
             ],
             "SUB_OBJ": [
                 {"TEMP": [
