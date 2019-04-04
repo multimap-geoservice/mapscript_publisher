@@ -38,6 +38,27 @@
                 
             }
         },
+        "map_symbolset":[
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.symbolObj",
+                    "OBJ_ARG": "'citycircle'",
+                    "type": {"OBJ": "mapscript.MS_SYMBOL_ELLIPSE"},
+                    "filled": {"OBJ": "mapscript.MS_TRUE"},
+                    "setPoints":{
+                        "SUB_OBJ":{
+                            "OBJ": "mapscript.lineObj",
+                            "add":{
+                                "SUB_OBJ":{
+                                    "OBJ": "mapscript.pointObj",
+                                    "OBJ_ARG": [1,1]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ],
         "db_connection": "",
         "epsg_id": 3857,
         "label_polygon": {
@@ -2925,12 +2946,61 @@
                                                 "8-20":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
                                             }
                                         ],
+                                        "priority": [
+                                            {"3-9":4}
+                                        ],
                                         "insertStyle":{
                                             "3-9": {
                                                 "SUB_OBJ":{
                                                     "OBJ": "mapscript.styleObj",
                                                     "size": 5,
-                                                    "symbolname": "citycircle",
+                                                    "symbol": 1,
+                                                    "setGeomTransform": "labelpnt",
+                                                    "color": {
+                                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                                    },
+                                                    "outlinecolor": {
+                                                        "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "8-18":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["town"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"8-9":8},
+                                            {"10-11":9},
+                                            {"12-14":10},
+                                            {"15-20":11}
+                                        ],
+                                        "outlinewidth":2,
+                                        "color":[
+                                            {
+                                                "8-10":{"TEMP": "{{ macros.color_hex('#666666') }}"}
+                                            },
+                                            {
+                                                "11-20":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ],
+                                        "priority": [
+                                            {"8-11":3}
+                                        ],
+                                        "insertStyle":{
+                                            "8-11": {
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.styleObj",
+                                                    "size": 3,
+                                                    "symbol": 1,
+                                                    "setGeomTransform": "labelpnt",
                                                     "color": {
                                                         "TEMP": "{{ macros.color_rgb(200,200,200) }}"
                                                     },
@@ -2957,6 +3027,7 @@
             "setExtent": [{"VAR": "extent"}],
             "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},
             "setSize": [{"VAR": "size"}],
+            "symbolset.appendSymbol": {"VAR":"map_symbolset"},
             "units": {
                 "OBJ": "mapscript.MS_DD"
             },
@@ -2966,16 +3037,6 @@
                 ["wms_srs", {"VAR": "wms_srs"}],
                 ["wms_title", {"VAR": "wms_title"}],
                 ["wms_enable_request", "*"]
-            ],
-            "symbolset.appendSymbol": [
-                {
-                    "SUB_OBJ":{
-                        "OBJ": "mapscript.symbolObj",
-                        "OBJ_ARG": "'citycircle'",
-                        "type": {"OBJ": "mapscript.MS_SYMBOL_ELLIPSE"},
-                        "filled": {"OBJ": "mapscript.MS_TRUE"}
-                    }
-                }
             ],
             "SUB_OBJ": [
                 {"TEMP": [
