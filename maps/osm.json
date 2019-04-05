@@ -119,6 +119,33 @@
         "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
             {
+                "layer_temp": "base_places",
+                "name": "base_places",
+                "wms_abstract": "base places",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "place as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where place is not null",
+                            "and boundary is null",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
                 "layer_temp": "transport_areas",
                 "name": "transport_areas",
                 "wms_abstract": "transport areas",
@@ -180,8 +207,10 @@
                             "    'meadow',",
                             "    'cemetery',",
                             "    'industrial',",
+                            "    'garages',",
                             "    'construction',",
                             "    'commercial',",
+                            "    'greenfield',",
                             "    'brownfield',",
                             "    'residential',",
                             "    'military'",
@@ -207,6 +236,10 @@
                             "(",
                             "    'wood',",
                             "    'scrub',",
+                            "    'grassland',",
+                            "    'beach',",
+                            "    'sand',",
+                            "    'heath',",
                             "    'wetland'",
                             ")",
                             "or highway = 'pedestrian'",
@@ -824,6 +857,71 @@
             },
             { "TEMP": "{%- endmacro -%}"}
         ],
+        "base_places":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "1-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
+                        ]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": "island",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "8-13": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "size": 7
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
         "landuse":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
@@ -873,7 +971,7 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
-                            "setExpression": ["{grass,meadow,playground}"],
+                            "setExpression": ["{grass,meadow,playground,grassland,greenfield}"],
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
@@ -892,7 +990,7 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
-                            "setExpression": ["scrub"],
+                            "setExpression": ["{scrub,heath,brownfield}"],
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
@@ -930,6 +1028,25 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
+                            "setExpression": ["{beach,sand}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#efefa0') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
                             "setExpression": ["residential"],
                             "SUB_OBJ": [
                                 {
@@ -953,7 +1070,7 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
-                            "setExpression": ["{industrial,commercial,parking}"],
+                            "setExpression": ["{industrial,commercial,parking,garages}"],
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",
@@ -983,6 +1100,30 @@
                                     "OBJ": "mapscript.styleObj",
                                     "color": {
                                         "TEMP": "{{ macros.color_hex('#c1bf95') }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["military"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#91c3b0') }}"
                                     },
                                     "outlinecolor": {
                                         "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
@@ -1170,7 +1311,7 @@
                                 }
                             ],
                             "addLabel": {
-                                "11-20": {
+                                "13-20": {
                                     "SUB_OBJ": {
                                         "VAR": "label_polygon"
                                     }
@@ -1182,7 +1323,7 @@
                             "setExpression": ["pier"],
                             "SUB_OBJ": [
                                 {
-                                    "14-20":{
+                                    "15-20":{
                                         "OBJ": "mapscript.styleObj",
                                         "color": {
                                             "TEMP": "{{ macros.color_hex('#dbdbdb') }}"
@@ -2999,7 +3140,7 @@
                                         "TEMP": "{{ macros.color_hex('#333333') }}"
                                     },
                                     "width": [
-                                         {"15-16": 0},
+                                         {"15-16": 0.1},
                                          {"17-20": 0.5}
                                     ]
                                 }
@@ -3029,7 +3170,7 @@
                                         "TEMP": "{{ macros.color_hex('#333333') }}"
                                     },
                                     "width": [
-                                         {"15-16": 0},
+                                         {"15-16": 0.1},
                                          {"17-20": 0.5}
                                     ]
                                 }
