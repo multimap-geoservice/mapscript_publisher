@@ -129,9 +129,11 @@
                             "(",
                             "select way as geometry,",
                             "osm_id,",
+                            "place as type,",
                             "name as name",
                             "from planet_osm_polygon",
                             "where railway = 'station'",
+                            "or place = 'square'",
                             "or aeroway in",
                             "(",
                             "    'aerodrome',",
@@ -204,6 +206,7 @@
                             "or \"natural\" in",
                             "(",
                             "    'wood',",
+                            "    'scrub',",
                             "    'wetland'",
                             ")",
                             "or highway = 'pedestrian'",
@@ -298,6 +301,33 @@
                             "    'drain'",
                             ")",
                             "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "layer_temp": "transport_areas",
+                "name": "above_water_areas",
+                "wms_abstract": "above water areas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "man_made as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where man_made = 'pier'",
+                            "order by way_area desc",
                             ")",
                             {
                                 "VAR": "end_query_str",
@@ -862,6 +892,25 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
+                            "setExpression": ["scrub"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#a4d17f') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
                             "setExpression": ["wetland"],
                             "SUB_OBJ": [
                                 {
@@ -1105,8 +1154,58 @@
                             {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
                         ]
                     ],
+                    "classitem": "type",
                     "labelitem": "name",
                     "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["square"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#e5e5e5') }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "11-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["pier"],
+                            "SUB_OBJ": [
+                                {
+                                    "14-20":{
+                                        "OBJ": "mapscript.styleObj",
+                                        "color": {
+                                            "TEMP": "{{ macros.color_hex('#dbdbdb') }}"
+                                        },
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(124,124,124) }}"
+                                        },
+                                        "outlinewidth": [
+                                            {"14-15": 0.1},
+                                            {"16-20": 0.5}
+                                        ],
+                                        "opacity": 50
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "16-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
                         {
                             "OBJ": "mapscript.classObj",
                             "SUB_OBJ": [
