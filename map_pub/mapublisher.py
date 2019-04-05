@@ -63,6 +63,23 @@ class PubMap(object):
     """
     up_scale = 268435456
 
+    """
+    symplify geometry scale
+    """
+    symplify_scale = [
+        220, 
+        200, 
+        180, 
+        160, 
+        140, 
+        120, 
+        100, 
+        80, 
+        60, 
+        40, 
+        20
+    ]
+
     #----------------------------------------------------------------------
     def __init__(self, mapdict=None):
         self.debug_mapscript = False
@@ -348,6 +365,7 @@ class PubMap(object):
                         # layer level scale objects
                         if levelline['OBJ'] == "mapscript.layerObj":
                             for numlevel in range(minlevel, maxlevel+1):
+                                # scale
                                 loopline = copy.deepcopy(levelline)
                                 loopline['name'] = '{0}{1}'.format(
                                     loopline['name'],
@@ -359,6 +377,13 @@ class PubMap(object):
                                 loopline['minscaledenom'] = self.scales[
                                     numlevel + 1
                                 ]
+                                # simplify
+                                if len(self.symplify_scale) > numlevel:
+                                    simplify_text = 'simplifypt([shape],{})'.format(
+                                        self.symplify_scale[numlevel]
+                                    )
+                                    loopline['setGeomTransform'] = simplify_text
+                                # recursive engine
                                 self.engine(
                                     loopline, 
                                     _dict['OBJ_VAR'],
