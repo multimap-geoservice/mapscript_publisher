@@ -1,8 +1,8 @@
 {
     "IMODS":["interface"],
     "VARS":{
-        "name": "osm-spb",
-        "wms_title": "Open Street Map S.Peterburg",
+        "name": "osm",
+        "wms_title": "Open Street Map",
         "up_scale": 332808204,
         "imagecolor": [153, 179, 204], 
         "extent": [

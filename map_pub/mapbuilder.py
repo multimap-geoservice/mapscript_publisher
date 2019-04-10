@@ -601,6 +601,24 @@ class BuildMap(object):
         else:
             raise Exception('Section MAP not found')
     
+    def get_json(self):
+        self.build()
+        return json.dumps(
+            self.mapdict,
+            sort_keys=True,
+            indent=4,
+            separators=(',', ': ')
+        )
+    
+    def get_json2file(self, path=None):
+        _json = self.get_json()
+        if path:
+            _file = open(path, 'w')
+            _file.write(_json)
+            _file.close()
+        else:
+            print(_json)
+    
     def __call__(self):
         self.build()
         return self.mapdict

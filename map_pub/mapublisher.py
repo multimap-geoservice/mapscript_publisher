@@ -66,19 +66,20 @@ class PubMap(object):
     """
     symplify geometry scale
     """
-    symplify_scale = [
-        220, 
-        200, 
-        180, 
-        160, 
-        140, 
-        120, 
-        100, 
-        80, 
-        60, 
-        40, 
-        20
-    ]
+    #symplify_scale = [
+        #220, 
+        #200, 
+        #180, 
+        #160, 
+        #140, 
+        #120, 
+        #100, 
+        #80, 
+        #60, 
+        #40, 
+        #20
+    #]
+    symplify_scale = []
 
     #----------------------------------------------------------------------
     def __init__(self, mapdict=None):
@@ -87,6 +88,16 @@ class PubMap(object):
         if isinstance(mapdict, dict):
             self.mapdict = mapdict
             
+    def load_json(self, jsonfile):
+        with open(jsonfile) as json_file:  
+            self.mapdict = json.load(json_file)
+
+    def load_map(self, mapfile):
+        mapdict = {
+            'OBJ': 'mapscript.mapObj', 
+            'OBJ_ARG': mapfile
+        }
+
     def create_scales(self, up_scale=None):
         if not isinstance(up_scale, (int, float)):
             up_scale = self.up_scale
@@ -367,10 +378,29 @@ class PubMap(object):
                             for numlevel in range(minlevel, maxlevel+1):
                                 # scale
                                 loopline = copy.deepcopy(levelline)
+                                # test scale name
+                                scale_test = True
+                                if not loopline.has_key('name'):
+                                    scale_test = False
+                                elif loopline['name'] is None or loopline['name'] == '':
+                                    scale_test = False
+                                if not scale_test:
+                                    raise Exception( 
+                                        "STRUCTURE\nIN:\n{}\nKEY:'name' not found".format(
+                                            json.dumps(
+                                                loopline,
+                                                sort_keys=True,
+                                                indent=4,
+                                                separators=(',', ': ')
+                                            ), 
+                                        )
+                                    )
+                                # name layer for scale level
                                 loopline['name'] = '{0}{1}'.format(
                                     loopline['name'],
                                     numlevel
                                 )
+                                # add scale denoms
                                 loopline['maxscaledenom'] = self.scales[
                                     numlevel
                                 ]
