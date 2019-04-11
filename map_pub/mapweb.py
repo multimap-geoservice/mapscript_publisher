@@ -2,6 +2,7 @@
 import mapscript
 import os
 from wsgiref.simple_server import make_server
+from interface import psqldb
 
 from mapublisher import PubMap
 
@@ -72,6 +73,10 @@ class MapsWEB(object):
     """
     Public more maps
     """
+    debug = False 
+    """
+    Enviroments for request
+    """
     MAPSERV_ENV = [
         'CONTENT_LENGTH',
         'CONTENT_TYPE',
@@ -102,27 +107,140 @@ class MapsWEB(object):
         'SERVER_NAME',
         'SERVER_PORT'
     ]
-
+   
+    """
+    serial_src - [] list sources for serialization
+    serial_tps - {} dict of tipes serialization data
+    ------------------------------
+    source format:
+    {
+        "type": self.serial_type
+        "connect": for type
+        "query": for type
+    }
+    ------------------------------
+    example fs:
+    {
+        "type": "fs"
+        "path": "/path/to/maps"
+    }
+    ------------------------------
+    example database:
+    {
+        "type": "pgsql"
+        "content": path(default)|json|map|xml
+        "connect": {
+            "host": localhost,
+            "port": 5432,
+            "dbname": "name",
+            "user": "user",
+            "password": "pass",
+        }
+        "query": "select name,file from table"
+    }
+    "content": content type for map
+    "query": select two column: 1-name, 2-content
+    """
+    serial_tps = {
+        "fs": {
+            "subserial": _subserial_fs,
+            "path": (str, unicode),
+        }, 
+        "pgsql": {
+            "subserial": _subserial_pgsql,
+            "content": (str.unicode),
+            "connect": dict,
+            "query": (str, unicode),
+        }
+    }
+    serial_src = []
+    
+    """
+    Options for serialization
+    key: name
+    get: method for get map
+    request: method for request map
+    """
+    serial_ops = {
+        "json": {
+            "get": get_mapjson,
+            "request": request_mapscript,
+            },
+        "map": {
+            "get": get_mapfile,
+            "request": request_mapscript,
+            },
+        "xml": {
+            "get": get_mapnik,
+            "request": request_mapnink,
+            },
+    }
+    
     #----------------------------------------------------------------------
-    def __init__(self, port=3007, host='0.0.0.0', base_url="http://localhost", *args):
+    def __init__(self, port=3007, host='0.0.0.0', base_url="http://localhost"):
         self.wsgi_host = host
         self.wsgi_port = port
         self.url = "{0}:{1}".format(base_url, port)
         self.maps = {}
-        if args != ():
-            for map_obj in args:
-                self.get_map(map_obj)
+ 
+    def _subserial_fs(self, map_name, **kwargs):
+        """
+        subserializator for fs
+        """
+        _dir = kwargs['path']
+        for _file in os.listdir(_dir):
+            for ext in self.serial_ops:
+                if _file == "{0}.{1}".format(map_name, ext):
+                    if self.debug:
+                        print ("In Dir:{0}, load Map File {1}".format(_dir, _file))
+                    return "{0}/{1}".format(_dir, _file)
+  
+    def _subserial_fs(self, map_name, **kwargs):
+        """
+        subserializator for pgsql
+        """
+        pass
+
+    def serializer(self, map_name):
+        """
+        serialization map from name of self.serial_src
+        """
+        pass
+
+    def get_mapnik(self, map_name, map_xml):
+        """
+        get map on mapnik xml
+        """
+        pass
     
-    def get_map(self, map_obj):
+    def get_mapfile(self, map_name, map_file):
+        """
+        get map on map file
+        """
+        pass
+    
+    def get_mapjson(self, map_name, map_json):
+        """
+        get map on json template
+        """
+        pass
+     
+    def get_mapscript(self, map_name, map_obj):
+        """
+        get map on mapscript object
+        """
         if isinstance(map_obj, mapscript.mapObj):
-            map_name = map_obj.name
             if map_name != "":
                 map_url = "{0}/{1}".format(self.url, map_name)
                 if "wms_enable_request" in map_obj.web.metadata.keys():
                     map_obj.web.metadata.set("wms_onlineresource", map_url)
                 if "wfs_enable_request" in map_obj.web.metadata.keys():
                     map_obj.web.metadata.set("wfs_onlineresource", map_url)
-                self.maps[map_name] = map_obj
+                return map_obj
+    
+    def maps_cleaner(self):
+        "cleaner maps as old timestamp"
+        pass
     
     def application(self, env, start_response):
         # find query string value
@@ -132,21 +250,36 @@ class MapsWEB(object):
             query_vals[sval_div[0]] = sval_div[-1]
         map_name = env['PATH_INFO'].split('/')[-1]
         # text debug
-        print ("-" * 30)
-        for key in self.MAPSERV_ENV:
-            if key in env:
-                os.environ[key] = env[key]
-                print (
-                    "{0}='{1}'".format(key, env[key])
-                )
+        if self.debug:
+            print ("-" * 30)
+            for key in self.MAPSERV_ENV:
+                if key in env:
+                    os.environ[key] = env[key]
+                    print (
+                        "{0}='{1}'".format(key, env[key])
+                    )
+                else:
+                    os.unsetenv(key)
+            print ("-" * 30)
+            for key in query_vals:
+                print ("{0}={1}".format(key, query_vals[key]))
+            print ("-" * 30)
+        
+        # serializer or request 
+        if not self.maps.has_key(map_name):
+            out = self.serializer(map_name)
+            if out:
+                self.maps[map_name]['request'](self.maps[map_name]['mapfile'])
             else:
-                os.unsetenv(key)
-        print ("-" * 30)
-        for key in query_vals:
-            print ("{0}={1}".format(key, query_vals[key]))
-        print ("-" * 30)
+                if self.debug:
+                    print "ERROR: Map:{} is not serialized".format(map_name)
+        else:
+            self.maps[map_name]['request'](self.maps[map_name]['mapfile'])
     
-        mapfile = self.maps[map_name]
+    def request_mapscript(self, mapfile):
+        """
+        render on mapserver mapscript request
+        """
         request = mapscript.OWSRequest()
         mapscript.msIO_installStdoutToBuffer()
         request.loadParamsFromURL(env['QUERY_STRING'])
@@ -161,13 +294,23 @@ class MapsWEB(object):
         start_response('200 OK', [('Content-type', content_type)])
         return [result]
     
+    def request_mapnik(self, mapfile):
+        """
+        render on mapnik request
+        """
+        pass
+    
     def wsgi(self):
+        """
+        simple wsgi server
+        """
         httpd = make_server(
             self.wsgi_host,
             self.wsgi_port,
             self.application
         )
-        print('Serving on port %d...' % self.wsgi_port)
+        if self.debug:
+            print('Serving on port %d...' % self.wsgi_port)
         httpd.serve_forever()
         
     def __call__(self):
