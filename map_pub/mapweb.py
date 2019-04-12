@@ -1,6 +1,8 @@
 
 import mapscript
 import os
+import time
+import ast
 from wsgiref.simple_server import make_server
 from interface import psqldb
 
@@ -115,11 +117,10 @@ class MapsWEB(object):
     source format:
     {
         "type": self.serial_type
-        "connect": for type
-        "query": for type
     }
+    Next keys is optionls for type
     ------------------------------
-    example fs:
+    example file system:
     {
         "type": "fs"
         "path": "/path/to/maps"
@@ -127,8 +128,7 @@ class MapsWEB(object):
     ------------------------------
     example database:
     {
-        "type": "pgsql"
-        "content": path(default)|json|map|xml
+        "type": "pgsql"(while only)
         "connect": {
             "host": localhost,
             "port": 5432,
@@ -148,7 +148,6 @@ class MapsWEB(object):
         }, 
         "pgsql": {
             "subserial": _subserial_pgsql,
-            "content": (str.unicode),
             "connect": dict,
             "query": (str, unicode),
         }
@@ -193,9 +192,11 @@ class MapsWEB(object):
                 if _file == "{0}.{1}".format(map_name, ext):
                     if self.debug:
                         print ("In Dir:{0}, load Map File {1}".format(_dir, _file))
-                    return "{0}/{1}".format(_dir, _file)
+                    with open("{0}/{1}".format(_dir, _file), "r") as _file:
+                        content_file = _file.read()
+                    return ext, content_file
   
-    def _subserial_fs(self, map_name, **kwargs):
+    def _subserial_pgsql(self, map_name, **kwargs):
         """
         subserializator for pgsql
         """
@@ -205,38 +206,63 @@ class MapsWEB(object):
         """
         serialization map from name of self.serial_src
         """
-        pass
+        for src in self.serial_src:
+            src_type = src['type']
+            subserial = self.serial_tps[src_type]['subserial']
+            valid = [
+                isinstance(src[key], self.serial_tps[src_type][key]) 
+                for key 
+                in self.serial_tps[src_type] 
+                if key != 'subserial'
+            ]
+            if False not in valid:
+                out_subserial = subserial(self, map_name, **src)
+                if out_subserial is not None:
+                    ops, content = out_subserial
+                    content = self.serial_ops[ops]['get'](self, map_name, content)
+                    if content is not None:
+                        self.maps[map_name] = {
+                            "request": self.serial_ops[ops]['request'],
+                            "content": content,
+                            "timestamp": int(time.time()),
+                        }
+                        return True
 
-    def get_mapnik(self, map_name, map_xml):
+    def get_mapnik(self, map_name, content):
         """
         get map on mapnik xml
+        mapnik.load_map_from_string()
         """
         pass
     
-    def get_mapfile(self, map_name, map_file):
+    def get_mapfile(self, map_name, content):
         """
         get map on map file
+        mapscript.mapObj() ?????
         """
         pass
     
-    def get_mapjson(self, map_name, map_json):
+    def get_mapjson(self, map_name, content):
         """
         get map on json template
+        PubMap()
         """
-        pass
+        content = ast.literal_eval(content)
+        pub_map = PubMap(content)
+        return self.edit_mapscript(map_name, pub_map())
      
-    def get_mapscript(self, map_name, map_obj):
+    def edit_mapscript(self, map_name, content):
         """
-        get map on mapscript object
+        edit requests resources in mapscript object
         """
-        if isinstance(map_obj, mapscript.mapObj):
+        if isinstance(content, mapscript.mapObj):
             if map_name != "":
                 map_url = "{0}/{1}".format(self.url, map_name)
-                if "wms_enable_request" in map_obj.web.metadata.keys():
-                    map_obj.web.metadata.set("wms_onlineresource", map_url)
-                if "wfs_enable_request" in map_obj.web.metadata.keys():
-                    map_obj.web.metadata.set("wfs_onlineresource", map_url)
-                return map_obj
+                if "wms_enable_request" in content.web.metadata.keys():
+                    content.web.metadata.set("wms_onlineresource", map_url)
+                if "wfs_enable_request" in content.web.metadata.keys():
+                    content.web.metadata.set("wfs_onlineresource", map_url)
+                return content
     
     def maps_cleaner(self):
         "cleaner maps as old timestamp"
@@ -269,14 +295,14 @@ class MapsWEB(object):
         if not self.maps.has_key(map_name):
             out = self.serializer(map_name)
             if out:
-                self.maps[map_name]['request'](self.maps[map_name]['mapfile'])
+                self.maps[map_name]['request'](self, self.maps[map_name]['content'])
             else:
                 if self.debug:
                     print "ERROR: Map:{} is not serialized".format(map_name)
         else:
-            self.maps[map_name]['request'](self.maps[map_name]['mapfile'])
+            self.maps[map_name]['request'](self, self.maps[map_name]['content'])
     
-    def request_mapscript(self, mapfile):
+    def request_mapscript(self, mapdata):
         """
         render on mapserver mapscript request
         """
@@ -285,7 +311,7 @@ class MapsWEB(object):
         request.loadParamsFromURL(env['QUERY_STRING'])
     
         try:
-            status = mapfile.OWSDispatch(request)
+            status = mapdata.OWSDispatch(request)
         except Exception as err:
             pass
     
@@ -294,7 +320,7 @@ class MapsWEB(object):
         start_response('200 OK', [('Content-type', content_type)])
         return [result]
     
-    def request_mapnik(self, mapfile):
+    def request_mapnik(self, mapdata):
         """
         render on mapnik request
         """
