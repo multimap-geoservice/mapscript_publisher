@@ -87,8 +87,8 @@ class MapsWEB(object):
     fullserial = False
     # multiprocessing
     multi = False
-    # debug
-    debug = False 
+    # debug -1-response only, 0-error, 1-warning, 2-full
+    debug = 0 
     # Enviroments for request
     MAPSERV_ENV = [
         'CONTENT_LENGTH',
@@ -197,11 +197,20 @@ class MapsWEB(object):
         if self.fullserial:
             self.full_serializer()
  
-    def _preserial_fs(self):
+    def _preserial_fs(self, **kwargs):
         """
         Find names for serialization all fs sources
         """
-        pass
+        _dir = kwargs['path']
+        names = []
+        for _file in os.listdir(_dir):
+            file_name = _file.split('.')[0]
+            file_ext = _file.split('.')[-1]
+            if file_ext in self.serial_ops:
+                if self.debug >= 2:
+                    print ("In Dir:{0}, add Map name {1}".format(_dir, file_name))
+                names.append(file_name)
+        return names
 
     def _subserial_fs(self, map_name, **kwargs):
         """
@@ -211,12 +220,12 @@ class MapsWEB(object):
         for _file in os.listdir(_dir):
             for ext in self.serial_ops:
                 if _file == "{0}.{1}".format(map_name, ext):
-                    if self.debug:
+                    if self.debug >= 2:
                         print ("In Dir:{0}, load Map File {1}".format(_dir, _file))
                     content_file = "{0}/{1}".format(_dir, _file)
                     return ext, content_file
                 
-    def _preserial_pgsql(self):
+    def _preserial_pgsql(self, **kwargs):
         """
         Find names for serialization all pgsql sources
         """
@@ -232,17 +241,12 @@ class MapsWEB(object):
         """
         Full serialization all sources map
         replase - replace maps if the names match
-                  if self.debug - to echo this matches.
+                  if self.debug >= 1 - to echo this matches.
         """
-        pass
-
-    def serializer(self, map_name):
-        """
-        serialization map from name of self.serial_src
-        """
+        # map names
+        all_map_names = []
         for src in self.serial_src:
             src_type = src['type']
-            subserial = self.serial_tps[src_type]['subserial']
             valid = [
                 isinstance(src[key], self.serial_tps[src_type][key]) 
                 for key 
@@ -250,6 +254,30 @@ class MapsWEB(object):
                 if key not in ('subserial', 'preserial')
             ]
             if False not in valid:
+                preserial = self.serial_tps[src_type]['preserial']
+                all_map_names += preserial(**src)
+        # find dublicates + replaces
+        # load all names
+        for map_name in all_map_names:
+            if not self.maps.has_key(map_name):
+                _map = self.serializer(map_name)
+                if _map:
+                    self.maps[map_name] = _map
+
+    def serializer(self, map_name):
+        """
+        serialization map from name of self.serial_src
+        """
+        for src in self.serial_src:
+            src_type = src['type']
+            valid = [
+                isinstance(src[key], self.serial_tps[src_type][key]) 
+                for key 
+                in self.serial_tps[src_type] 
+                if key not in ('subserial', 'preserial')
+            ]
+            if False not in valid:
+                subserial = self.serial_tps[src_type]['subserial']
                 out_subserial = subserial(map_name, **src)
                 if out_subserial is not None:
                     ops, content = out_subserial
@@ -280,7 +308,7 @@ class MapsWEB(object):
             else:
                 raise  # to do
         except:
-            if self.debug:
+            if self.debug >= 0:
                 print (
                     "ERROR: Content {} not init as Map FILE".format(content)
                 )
@@ -300,7 +328,7 @@ class MapsWEB(object):
                 content = ast.literal_eval(content)
                 pub_map = PubMap(content)
         except:
-            if self.debug:
+            if self.debug >= 0:
                 print (
                     "ERROR: Content {} not init as Map JSON".format(content)
                 )
@@ -334,7 +362,7 @@ class MapsWEB(object):
         map_name = env['PATH_INFO'].split('/')[-1]
         
         # text debug
-        if self.debug:
+        if self.debug >= 1:
             print ("-" * 30)
             for key in self.MAPSERV_ENV:
                 if key in env:
@@ -344,6 +372,8 @@ class MapsWEB(object):
                     )
                 else:
                     os.unsetenv(key)
+            print ("-" * 30)
+        if self.debug >= 2:
             print ("-" * 30)
             for key in query_vals:
                 print ("{0}={1}".format(key, query_vals[key]))
@@ -356,7 +386,7 @@ class MapsWEB(object):
                 if _map:
                     self.maps[map_name] = _map
                 else:
-                    if self.debug:
+                    if self.debug >= 0:
                         print "ERROR: Map:{} is not serialized".format(map_name)
                     resp_status = '404 Not Found'
                     resp_type = [('Content-type', 'text/plain')]
@@ -390,7 +420,7 @@ class MapsWEB(object):
                     start_response(resp_status, resp_type)
                     return [response[1]]
                 else:
-                    if self.debug:
+                    if self.debug >= 0:
                         print "ERROR: Map:{} rander error".format(map_name)
                     resp_status = '500 Server Error'
                     resp_type = [('Content-type', 'text/plain')]
@@ -434,7 +464,7 @@ class MapsWEB(object):
             self.application,
             ThreadingWSGIServer
         )
-        if self.debug:
+        if self.debug >= 0:
             print('Serving on port %d...' % self.wsgi_port)
         httpd.serve_forever()
         

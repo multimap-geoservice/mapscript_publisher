@@ -6,10 +6,10 @@
         "up_scale": 332808204,
         "imagecolor": [153, 179, 204], 
         "extent": [
-            3276111.5,
-            8318651.22,
-            3424131.14,
-            8454451.02
+            -20000000,
+            -20000000,
+            20000000,
+            20000000
         ],
         "size": [800, 800],
         "wms_srs": {
@@ -213,6 +213,7 @@
                             "    'greenfield',",
                             "    'brownfield',",
                             "    'residential',",
+                            "    'quarry',",
                             "    'military'",
                             ")",
                             "or leisure in",
@@ -1070,7 +1071,7 @@
                         },
                         {
                             "OBJ": "mapscript.classObj",
-                            "setExpression": ["{industrial,commercial,parking,garages}"],
+                            "setExpression": ["{industrial,commercial,parking,garages,quarry,quarrywetland}"],
                             "SUB_OBJ": [
                                 {
                                     "OBJ": "mapscript.styleObj",

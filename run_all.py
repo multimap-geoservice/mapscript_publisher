@@ -14,5 +14,5 @@ if __name__ == "__main__":
     web = MapsWEB(srcs=srcs)
     #web.serial_src += srcs
     web.multi = True
-    #web.debug = True
+    web.debug = 2
     web()
