@@ -3,9 +3,11 @@ import mapscript
 import os
 import time
 import ast
-from wsgiref.simple_server import make_server
-from interface import psqldb
+from multiprocessing import Process, Queue
+from wsgiref.simple_server import make_server, WSGIServer
+from SocketServer import ThreadingMixIn
 
+from interface import psqldb
 from mapublisher import PubMap
 
 
@@ -71,14 +73,23 @@ class PubMapWEB(PubMap):
 
 
 ########################################################################
+class ThreadingWSGIServer(ThreadingMixIn, WSGIServer): 
+    daemon_threads = True
+
+
+########################################################################
+
 class MapsWEB(object):
     """
-    Public more maps
+    Class for serialization & render more maps
     """
+    # full serialization sources
+    fullserial = False
+    # multiprocessing
+    multi = False
+    # debug
     debug = False 
-    """
-    Enviroments for request
-    """
+    # Enviroments for request
     MAPSERV_ENV = [
         'CONTENT_LENGTH',
         'CONTENT_TYPE',
@@ -109,79 +120,89 @@ class MapsWEB(object):
         'SERVER_NAME',
         'SERVER_PORT'
     ]
-   
-    """
-    serial_src - [] list sources for serialization
-    serial_tps - {} dict of tipes serialization data
-    ------------------------------
-    source format:
-    {
-        "type": self.serial_type
-    }
-    Next keys is optionls for type
-    ------------------------------
-    example file system:
-    {
-        "type": "fs"
-        "path": "/path/to/maps"
-    }
-    ------------------------------
-    example database:
-    {
-        "type": "pgsql"(while only)
-        "connect": {
-            "host": localhost,
-            "port": 5432,
-            "dbname": "name",
-            "user": "user",
-            "password": "pass",
-        }
-        "query": "select name,file from table"
-    }
-    "content": content type for map
-    "query": select two column: 1-name, 2-content
-    """
-    serial_tps = {
-        "fs": {
-            "subserial": _subserial_fs,
-            "path": (str, unicode),
-        }, 
-        "pgsql": {
-            "subserial": _subserial_pgsql,
-            "connect": dict,
-            "query": (str, unicode),
-        }
-    }
-    serial_src = []
-    
-    """
-    Options for serialization
-    key: name
-    get: method for get map
-    request: method for request map
-    """
-    serial_ops = {
-        "json": {
-            "get": get_mapjson,
-            "request": request_mapscript,
-            },
-        "map": {
-            "get": get_mapfile,
-            "request": request_mapscript,
-            },
-        "xml": {
-            "get": get_mapnik,
-            "request": request_mapnink,
-            },
-    }
     
     #----------------------------------------------------------------------
-    def __init__(self, port=3007, host='0.0.0.0', base_url="http://localhost"):
+    def __init__(self, port=3007, host='0.0.0.0', base_url="http://localhost", srcs = []):
+        """
+        serial_src - [] list sources for serialization
+        """
+        self.serial_src = srcs
+        """
+        serial_tps - {} dict of tipes serialization data
+        ------------------------------
+        source format:
+        {
+            "type": self.serial_type
+        }
+        Next keys is optionls for type
+        ------------------------------
+        example file system:
+        {
+            "type": "fs"
+            "path": "/path/to/maps"
+        }
+        ------------------------------
+        example database:
+        {
+            "type": "pgsql"(while only)
+            "connect": {
+                "host": localhost,
+                "port": 5432,
+                "dbname": "name",
+                "user": "user",
+                "password": "pass",
+            }
+            "query": "select name,file from table"
+        }
+        "content": content type for map
+        "query": select two column: 1-name, 2-content
+        """
+        self.serial_tps = {
+            "fs": {
+                "preserial": self._preserial_fs,
+                "subserial": self._subserial_fs,
+                "path": (str, unicode),
+            }, 
+            "pgsql": {
+                "preserial": self._preserial_pgsql,
+                "subserial": self._subserial_pgsql,
+                "connect": dict,
+                "query": (str, unicode),
+            }
+        }
+        """
+        Options for serialization
+        key: name
+        get: method for get map
+        request: method for request map
+        """
+        self.serial_ops = {
+            "json": {
+                "get": self.get_mapjson,
+                "request": self.request_mapscript,
+                },
+            "map": {
+                "get": self.get_mapfile,
+                "request": self.request_mapscript,
+                },
+            "xml": {
+                "get": self.get_mapnik,
+                "request": self.request_mapnik,
+                },
+        }
         self.wsgi_host = host
         self.wsgi_port = port
         self.url = "{0}:{1}".format(base_url, port)
         self.maps = {}
+        if self.fullserial:
+            self.full_serializer()
  
+    def _preserial_fs(self):
+        """
+        Find names for serialization all fs sources
+        """
+        pass
+
     def _subserial_fs(self, map_name, **kwargs):
         """
         subserializator for fs
@@ -192,13 +213,26 @@ class MapsWEB(object):
                 if _file == "{0}.{1}".format(map_name, ext):
                     if self.debug:
                         print ("In Dir:{0}, load Map File {1}".format(_dir, _file))
-                    with open("{0}/{1}".format(_dir, _file), "r") as _file:
-                        content_file = _file.read()
+                    content_file = "{0}/{1}".format(_dir, _file)
                     return ext, content_file
+                
+    def _preserial_pgsql(self):
+        """
+        Find names for serialization all pgsql sources
+        """
+        pass
   
     def _subserial_pgsql(self, map_name, **kwargs):
         """
         subserializator for pgsql
+        """
+        pass
+    
+    def full_serializer(self, replace=True):
+        """
+        Full serialization all sources map
+        replase - replace maps if the names match
+                  if self.debug - to echo this matches.
         """
         pass
 
@@ -213,20 +247,19 @@ class MapsWEB(object):
                 isinstance(src[key], self.serial_tps[src_type][key]) 
                 for key 
                 in self.serial_tps[src_type] 
-                if key != 'subserial'
+                if key not in ('subserial', 'preserial')
             ]
             if False not in valid:
-                out_subserial = subserial(self, map_name, **src)
+                out_subserial = subserial(map_name, **src)
                 if out_subserial is not None:
                     ops, content = out_subserial
-                    content = self.serial_ops[ops]['get'](self, map_name, content)
+                    content = self.serial_ops[ops]['get'](map_name, content)
                     if content is not None:
-                        self.maps[map_name] = {
+                        return {
                             "request": self.serial_ops[ops]['request'],
                             "content": content,
                             "timestamp": int(time.time()),
                         }
-                        return True
 
     def get_mapnik(self, map_name, content):
         """
@@ -238,18 +271,41 @@ class MapsWEB(object):
     def get_mapfile(self, map_name, content):
         """
         get map on map file
-        mapscript.mapObj() ?????
+        PubMap()
         """
-        pass
+        try:
+            if os.path.isfile(content):
+                pub_map = PubMap()
+                pub_map.load_map(content)
+            else:
+                raise  # to do
+        except:
+            if self.debug:
+                print (
+                    "ERROR: Content {} not init as Map FILE".format(content)
+                )
+        else:
+            return self.edit_mapscript(map_name, pub_map())
     
     def get_mapjson(self, map_name, content):
         """
         get map on json template
         PubMap()
         """
-        content = ast.literal_eval(content)
-        pub_map = PubMap(content)
-        return self.edit_mapscript(map_name, pub_map())
+        try:
+            if os.path.isfile(content):
+                pub_map = PubMap()
+                pub_map.load_json(content)
+            else:
+                content = ast.literal_eval(content)
+                pub_map = PubMap(content)
+        except:
+            if self.debug:
+                print (
+                    "ERROR: Content {} not init as Map JSON".format(content)
+                )
+        else:
+            return self.edit_mapscript(map_name, pub_map())
      
     def edit_mapscript(self, map_name, content):
         """
@@ -269,12 +325,14 @@ class MapsWEB(object):
         pass
     
     def application(self, env, start_response):
+        
         # find query string value
         query_vals = {}
         for sval in env['QUERY_STRING'].split('&'):
             sval_div = sval.split('=')
             query_vals[sval_div[0]] = sval_div[-1]
         map_name = env['PATH_INFO'].split('/')[-1]
+        
         # text debug
         if self.debug:
             print ("-" * 30)
@@ -291,18 +349,55 @@ class MapsWEB(object):
                 print ("{0}={1}".format(key, query_vals[key]))
             print ("-" * 30)
         
-        # serializer or request 
-        if not self.maps.has_key(map_name):
-            out = self.serializer(map_name)
-            if out:
-                self.maps[map_name]['request'](self, self.maps[map_name]['content'])
+        while True:
+            if not self.maps.has_key(map_name):
+                # serialization
+                _map = self.serializer(map_name)
+                if _map:
+                    self.maps[map_name] = _map
+                else:
+                    if self.debug:
+                        print "ERROR: Map:{} is not serialized".format(map_name)
+                    resp_status = '404 Not Found'
+                    resp_type = [('Content-type', 'text/plain')]
+                    start_response(resp_status, resp_type)
+                    return [b'MAP:{} not found'.format(map_name)]
             else:
-                if self.debug:
-                    print "ERROR: Map:{} is not serialized".format(map_name)
-        else:
-            self.maps[map_name]['request'](self, self.maps[map_name]['content'])
+                # response (mono or multi)
+                if self.multi:
+                    que = Queue()
+                    proc = Process(
+                        target=self.maps[map_name]['request'],
+                        name='response',
+                        args=(
+                            env,
+                            self.maps[map_name]['content'],
+                            que
+                        )
+                    )
+                    proc.start()
+                    response = que.get()
+                    proc.join()
+                else:
+                    response = self.maps[map_name]['request'](
+                        env,
+                        self.maps[map_name]['content']
+                    )
+                # fin response
+                if response:
+                    resp_status = '200 OK'
+                    resp_type = [('Content-type', response[0])]
+                    start_response(resp_status, resp_type)
+                    return [response[1]]
+                else:
+                    if self.debug:
+                        print "ERROR: Map:{} rander error".format(map_name)
+                    resp_status = '500 Server Error'
+                    resp_type = [('Content-type', 'text/plain')]
+                    start_response(resp_status, resp_type)
+                    return [b'MAP:{} rander error'.format(map_name)]
     
-    def request_mapscript(self, mapdata):
+    def request_mapscript(self, env, mapdata, que=None):
         """
         render on mapserver mapscript request
         """
@@ -317,10 +412,13 @@ class MapsWEB(object):
     
         content_type = mapscript.msIO_stripStdoutBufferContentType()
         result = mapscript.msIO_getStdoutBufferBytes()
-        start_response('200 OK', [('Content-type', content_type)])
-        return [result]
+        out_req = (content_type, result)
+        if que is None:
+            return out_req
+        else:
+            que.put(out_req)
     
-    def request_mapnik(self, mapdata):
+    def request_mapnik(self, env, mapdata, que=None):
         """
         render on mapnik request
         """
@@ -333,7 +431,8 @@ class MapsWEB(object):
         httpd = make_server(
             self.wsgi_host,
             self.wsgi_port,
-            self.application
+            self.application,
+            ThreadingWSGIServer
         )
         if self.debug:
             print('Serving on port %d...' % self.wsgi_port)

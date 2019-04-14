@@ -11,6 +11,8 @@ if __name__ == "__main__":
             "path": maps_path,
         }
     ]
-    web = MapsWEB()
-    web.serial_src += srcs
+    web = MapsWEB(srcs=srcs)
+    #web.serial_src += srcs
+    web.multi = True
+    #web.debug = True
     web()
