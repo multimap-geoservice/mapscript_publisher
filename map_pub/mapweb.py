@@ -88,7 +88,9 @@ class MapsWEB(object):
     # multiprocessing
     multi = False
     # debug -1-response only, 0-error, 1-warning, 2-full
-    debug = 0 
+    debug = 0
+    # log - False or path
+    log = False
     # Enviroments for request
     MAPSERV_ENV = [
         'CONTENT_LENGTH',
@@ -196,6 +198,14 @@ class MapsWEB(object):
         self.maps = {}
         if self.fullserial:
             self.full_serializer()
+            
+    def _logging(self, debug_layer, outdata):
+        if self.debug >= debug_layer:
+            if self.log:
+                with open(self.log, mode='a') as logfile:
+                    logfile.write("{}\n".format(outdata))
+            else:
+                print(outdata)
  
     def _preserial_fs(self, **kwargs):
         """
@@ -207,8 +217,10 @@ class MapsWEB(object):
             file_name = _file.split('.')[0]
             file_ext = _file.split('.')[-1]
             if file_ext in self.serial_ops:
-                if self.debug >= 2:
-                    print ("In Dir:{0}, add Map name {1}".format(_dir, file_name))
+                self._logging(
+                    2,
+                    "In Dir:{0}, add Map name {1}".format(_dir, file_name)
+                )
                 names.append(file_name)
         return names
 
@@ -220,8 +232,10 @@ class MapsWEB(object):
         for _file in os.listdir(_dir):
             for ext in self.serial_ops:
                 if _file == "{0}.{1}".format(map_name, ext):
-                    if self.debug >= 2:
-                        print ("In Dir:{0}, load Map File {1}".format(_dir, _file))
+                    self._logging(
+                        2,
+                        "In Dir:{0}, load Map File {1}".format(_dir, _file)
+                    )
                     content_file = "{0}/{1}".format(_dir, _file)
                     return ext, content_file
                 
@@ -241,7 +255,6 @@ class MapsWEB(object):
         """
         Full serialization all sources map
         replase - replace maps if the names match
-                  if self.debug >= 1 - to echo this matches.
         """
         # map names
         all_map_names = []
@@ -256,7 +269,20 @@ class MapsWEB(object):
             if False not in valid:
                 preserial = self.serial_tps[src_type]['preserial']
                 all_map_names += preserial(**src)
+                
         # find dublicates + replaces
+        nam_count = {my: all_map_names.count(my) for my in all_map_names}
+        nam_uniq = [my for my in nam_count if nam_count[my] == 1]
+        nam_dubl = [my for my in nam_count if nam_count[my] > 1]
+        if len(nam_dubl) > 0: 
+            self._logging(
+                1,
+                "WARINIG: Found dublicate Map Names:{}".format(nam_dubl)
+            )
+        if replace:
+            all_map_names = nam_uniq + nam_dubl
+        else:
+            all_map_names = nam_uniq
         # load all names
         for map_name in all_map_names:
             if not self.maps.has_key(map_name):
@@ -287,6 +313,7 @@ class MapsWEB(object):
                             "request": self.serial_ops[ops]['request'],
                             "content": content,
                             "timestamp": int(time.time()),
+                            "multi": True,
                         }
 
     def get_mapnik(self, map_name, content):
@@ -308,10 +335,10 @@ class MapsWEB(object):
             else:
                 raise  # to do
         except:
-            if self.debug >= 0:
-                print (
-                    "ERROR: Content {} not init as Map FILE".format(content)
-                )
+            self._logging(
+                0, 
+                "ERROR: Content {} not init as Map FILE".format(content)
+            )
         else:
             return self.edit_mapscript(map_name, pub_map())
     
@@ -328,10 +355,10 @@ class MapsWEB(object):
                 content = ast.literal_eval(content)
                 pub_map = PubMap(content)
         except:
-            if self.debug >= 0:
-                print (
-                    "ERROR: Content {} not init as Map JSON".format(content)
-                )
+            self._logging(
+                0, 
+                "ERROR: Content {} not init as Map JSON".format(content)
+            )
         else:
             return self.edit_mapscript(map_name, pub_map())
      
@@ -348,37 +375,31 @@ class MapsWEB(object):
                     content.web.metadata.set("wfs_onlineresource", map_url)
                 return content
     
-    def maps_cleaner(self):
-        "cleaner maps as old timestamp"
-        pass
-    
     def application(self, env, start_response):
         
-        # find query string value
-        query_vals = {}
-        for sval in env['QUERY_STRING'].split('&'):
-            sval_div = sval.split('=')
-            query_vals[sval_div[0]] = sval_div[-1]
+        # find map name
         map_name = env['PATH_INFO'].split('/')[-1]
         
         # text debug
         if self.debug >= 1:
-            print ("-" * 30)
+            self._logging(1, "-" * 30)
             for key in self.MAPSERV_ENV:
                 if key in env:
                     os.environ[key] = env[key]
-                    print (
+                    self._logging(
+                        1, 
                         "{0}='{1}'".format(key, env[key])
                     )
                 else:
                     os.unsetenv(key)
-            print ("-" * 30)
-        if self.debug >= 2:
-            print ("-" * 30)
-            for key in query_vals:
-                print ("{0}={1}".format(key, query_vals[key]))
-            print ("-" * 30)
+            if self.debug >= 2:
+                self._logging(2, "QUERY_STRING=(")
+                for q_str in env['QUERY_STRING'].split('&'):
+                    self._logging(2, "    {},".format(q_str))
+                self._logging(2, ")")
+            self._logging(1, "-" * 30)
         
+        # serialization & response  
         while True:
             if not self.maps.has_key(map_name):
                 # serialization
@@ -386,15 +407,17 @@ class MapsWEB(object):
                 if _map:
                     self.maps[map_name] = _map
                 else:
-                    if self.debug >= 0:
-                        print "ERROR: Map:{} is not serialized".format(map_name)
+                    self._logging(
+                        0,
+                        "ERROR: Map:'{}' is not serialized".format(map_name)
+                    )
                     resp_status = '404 Not Found'
                     resp_type = [('Content-type', 'text/plain')]
                     start_response(resp_status, resp_type)
-                    return [b'MAP:{} not found'.format(map_name)]
+                    return [b'MAP:\'{}\' not found'.format(map_name)]
             else:
                 # response (mono or multi)
-                if self.multi:
+                if self.multi and self.maps[map_name]['multi']:
                     que = Queue()
                     proc = Process(
                         target=self.maps[map_name]['request'],
@@ -420,12 +443,14 @@ class MapsWEB(object):
                     start_response(resp_status, resp_type)
                     return [response[1]]
                 else:
-                    if self.debug >= 0:
-                        print "ERROR: Map:{} rander error".format(map_name)
+                    self._logging(
+                        0,
+                        "ERROR: Resource:{} error".format(map_name)
+                    )
                     resp_status = '500 Server Error'
                     resp_type = [('Content-type', 'text/plain')]
                     start_response(resp_status, resp_type)
-                    return [b'MAP:{} rander error'.format(map_name)]
+                    return [b'Resource:{} error'.format(map_name)]
     
     def request_mapscript(self, env, mapdata, que=None):
         """
@@ -464,14 +489,61 @@ class MapsWEB(object):
             self.application,
             ThreadingWSGIServer
         )
-        if self.debug >= 0:
-            print('Serving on port %d...' % self.wsgi_port)
+        self._logging(0, 'Serving on port %d...' % self.wsgi_port)
         httpd.serve_forever()
         
     def __call__(self):
         self.wsgi()
         
+
+########################################################################
+class MapsAPI(MapsWEB):
+    """
+    API for MapsWEB
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs):
+        """
+        Init MapsWEB constructor
+        """
+        MapsWEB.__init__(self, *args, **kwargs)
+        """
+        create map name 'api'
+        """
+        self.api2maps = {
+            'api': {
+                "request": self.request_api,
+                "content": 'api',
+                "timestamp": 0,
+                "multi": False
+            }
+        }
+        self.maps.update(self.api2maps)
+        """
+        API dict
+        """
+        api = {}
         
+    def request_api(self, env, data):
+        # find query string value
+        query_vals = {}
+        for sval in env['QUERY_STRING'].split('&'):
+            sval_div = sval.split('=')
+            query_vals[sval_div[0]] = sval_div[-1]
+            
+        print query_vals
+        
+        content_type = 'text/plain'
+        result = b'API OK'
+        out_req = (content_type, result)
+        return out_req
+     
+    def maps_cleaner(self):
+        "cleaner maps as old timestamp"
+        pass
+    
+   
 ########################################################################
 class MapsCache(object):
     """
