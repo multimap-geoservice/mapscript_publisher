@@ -7,7 +7,7 @@ from multiprocessing import Process, Queue
 from wsgiref.simple_server import make_server, WSGIServer
 from SocketServer import ThreadingMixIn
 
-from interface import psqldb
+from interface import pgsqldb
 from mapublisher import PubMap
 
 

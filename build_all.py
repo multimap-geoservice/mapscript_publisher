@@ -1,12 +1,12 @@
 import os, sys
-from map_pub import BuildMap
+from map_pub import BuildMapSave
 
 
 def init_map(template, _map, db_host, maps_path):
     print ("BUILD: {}".format(_map))
     
     # init builder
-    builder = BuildMap()
+    builder = BuildMapRes()
     builder.load_mapjson(template)
     
     # osm
@@ -23,7 +23,7 @@ def init_map(template, _map, db_host, maps_path):
     map_full_path = "{0}/{1}.json".format(maps_path, _map)
     
     # build map
-    builder.get_json2file(path=map_full_path)
+    builder.save2file(path=map_full_path)
 
 
 if __name__ == "__main__":

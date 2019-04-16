@@ -6,6 +6,8 @@ import ast
 import inspect
 import copy
 
+from interface import pgsqldb
+
 
 ########################################################################
 class BuildMap(object):
@@ -65,10 +67,6 @@ class BuildMap(object):
         }
         self.mapdict = self.MAP
     
-    def load_mapjson(self, jsonfile):
-        with open(jsonfile) as json_file:  
-            self.mapjson = json.load(json_file)
-            
     def debug_out(self, log, description, first=False):
         if isinstance(log, dict):
             log = json.dumps(
@@ -610,7 +608,48 @@ class BuildMap(object):
             separators=(',', ': ')
         )
     
-    def get_json2file(self, path=None):
+    def __call__(self):
+        self.build()
+        return self.mapdict
+
+
+########################################################################
+class BuildMapRes(BuildMap):
+    """
+    BuildMap and Save/Load operations
+    """
+
+    #----------------------------------------------------------------------
+    def __init__(self, *args, **kwargs):
+        """
+        Init Constructor of BuildMap
+        """
+        BuildMap.__init__(self, *args, **kwargs)
+
+    def load4file(self, path):
+        """
+        Load json template from file
+
+        path - path for load json template
+        """
+        with open(path) as _file:  
+            self.mapjson = json.load(_file)
+     
+    def load4pgsql(self, query, **kwargs):
+        """
+        Load json template map from postgresql database
+        
+        query - SQL query one data to json
+        **kwargs - connect **dict as interface.pgsqldb.pg_defaults
+        """
+        psql = pgsqldb(**kwargs)
+
+    def save2file(self, path=None):
+        """
+        save json build map to file
+        
+        path - path to save json file
+        """
         _json = self.get_json()
         if path:
             _file = open(path, 'w')
@@ -618,7 +657,53 @@ class BuildMap(object):
             _file.close()
         else:
             print(_json)
-    
-    def __call__(self):
-        self.build()
-        return self.mapdict
+        
+    def save2pgsql(self, table, name, col_name, col_cont, **kwargs):
+        """
+        save json build map to postgresql database
+        
+        table - table name
+        name - map name
+        col_name - column for map name
+        col_cont - column for filename or content:
+            if not kwargs['path'] - to col_name save content
+            if kwargs['path']= path - to col_name save filename, content save to file path
+        **kwargs(but 'path' key) - connect **dict as interface.pgsqldb.pg_defaults
+        """
+        
+        #kwargs
+        if kwargs.has_key('path'):
+            path = kwargs.pop('path')
+        else:
+            path = None
+        psql = pgsqldb(**kwargs)
+        
+        # data
+        _json = self.get_json()
+        SQL = {
+            'create': """
+                create {0} if not exists "maps" (
+                    "id" serial primary key,
+                    "{1}" text unique,
+                    "{2}" text
+                )
+                """.format(table, col_name, col_cont),
+            'select': """
+                select *
+                from "{0}"
+                where "{1}" = '{2}'; 
+                """.format(table, cal_name, name),
+            'insert': """
+                insert into "{0}" ("{1}","{2}")
+                values('{3}','{4}');
+                """.format(table, col_name, col_cont, name, _json),
+            'update': """
+                update "{0}"
+                set "{2}" = '{4}'
+                where "{1}" = '{3}';            
+                """.format(table, col_name, col_cont, name, _json),
+        }
+        #create
+        psql.sql(SQL['create'])
+        psql.commit()
+        

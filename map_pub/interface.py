@@ -7,7 +7,7 @@ from subprocess import Popen, PIPE
 import config
 
 
-class psqldb(object):
+class pgsqldb(object):
     
     pg_defaults = {
         'host': config.databaseHost,
