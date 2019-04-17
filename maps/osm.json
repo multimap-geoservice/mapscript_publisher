@@ -59,6 +59,7 @@
                 }
             }
         ],
+        "fontset": "",
         "db_connection": "",
         "epsg_id": 3857,
         "label_polygon": {
@@ -3439,7 +3440,7 @@
             "SCALES": {"VAR": "up_scale"},
             "OBJ": "mapscript.mapObj",
             "name": {"VAR": "name"},
-            "setFontSet":["maps/fonts/fonts.lst"],
+            "setFontSet":[{"VAR": "fontset"}],
             "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
             "setExtent": [{"VAR": "extent"}],
             "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},

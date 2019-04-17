@@ -1,5 +1,6 @@
 
 #import mapscript
+import os
 import json
 from jinja2 import Environment, DictLoader
 import ast
@@ -650,11 +651,15 @@ class BuildMapRes(BuildMap):
         
         path - path to save json file
         """
+        
         _json = self.get_json()
         if path:
-            _file = open(path, 'w')
-            _file.write(_json)
-            _file.close()
+            _dir = os.path.dirname(path)
+            if os.path.isdir(_dir):
+                with open(path, 'w') as _file:
+                    _file.write(_json)
+            else:
+                raise Exception('Dir {} not found'.format(_dir))
         else:
             print(_json)
         
@@ -670,19 +675,21 @@ class BuildMapRes(BuildMap):
             if kwargs['path']= path - to col_name save filename, content save to file path
         **kwargs(but 'path' key) - connect **dict as interface.pgsqldb.pg_defaults
         """
-        
-        #kwargs
+
+        # kwargs
         if kwargs.has_key('path'):
-            path = kwargs.pop('path')
+            cont = kwargs.pop('path')
+            self.save2file(path=cont)
         else:
-            path = None
+            cont = self.get_json()
+        
+        # init db
         psql = pgsqldb(**kwargs)
         
         # data
-        _json = self.get_json()
         SQL = {
             'create': """
-                create {0} if not exists "maps" (
+                create table if not exists "{0}" (
                     "id" serial primary key,
                     "{1}" text unique,
                     "{2}" text
@@ -692,18 +699,28 @@ class BuildMapRes(BuildMap):
                 select *
                 from "{0}"
                 where "{1}" = '{2}'; 
-                """.format(table, cal_name, name),
+                """.format(table, col_name, name),
             'insert': """
                 insert into "{0}" ("{1}","{2}")
                 values('{3}','{4}');
-                """.format(table, col_name, col_cont, name, _json),
+                """.format(table, col_name, col_cont, name, cont),
             'update': """
                 update "{0}"
                 set "{2}" = '{4}'
                 where "{1}" = '{3}';            
-                """.format(table, col_name, col_cont, name, _json),
+                """.format(table, col_name, col_cont, name, cont),
         }
-        #create
+        # create
         psql.sql(SQL['create'])
         psql.commit()
         
+        # query map name and insert/update
+        psql.sql(SQL['select'])
+        if psql.fetchone() is None:
+            psql.sql(SQL['insert'])
+        else:
+            psql.sql(SQL['update'])
+            
+        # end db work
+        psql.commit()
+        psql.close()
