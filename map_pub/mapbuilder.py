@@ -672,55 +672,120 @@ class BuildMapRes(BuildMap):
         col_name - column for map name
         col_cont - column for filename or content:
             if not kwargs['path'] - to col_name save content
-            if kwargs['path']= path - to col_name save filename, content save to file path
-        **kwargs(but 'path' key) - connect **dict as interface.pgsqldb.pg_defaults
+            if kwargs['path']= hibrid data db/path:
+                path - to col_name save filename, content save to file path
+        kwargs['path'] - path for hibrid data db/path
+        kwargs['columns'] - additional column for database, Dict format: 
+            {
+                "cilumn_name": "column_data(::column_type)"
+            }
+            column_type - if str or unicode to type
+        kwargs[all next keys] - connect **dict as interface.pgsqldb.pg_defaults
         """
 
         # kwargs
         if kwargs.has_key('path'):
             cont = kwargs.pop('path')
+            cont_type = 'text'
             self.save2file(path=cont)
         else:
             cont = self.get_json()
+            cont = cont.replace("'", "''")
+            cont_type = 'json'
         
-        # init db
-        psql = pgsqldb(**kwargs)
-        
-        # data
+        # SQL data
         SQL = {
-            'create': """
+            'create_table': """
                 create table if not exists "{0}" (
                     "id" serial primary key,
                     "{1}" text unique,
                     "{2}" text
                 )
                 """.format(table, col_name, col_cont),
-            'select': """
+            'find_name': """
                 select *
                 from "{0}"
                 where "{1}" = '{2}'; 
                 """.format(table, col_name, name),
-            'insert': """
+            'insert_cont': """
                 insert into "{0}" ("{1}","{2}")
-                values('{3}','{4}');
-                """.format(table, col_name, col_cont, name, cont),
-            'update': """
+                values('{3}','{4}'::{5});
+                """.format(table, col_name, col_cont, name, cont, cont_type),
+            'update_cont': """
+                update "{0}"
+                set "{2}" = '{4}'::{5}
+                where "{1}" = '{3}';            
+                """.format(table, col_name, col_cont, name, cont, cont_type),
+            'find_extra': """
+                select *
+                from information_schema.columns
+                where table_name = '{0}'
+                and column_name = '{1}' 
+                """,
+            'alter_extra': """
+                alter table "{0}"
+                add column "{1}" {2};
+                """,
+            'update_extra': """
                 update "{0}"
                 set "{2}" = '{4}'
                 where "{1}" = '{3}';            
-                """.format(table, col_name, col_cont, name, cont),
+                """,
         }
-        # create
-        psql.sql(SQL['create'])
+        # init db
+        psql = pgsqldb(**kwargs)
+
+        # create table
+        psql.sql(SQL['create_table'])
         psql.commit()
         
-        # query map name and insert/update
-        psql.sql(SQL['select'])
+        # query map name and insert/update content
+        psql.sql(SQL['find_name'])
         if psql.fetchone() is None:
-            psql.sql(SQL['insert'])
+            psql.sql(SQL['insert_cont'])
         else:
-            psql.sql(SQL['update'])
+            psql.sql(SQL['update_cont'])
+
+        psql.commit()
+
+        # extra columns
+        if kwargs.has_key('columns'):
+            for col_extra in kwargs['columns']:
+                cont_extra = kwargs['columns'][col_extra]
+                if isinstance(cont_extra, int):
+                    type_extra = 'int'
+                elif isinstance(cont_extra, float):
+                    type_extra = 'float'
+                elif isinstance(cont_extra, (dict, list, tuple)):
+                    type_extra = 'text'
+                elif isinstance(cont_extra, (str, unicode)):
+                    if "::" in cont_extra:
+                        type_extra = cont_extra.split("::")[-1]
+                        cont_extra = cont_extra.split("::")[0]
+                    else:
+                        type_extra = 'text'
+                # find & alter extra columns
+                psql.sql(SQL['find_extra'].format(table, col_extra))
+                if psql.fetchone() is None:
+                    psql.sql(
+                        SQL['alter_extra'].format(
+                            table, 
+                            col_extra, 
+                            type_extra 
+                        )
+                    )
+                    psql.commit()
+                # update extra columns
+                psql.sql(
+                    SQL['update_extra'].format(
+                        table, 
+                        col_name, 
+                        col_extra, 
+                        name, 
+                        cont_extra
+                    )
+                )
+                psql.commit()
             
         # end db work
-        psql.commit()
         psql.close()

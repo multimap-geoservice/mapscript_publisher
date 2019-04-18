@@ -1,5 +1,6 @@
 import os, sys
 from map_pub import BuildMapRes
+import time
 
 
 def init_map(template, _map, map_type, **kwargs):
@@ -23,7 +24,7 @@ def init_map(template, _map, map_type, **kwargs):
         builder.mapjson["VARS"]["fontset"] = "{}/fonts/fonts.lst".format(_map)  #!!!!! 
     
     if map_type == "maps_path" or map_type == "maps_path_db":
-        map_full_path = "{0}/{1}.json".format(maps_path, _map)
+        map_full_path = "{0}/{1}.json".format(kwargs['maps_path'], _map)
     
     if map_type == "maps_db" or map_type == "maps_path_db":
         db_connect = {
@@ -46,6 +47,7 @@ def init_map(template, _map, map_type, **kwargs):
             name=_map, 
             col_name=kwargs['maps_col_name'], 
             col_cont=kwargs['maps_col_cont'],
+            columns=kwargs['columns'], 
             **db_connect
         )
 
@@ -59,7 +61,13 @@ if __name__ == "__main__":
         "maps_table": "maps",
         "maps_col_name": "name",
         "maps_col_cont": "cont",
-        "maps_path": "{}/GIS/mapserver/debug/all_maps".format(os.environ["HOME"])
+        "maps_path": "{}/GIS/mapserver/debug/all_maps".format(os.environ["HOME"]), 
+        "columns": {
+            "int_data": 1,
+            "float_data": 0.5,
+            "text_data": "text",
+            "timestamp": "now::timestamp",
+            }
     }
     template = "./maps/osm.json"
     maps = {
