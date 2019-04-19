@@ -643,7 +643,8 @@ class BuildMapRes(BuildMap):
         query - SQL query one data to json
         **kwargs - connect **dict as interface.pgsqldb.pg_defaults
         """
-        psql = pgsqldb(**kwargs)
+        #psql = pgsqldb(**kwargs)
+        pass
 
     def save2file(self, path=None):
         """
@@ -701,21 +702,29 @@ class BuildMapRes(BuildMap):
                     "{1}" text unique,
                     "{2}" text
                 )
-                """.format(table, col_name, col_cont),
+                """,
             'find_name': """
                 select *
                 from "{0}"
                 where "{1}" = '{2}'; 
-                """.format(table, col_name, name),
-            'insert_cont': """
-                insert into "{0}" ("{1}","{2}")
-                values('{3}','{4}'::{5});
-                """.format(table, col_name, col_cont, name, cont, cont_type),
-            'update_cont': """
+                """,
+            'insert_all': """
+                insert into "{0}" 
+                (
+                    "{1}",
+                    "{2}"{6}
+                )
+                values
+                (
+                    '{3}',
+                    '{4}'::{5}{7}
+                );
+                """,
+            'update_all': """
                 update "{0}"
-                set "{2}" = '{4}'::{5}
+                set "{2}" = '{4}'::{5}{6}
                 where "{1}" = '{3}';            
-                """.format(table, col_name, col_cont, name, cont, cont_type),
+                """,
             'find_extra': """
                 select *
                 from information_schema.columns
@@ -726,29 +735,24 @@ class BuildMapRes(BuildMap):
                 alter table "{0}"
                 add column "{1}" {2};
                 """,
-            'update_extra': """
-                update "{0}"
-                set "{2}" = '{4}'
-                where "{1}" = '{3}';            
-                """,
         }
         # init db
         psql = pgsqldb(**kwargs)
 
         # create table
-        psql.sql(SQL['create_table'])
+        psql.sql(
+            SQL['create_table'].format(
+                table, 
+                col_name, 
+                col_cont
+            )
+        )
         psql.commit()
         
-        # query map name and insert/update content
-        psql.sql(SQL['find_name'])
-        if psql.fetchone() is None:
-            psql.sql(SQL['insert_cont'])
-        else:
-            psql.sql(SQL['update_cont'])
-
-        psql.commit()
-
         # extra columns
+        ins_ex_cols = ""
+        ins_ex_vals = ""
+        upd_ex_sets = ""
         if kwargs.has_key('columns'):
             for col_extra in kwargs['columns']:
                 cont_extra = kwargs['columns'][col_extra]
@@ -775,17 +779,58 @@ class BuildMapRes(BuildMap):
                         )
                     )
                     psql.commit()
-                # update extra columns
-                psql.sql(
-                    SQL['update_extra'].format(
-                        table, 
-                        col_name, 
-                        col_extra, 
-                        name, 
-                        cont_extra
-                    )
+                # text data for extra columns
+                ins_ex_cols = '{0},\n{1}"{2}"'.format(
+                    ins_ex_cols, 
+                    " "*20, 
+                    col_extra
                 )
-                psql.commit()
-            
+                ins_ex_vals = "{0},\n{1}'{2}'".format(
+                    ins_ex_vals, 
+                    " "*20, 
+                    cont_extra
+                )
+                upd_ex_sets = '{0},\n{1}"{2}" = \'{3}\''.format(
+                    upd_ex_sets, 
+                    " "*20, 
+                    col_extra, 
+                    cont_extra
+                )
+                
+        # query map name and insert/update all
+        psql.sql(
+            SQL['find_name'].format(
+                table, 
+                col_name, 
+                name
+            )
+        )
+        if psql.fetchone() is None:
+            psql.sql(
+                SQL['insert_all'].format(
+                    table, 
+                    col_name, 
+                    col_cont, 
+                    name, 
+                    cont, 
+                    cont_type, 
+                    ins_ex_cols, 
+                    ins_ex_vals
+                )
+            )
+        else:
+            psql.sql(
+                SQL['update_all'].format(
+                    table, 
+                    col_name, 
+                    col_cont, 
+                    name, 
+                    cont, 
+                    cont_type, 
+                    upd_ex_sets
+                )
+            )
+
         # end db work
+        psql.commit()
         psql.close()

@@ -9,6 +9,20 @@ if __name__ == "__main__":
         {
             "type": "fs",
             "path": maps_path,
+        }, 
+        {
+            "type": "pgsql", 
+            "connect": {
+                "host": db_host,
+                "dbname": "maps",
+                "user": "gis",
+                "password": "gis",
+            }, 
+            "query": """
+                select name as map_name,
+                       cont as map_cont
+                from maps
+            """
         }
     ]
     web = MapsAPI(srcs=srcs)

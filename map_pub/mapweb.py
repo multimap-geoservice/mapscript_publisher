@@ -154,10 +154,9 @@ class MapsWEB(object):
                 "user": "user",
                 "password": "pass",
             }
-            "query": "select name,file from table"
+            "query": "select name as map_name, content as map_cont from table"
         }
-        "content": content type for map
-        "query": select two column: 1-name, 2-content
+        "query": select two column as: map_name, map_cont
         """
         self.serial_tps = {
             "fs": {
@@ -206,6 +205,12 @@ class MapsWEB(object):
                     logfile.write("{}\n".format(outdata))
             else:
                 print(outdata)
+                
+    def _detect_cont_ops(self, cont):
+        """
+        Detect content options as self.serial_ops
+        """
+        pass
  
     def _preserial_fs(self, **kwargs):
         """
@@ -249,7 +254,22 @@ class MapsWEB(object):
         """
         subserializator for pgsql
         """
-        pass
+        
+        SQL = """
+        select query.map_cont
+        from (
+        {0}
+        ) as query
+        where query.map_name = {1}
+        limit 1
+        """.format(kwargs['query'], map_name)
+        
+        psql = pgsqldb(**kwargs['connect'])
+        psql.sql(SQL)
+        content = psql.fetchone()
+        ops = self._detect_cont_ops(content)
+        psql.close()
+        return ops, content
     
     def full_serializer(self, replace=True):
         """
