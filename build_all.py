@@ -3,8 +3,8 @@ from map_pub import BuildMapRes
 import time
 
 
-def init_map(template, _map, map_type, **kwargs):
-    print ("BUILD: {}".format(_map))
+def init_map(template, fontset, map_, map_type, **kwargs):
+    print ("BUILD: {}".format(map_))
     
     # init builder
     builder = BuildMapRes()
@@ -15,17 +15,19 @@ def init_map(template, _map, map_type, **kwargs):
     if builder.mapjson["VARS"].has_key('db_connection'):
         db_connection = "host={0} dbname={1} user={2} password={3} port=5432".format(
             kwargs["host"], 
-            _map, 
+            map_, 
             kwargs["user"], 
             kwargs["password"], 
         )
         builder.mapjson["VARS"]["db_connection"] = db_connection 
-        builder.mapjson["VARS"]["name"] = "osm_{}".format(_map) 
-        builder.mapjson["VARS"]["wms_title"] = "Open Street Map {}".format(_map) 
-        builder.mapjson["VARS"]["fontset"] = "{}/fonts/fonts.lst".format(_map)  #!!!!! 
+        builder.mapjson["VARS"]["name"] = "osm_{}".format(map_) 
+        builder.mapjson["VARS"]["wms_title"] = "Open Street Map {}".format(map_) 
+        builder.mapjson["VARS"]["fontset"] = fontset 
     
-    if map_type == "maps_path" or map_type == "maps_path_db":
-        map_full_path = "{0}/{1}.json".format(kwargs['maps_path'], _map)
+    if map_type == "maps_path":
+        map_full_path = "{0}/{1}.json".format(kwargs['maps_path'], map_)
+    elif map_type == "maps_path_db":
+        map_full_path = "{0}/{1}.json".format(kwargs['maps_path_db'], map_)
     
     if map_type == "maps_db" or map_type == "maps_path_db":
         db_connect = {
@@ -45,7 +47,7 @@ def init_map(template, _map, map_type, **kwargs):
     elif map_type == "maps_db" or map_type == "maps_path_db":
         builder.save2pgsql(
             table=kwargs['maps_table'], 
-            name=_map, 
+            name=map_, 
             col_name=kwargs['maps_col_name'], 
             col_cont=kwargs['maps_col_cont'],
             columns=kwargs['columns'], 
@@ -62,7 +64,8 @@ if __name__ == "__main__":
         "maps_table": "maps",
         "maps_col_name": "name",
         "maps_col_cont": "cont",
-        "maps_path": "{}/GIS/mapserver/debug/all_maps".format(os.environ["HOME"]), 
+        "maps_path": "{}/GIS/mapserver/debug/all_maps/fs".format(os.environ["HOME"]), 
+        "maps_path_db": "{}/GIS/mapserver/debug/all_maps/db".format(os.environ["HOME"]), 
         "columns": {
             "int_data": 1,
             "float_data": 0.5,
@@ -71,6 +74,7 @@ if __name__ == "__main__":
             }
     }
     template = "./maps/osm.json"
+    fontset = "./maps/fonts/fonts.lst"
     maps = {
         "maps_path": [
             "RU-SPE", 
@@ -83,5 +87,5 @@ if __name__ == "__main__":
         ], 
     }
     for map_type in maps:
-        for _map in maps[map_type]: 
-            init_map(template, _map, map_type, **db)
+        for map_ in maps[map_type]: 
+            init_map(template, fontset, map_, map_type, **db)

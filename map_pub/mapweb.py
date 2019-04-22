@@ -303,16 +303,16 @@ class MapsWEB(object):
         SQL = """
         select query.map_name
         from (
-        {0}
+        {}
         ) as query
-        """.format(kwargs['query'], map_name)
+        """.format(kwargs['query'])
         
         psql = pgsqldb(**kwargs['connect'])
         psql.sql(SQL)
         names = psql.fetchall()
         psql.close()
         if names is not None:
-            names = names[0]
+            names = [my[0] for my in names]
             self._logging(
                 2,
                 "In Database:{0}, add Map name(s) {1}".format(
@@ -332,13 +332,13 @@ class MapsWEB(object):
         from (
         {0}
         ) as query
-        where query.map_name = {1}
+        where query.map_name = '{1}'
         limit 1
         """.format(kwargs['query'], map_name)
         
         psql = pgsqldb(**kwargs['connect'])
         psql.sql(SQL)
-        content = psql.fetchone()
+        content = psql.fetchone()[0]
         psql.close()
         if content is not None:
             ops = self._detect_cont_ops(content)
