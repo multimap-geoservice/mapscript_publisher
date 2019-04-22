@@ -619,6 +619,8 @@ class BuildMapRes(BuildMap):
     """
     BuildMap and Save/Load operations
     """
+    #create resource for save
+    create_res = False
 
     #----------------------------------------------------------------------
     def __init__(self, *args, **kwargs):
@@ -652,17 +654,19 @@ class BuildMapRes(BuildMap):
         
         path - path to save json file
         """
-        
-        _json = self.get_json()
+        json_ = self.get_json()
         if path:
-            _dir = os.path.dirname(path)
-            if os.path.isdir(_dir):
-                with open(path, 'w') as _file:
-                    _file.write(_json)
+            dir_ = os.path.dirname(path)
+            if self.create_res:
+                if not os.path.isdir(dir_):
+                    os.makedirs(dir_)
+            if os.path.isdir(dir_):
+                with open(path, 'w') as file_:
+                    file_.write(json_)
             else:
-                raise Exception('Dir {} not found'.format(_dir))
+                raise Exception('Dir {} not found'.format(dir_))
         else:
-            print(_json)
+            print(json_)
         
     def save2pgsql(self, table, name, col_name, col_cont, **kwargs):
         """
@@ -740,14 +744,15 @@ class BuildMapRes(BuildMap):
         psql = pgsqldb(**kwargs)
 
         # create table
-        psql.sql(
-            SQL['create_table'].format(
-                table, 
-                col_name, 
-                col_cont
+        if self.create_res:
+            psql.sql(
+                SQL['create_table'].format(
+                    table, 
+                    col_name, 
+                    col_cont
+                )
             )
-        )
-        psql.commit()
+            psql.commit()
         
         # extra columns
         ins_ex_cols = ""
@@ -769,16 +774,17 @@ class BuildMapRes(BuildMap):
                     else:
                         type_extra = 'text'
                 # find & alter extra columns
-                psql.sql(SQL['find_extra'].format(table, col_extra))
-                if psql.fetchone() is None:
-                    psql.sql(
-                        SQL['alter_extra'].format(
-                            table, 
-                            col_extra, 
-                            type_extra 
+                if self.create_res:
+                    psql.sql(SQL['find_extra'].format(table, col_extra))
+                    if psql.fetchone() is None:
+                        psql.sql(
+                            SQL['alter_extra'].format(
+                                table, 
+                                col_extra, 
+                                type_extra 
+                            )
                         )
-                    )
-                    psql.commit()
+                        psql.commit()
                 # text data for extra columns
                 ins_ex_cols = '{0},\n{1}"{2}"'.format(
                     ins_ex_cols, 

@@ -8,6 +8,7 @@ def init_map(template, _map, map_type, **kwargs):
     
     # init builder
     builder = BuildMapRes()
+    builder.create_res = True
     builder.load4file(template)
     
     # osm
@@ -75,7 +76,7 @@ if __name__ == "__main__":
             "RU-SPE", 
         ], 
         "maps_path_db": [
-            "RU-KL", 
+            "RU-KR", 
         ], 
         "maps_db": [
             "RU-LEN", 

@@ -3,6 +3,8 @@ import mapscript
 import os
 import time
 import ast
+import json
+from xml.etree import ElementTree
 from multiprocessing import Process, Queue
 from wsgiref.simple_server import make_server, WSGIServer
 from SocketServer import ThreadingMixIn
@@ -78,7 +80,6 @@ class ThreadingWSGIServer(ThreadingMixIn, WSGIServer):
 
 
 ########################################################################
-
 class MapsWEB(object):
     """
     Class for serialization & render more maps
@@ -141,6 +142,7 @@ class MapsWEB(object):
         example file system:
         {
             "type": "fs"
+            "ext": [] json|xml|map|or any|or not
             "path": "/path/to/maps"
         }
         ------------------------------
@@ -205,23 +207,64 @@ class MapsWEB(object):
                     logfile.write("{}\n".format(outdata))
             else:
                 print(outdata)
-                
+             
+    def _is_json(self, test_cont):
+        try:
+            _ = json.loads(test_cont)
+        except:
+            return False
+        else:
+            return True    
+
+    def _is_xml(self, test_cont):
+        try:
+            _ = ElementTree.fromstring(test_cont)
+        except:
+            return False
+        else:
+            return True
+        
+    def _is_map(self, test_cont):
+        if "MAP" in test_cont and "EXTENT" in test_cont:
+            return True
+        else:
+            return False
+        
     def _detect_cont_ops(self, cont):
         """
         Detect content options as self.serial_ops
         """
-        pass
- 
+        # init test_cont
+        if os.path.isfile(cont):
+            with open(cont, 'r') as file_:
+                test_cont = file_.read()
+        else:
+            test_cont = cont
+        # detect
+        if self._is_json(test_cont):
+            return "json"
+        elif self._is_xml(test_cont):
+            return "xml"
+        elif self._is_map(test_cont):
+            return "map"
+        
     def _preserial_fs(self, **kwargs):
         """
         Find names for serialization all fs sources
         """
         _dir = kwargs['path']
+        if kwargs.has_key('ext'):
+            if isinstance(kwargs['ext'], (list, tuple)):
+                exts = kwargs['ext']
+            else:
+                exts = [kwargs['ext']]
+        else:
+            exts = self.serial_ops
         names = []
         for _file in os.listdir(_dir):
             file_name = _file.split('.')[0]
             file_ext = _file.split('.')[-1]
-            if file_ext in self.serial_ops:
+            if file_ext in exts:
                 self._logging(
                     2,
                     "In Dir:{0}, add Map name {1}".format(_dir, file_name)
@@ -234,21 +277,50 @@ class MapsWEB(object):
         subserializator for fs
         """
         _dir = kwargs['path']
+        if kwargs.has_key('ext'):
+            if isinstance(kwargs['ext'], (list, tuple)):
+                exts = kwargs['ext']
+            else:
+                exts = [kwargs['ext']]
+        else:
+            exts = self.serial_ops
         for _file in os.listdir(_dir):
-            for ext in self.serial_ops:
+            for ext in exts:
                 if _file == "{0}.{1}".format(map_name, ext):
-                    self._logging(
-                        2,
-                        "In Dir:{0}, load Map File {1}".format(_dir, _file)
-                    )
-                    content_file = "{0}/{1}".format(_dir, _file)
-                    return ext, content_file
+                    content = "{0}/{1}".format(_dir, _file)
+                    ops = self._detect_cont_ops(content)
+                    if ops is not None:
+                        self._logging(
+                            2,
+                            "In Dir:{0}, load Map File {1}".format(_dir, _file)
+                        )
+                        return ops, content
                 
     def _preserial_pgsql(self, **kwargs):
         """
         Find names for serialization all pgsql sources
         """
-        pass
+        SQL = """
+        select query.map_name
+        from (
+        {0}
+        ) as query
+        """.format(kwargs['query'], map_name)
+        
+        psql = pgsqldb(**kwargs['connect'])
+        psql.sql(SQL)
+        names = psql.fetchall()
+        psql.close()
+        if names is not None:
+            names = names[0]
+            self._logging(
+                2,
+                "In Database:{0}, add Map name(s) {1}".format(
+                    kwargs['connect']['dbname'],
+                    names
+                )
+            )
+            return names
   
     def _subserial_pgsql(self, map_name, **kwargs):
         """
@@ -267,9 +339,18 @@ class MapsWEB(object):
         psql = pgsqldb(**kwargs['connect'])
         psql.sql(SQL)
         content = psql.fetchone()
-        ops = self._detect_cont_ops(content)
         psql.close()
-        return ops, content
+        if content is not None:
+            ops = self._detect_cont_ops(content)
+            if ops is not None:
+                self._logging(
+                    2,
+                    "From Database:{0}, load Map {1}".format(
+                        kwargs['connect']['dbname'],
+                        map_name
+                    )
+                )
+                return ops, content
     
     def full_serializer(self, replace=True):
         """
