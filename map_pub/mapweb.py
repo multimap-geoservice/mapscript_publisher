@@ -267,7 +267,7 @@ class MapsWEB(object):
             if file_ext in exts:
                 self._logging(
                     2,
-                    "In Dir:{0}, add Map name {1}".format(_dir, file_name)
+                    "INFO: In Dir:{0}, add Map name {1}".format(_dir, file_name)
                 )
                 names.append(file_name)
         return names
@@ -292,7 +292,7 @@ class MapsWEB(object):
                     if ops is not None:
                         self._logging(
                             2,
-                            "In Dir:{0}, load Map File {1}".format(_dir, _file)
+                            "INFO: In Dir:{0}, load Map File {1}".format(_dir, _file)
                         )
                         return ops, content
                 
@@ -315,7 +315,7 @@ class MapsWEB(object):
             names = [my[0] for my in names]
             self._logging(
                 2,
-                "In Database:{0}, add Map name(s) {1}".format(
+                "INFO: In Database:{0}, add Map name(s) {1}".format(
                     kwargs['connect']['dbname'],
                     names
                 )
@@ -338,14 +338,15 @@ class MapsWEB(object):
         
         psql = pgsqldb(**kwargs['connect'])
         psql.sql(SQL)
-        content = psql.fetchone()[0]
+        content = psql.fetchone()
         psql.close()
         if content is not None:
+            content = content[0]
             ops = self._detect_cont_ops(content)
             if ops is not None:
                 self._logging(
                     2,
-                    "From Database:{0}, load Map {1}".format(
+                    "INFO: From Database:{0}, load Map {1}".format(
                         kwargs['connect']['dbname'],
                         map_name
                     )
@@ -600,7 +601,7 @@ class MapsWEB(object):
 ########################################################################
 class MapsAPI(MapsWEB):
     """
-    API for MapsWEB
+    Light API for MapsWEB
     """
 
     #----------------------------------------------------------------------
@@ -622,21 +623,42 @@ class MapsAPI(MapsWEB):
         }
         self.maps.update(self.api2maps)
         """
-        API dict
+        API schema dict
         """
-        api = {}
+        self.api_schema = {
+            "test": {
+                "obj": self.api_test,
+                "args": {},
+                },
+        }
+    
+    def api_test(self):
+        pass
         
     def request_api(self, env, data):
         # find query string value
-        query_vals = {}
-        for sval in env['QUERY_STRING'].split('&'):
+        query_string = env['QUERY_STRING'].split('&')
+        query_method = query_string.pop(0)
+        query_args = {}
+        for sval in query_string:
             sval_div = sval.split('=')
-            query_vals[sval_div[0]] = sval_div[-1]
-            
-        print query_vals
+            if len(sval_div) == 2:
+                query_args[sval_div[0]] = sval_div[-1]
         
-        content_type = 'text/plain'
-        result = b'API OK'
+        print query_method    
+        print query_args
+        
+        valid = True
+        if self.api_schema.has_key(query_method):
+            #for arg in self.api_schema[query_method]["args"]:
+                #if isinstance()
+        
+            content_type = 'application/json'
+            result = b'{"result": true}'
+        else:
+            content_type = 'application/json'
+            result = b'{"result": false}'
+            
         out_req = (content_type, result)
         return out_req
      
