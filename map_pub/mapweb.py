@@ -624,16 +624,75 @@ class MapsAPI(MapsWEB):
         self.maps.update(self.api2maps)
         """
         API schema dict
+            'api key name':{
+                    'obj': self.api_module_name,
+                    'args': { # need args
+                        'arg_name': [type1,type2] #types list in priotity
+                    },
+                    'opts': {} #optional args - type as 'args'
+                }
         """
         self.api_schema = {
+            "help": {
+                "obj": self.api_help,
+                "args": {},
+                "opts": {
+                    "name": str,
+                    },
+                },
             "test": {
                 "obj": self.api_test,
-                "args": {},
+                "args": {
+                    "data": [
+                        int, 
+                        float,
+                        unicode, 
+                        ],
+                    },
                 },
-        }
+            }
     
-    def api_test(self):
-        pass
+    def api_help(self, **kwargs):
+        """
+        default api method:
+            def method_name(self, **kwargs)
+                return dict{} or tuple(result,content_type)
+        """
+        # find help for key 'name'
+        if kwargs.has_key('name'):
+            if self.api_schema.has_key(kwargs['name']):
+                all_api_schema = {kwargs['name']: self.api_schema[kwargs['name']]}
+            else:
+                all_api_schema = {} 
+        else:
+            all_api_schema = self.api_schema
+        # gen help dict    
+        schema_help = {}
+        for key in all_api_schema:
+            schema_help[key] = {}
+            if self.api_schema[key].has_key('args'):
+                args = self.api_schema[key]['args']
+                schema_help[key]['args'] = {}
+                for arg in args:
+                    types = args[arg]
+                    if not isinstance(types, list): types = [types]
+                    schema_help[key]['args'][arg] = [my.__name__ for my in types]
+            if self.api_schema[key].has_key('opts'):
+                opts = self.api_schema[key]['opts']
+                schema_help[key]['opts'] = {}
+                for opt in opts:
+                    types = opts[opt]
+                    if not isinstance(types, list): types = [types]
+                    schema_help[key]['opts'][opt] = [my.__name__ for my in types]
+        return {
+            "api_keys": schema_help,
+        }
+
+    def api_test(self, **kwargs):
+        return {
+            "data_type": type(kwargs["data"]).__name__,
+            "data_value": kwargs["data"],
+        }
         
     def request_api(self, env, data):
         # find query string value
@@ -645,19 +704,69 @@ class MapsAPI(MapsWEB):
             if len(sval_div) == 2:
                 query_args[sval_div[0]] = sval_div[-1]
         
-        print query_method    
-        print query_args
-        
+        # validization 
         valid = True
         if self.api_schema.has_key(query_method):
-            #for arg in self.api_schema[query_method]["args"]:
-                #if isinstance()
-        
-            content_type = 'application/json'
-            result = b'{"result": true}'
+            need_args = self.api_schema[query_method]["args"]
+            for arg in need_args:
+                if query_args.has_key(arg):
+                    arg_data = query_args[arg]
+                    if isinstance(need_args[arg], list):
+                        arg_types = need_args[arg]
+                    else:
+                        arg_types = [need_args[arg]]
+                    for arg_type in need_args[arg]:
+                        valid = False
+                        try:
+                            query_args[arg] = arg_type(arg_data)
+                        except:
+                            pass
+                        else:
+                            valid = True
+                            break
+                    if not valid:
+                        err = "Argument '{0}' for API Key '{1}' wrong type".format(
+                            arg, 
+                            query_method
+                        )
+                        break
+                else:
+                    valid = False
+                    err = "Argument '{0}' for API Key '{1}' not found".format(
+                        arg, 
+                        query_method
+                    )
+                    break
+        elif query_method == '':
+            query_method = 'help' 
         else:
+            valid = False
+            err = "API Key '{}' not found".format(query_method)
+
+        # run api method
+        if valid:
+            out = self.api_schema[query_method]["obj"](**query_args)
+        else:
+            out = {
+                "error": err,
+                "result": False,
+            }
+            
+        # init reslt and content type
+        if isinstance(out, tuple):
+            result, content_type = out
+        elif isinstance(out, dict):
             content_type = 'application/json'
-            result = b'{"result": false}'
+            if not out.has_key('result'):
+                out['result'] = True
+            result = b'{}'.format(out)
+        else:
+            out = {
+                "error": "Not valid output for API Method {}".format(query_method),
+                "result": False,
+            }
+            content_type = 'application/json'
+            result = b'{}'.format(out)
             
         out_req = (content_type, result)
         return out_req
