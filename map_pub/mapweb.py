@@ -123,6 +123,8 @@ class MapsWEB(object):
         'SERVER_NAME',
         'SERVER_PORT'
     ]
+    # invariable map name list
+    invariable_name = []
     
     #----------------------------------------------------------------------
     def __init__(self, port=3007, host='0.0.0.0', base_url="http://localhost", srcs = []):
@@ -388,9 +390,9 @@ class MapsWEB(object):
         # load all names
         for map_name in all_map_names:
             if not self.maps.has_key(map_name):
-                _map = self.serializer(map_name)
-                if _map:
-                    self.maps[map_name] = _map
+                map_ = self.serializer(map_name)
+                if map_ and map_name not in self.invariable_name:
+                    self.maps[map_name] = map_
 
     def serializer(self, map_name):
         """
@@ -505,9 +507,9 @@ class MapsWEB(object):
         while True:
             if not self.maps.has_key(map_name):
                 # serialization
-                _map = self.serializer(map_name)
-                if _map:
-                    self.maps[map_name] = _map
+                map_ = self.serializer(map_name)
+                if map_ and map_name not in self.invariable_name:
+                    self.maps[map_name] = map_
                 else:
                     self._logging(
                         0,
@@ -613,6 +615,8 @@ class MapsAPI(MapsWEB):
         """
         create map name 'api'
         """
+        # invariable name for api
+        self.invariable_name += ['api']
         self.api2maps = {
             'api': {
                 "request": self.request_api,
@@ -632,10 +636,11 @@ class MapsAPI(MapsWEB):
                     'opts': {} #optional args - type as 'args'
                 }
         """
+        self.api_args_keys = ["args"]
+        self.api_opts_keys = ["opts"]
         self.api_schema = {
             "help": {
                 "obj": self.api_help,
-                "args": {},
                 "opts": {
                     "name": str,
                     },
@@ -648,6 +653,16 @@ class MapsAPI(MapsWEB):
                         float,
                         unicode, 
                         ],
+                    },
+                },
+            "sources": {
+                "obj": self.api_sources,
+                },
+            "serialize": {
+                "obj": self.api_serialize,
+                "opts": {
+                    "map": str,
+                    "replace": int,
                     },
                 },
             }
@@ -670,20 +685,14 @@ class MapsAPI(MapsWEB):
         schema_help = {}
         for key in all_api_schema:
             schema_help[key] = {}
-            if self.api_schema[key].has_key('args'):
-                args = self.api_schema[key]['args']
-                schema_help[key]['args'] = {}
-                for arg in args:
-                    types = args[arg]
-                    if not isinstance(types, list): types = [types]
-                    schema_help[key]['args'][arg] = [my.__name__ for my in types]
-            if self.api_schema[key].has_key('opts'):
-                opts = self.api_schema[key]['opts']
-                schema_help[key]['opts'] = {}
-                for opt in opts:
-                    types = opts[opt]
-                    if not isinstance(types, list): types = [types]
-                    schema_help[key]['opts'][opt] = [my.__name__ for my in types]
+            for subkey in self.api_args_keys + self.api_opts_keys:
+                if self.api_schema[key].has_key(subkey):
+                    schema_help[key][subkey] = {}
+                    args = self.api_schema[key][subkey]
+                    for arg in args:
+                        types = args[arg]
+                        if not isinstance(types, list): types = [types]
+                        schema_help[key][subkey][arg] = [my.__name__ for my in types]
         return {
             "api_keys": schema_help,
         }
@@ -693,6 +702,46 @@ class MapsAPI(MapsWEB):
             "data_type": type(kwargs["data"]).__name__,
             "data_value": kwargs["data"],
         }
+  
+    def api_sources(self, **kwargs):
+        return {
+            "sources": self.serial_src,
+        }
+    
+    def api_serialize(self, **kwargs):
+        if kwargs.has_key('replace'):
+            replace = bool(kwargs['replace'])
+        else:
+            replace = True
+        if kwargs.has_key('map'):
+            map_name = kwargs['map']
+            if self.maps.has_key(map_name) and not replace:
+                return {
+                    "serialize": map_name,
+                    "error": "replace is not allow",
+                    "result": False,
+                }
+            else:
+                map_ = self.serializer(map_name)
+                if map_ and map_name not in self.invariable_name:
+                    self.maps[map_name] = map_
+                    return {
+                        "serialize": map_name, 
+                        "result": True,
+                    }
+                else:
+                    return {
+                        "serialize": map_name,
+                        "error": "Map is not found",
+                        "result": False,
+                    }
+        else:
+            self.full_serializer(replace=replace)
+            return {
+                "serialize": "full", 
+                "result": True,
+            }
+        
         
     def request_api(self, env, data):
         # find query string value
@@ -707,36 +756,40 @@ class MapsAPI(MapsWEB):
         # validization 
         valid = True
         if self.api_schema.has_key(query_method):
-            need_args = self.api_schema[query_method]["args"]
-            for arg in need_args:
-                if query_args.has_key(arg):
-                    arg_data = query_args[arg]
-                    if isinstance(need_args[arg], list):
-                        arg_types = need_args[arg]
-                    else:
-                        arg_types = [need_args[arg]]
-                    for arg_type in need_args[arg]:
-                        valid = False
-                        try:
-                            query_args[arg] = arg_type(arg_data)
-                        except:
-                            pass
+            for subkey in self.api_args_keys + self.api_opts_keys:
+                if self.api_schema[query_method].has_key(subkey):
+                    need = self.api_schema[query_method][subkey]
+                else:
+                    need = {}
+                for arg in need:
+                    if query_args.has_key(arg):
+                        arg_data = query_args[arg]
+                        if isinstance(need[arg], list):
+                            arg_types = need[arg]
                         else:
-                            valid = True
+                            arg_types = [need[arg]]
+                        for arg_type in arg_types:
+                            valid = False
+                            try:
+                                query_args[arg] = arg_type(arg_data)
+                            except:
+                                pass
+                            else:
+                                valid = True
+                                break
+                        if not valid:
+                            err = "Argument '{0}' for API Key '{1}' wrong type".format(
+                                arg, 
+                                query_method
+                            )
                             break
-                    if not valid:
-                        err = "Argument '{0}' for API Key '{1}' wrong type".format(
+                    elif subkey in self.api_args_keys:
+                        valid = False
+                        err = "Argument '{0}' for API Key '{1}' not found".format(
                             arg, 
                             query_method
                         )
                         break
-                else:
-                    valid = False
-                    err = "Argument '{0}' for API Key '{1}' not found".format(
-                        arg, 
-                        query_method
-                    )
-                    break
         elif query_method == '':
             query_method = 'help' 
         else:
