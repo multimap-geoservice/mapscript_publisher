@@ -3,6 +3,7 @@ import mapscript
 import os
 import time
 import ast
+import copy
 import json
 from xml.etree import ElementTree
 from multiprocessing import Process, Queue
@@ -657,12 +658,32 @@ class MapsAPI(MapsWEB):
                 },
             "sources": {
                 "obj": self.api_sources,
+                "opts": {
+                    "index": int,
+                    "del": bool,
+                    },
+                },
+            "maps": {
+                "obj": self.api_maps,
+                "opts": {
+                    "name": str,
+                    "del": bool,
+                    },
                 },
             "serialize": {
                 "obj": self.api_serialize,
                 "opts": {
                     "map": str,
-                    "replace": int,
+                    "replace": bool,
+                    },
+                },
+            "timeout": {
+                "obj": self.api_timeout,
+                "args": {
+                    "sec": int,
+                    },
+                "opts": {
+                    "map": str,
                     },
                 },
             }
@@ -704,13 +725,89 @@ class MapsAPI(MapsWEB):
         }
   
     def api_sources(self, **kwargs):
-        return {
-            "sources": self.serial_src,
-        }
+        out = {}
+        if kwargs.has_key('index'):
+            index = kwargs['index']
+            if index + 1 <= len(self.serial_src):
+                src_out = [copy.deepcopy(self.serial_src[index])]
+            else:
+                return {
+                    'result': False,
+                    'error': 'Index too large',
+                }
+        else: 
+            src_out = copy.deepcopy(self.serial_src)
+        # test to found
+        if len(src_out) == 0:
+            return {
+                "result": False,
+                "error": "Sources not found",
+            }
+        else:
+            #query to list
+            for src in src_out:
+                if src.has_key('query'):
+                    src['query'] = src['query'].split('\n')
+            out["sources"] = src_out
+        # delete
+        if kwargs.has_key('del') and kwargs.has_key('index'):
+            if kwargs['del']:
+                del(self.serial_src[index])
+                out['delete'] = True
+        return out
+            
+    def api_maps(self, **kwargs):
+        out = {}
+        # find map for key 'name'
+        if kwargs.has_key('name'):
+            if self.maps.has_key(kwargs['name']):
+                all_maps = {kwargs['name']: self.maps[kwargs['name']]}
+            else:
+                all_maps = {} 
+        else:
+            all_maps = self.maps
+        # gen maps dict    
+        maps_out = {}
+        for key in all_maps:
+            if key not in self.invariable_name:
+                # time
+                if self.maps[key]['timestamp'] != 0:
+                    data_time = time.ctime(int(self.maps[key]['timestamp']))
+                else:
+                    data_time = 'unlimited'
+                # request & map data
+                request = self.maps[key]['request'].__name__
+                metadata = 0
+                if request == 'request_mapscript':
+                    map_cont = self.maps[key]['content']
+                    matadata_keys = map_cont.web.metadata.keys() 
+                    metadata = {my: map_cont.web.metadata.get(my) for my in matadata_keys}
+                if request == 'request_mapnik':
+                    pass
+                maps_out[key] = {
+                    'request': request,
+                    'metadata': metadata,
+                    'multi': int(self.maps[key]['multi']),
+                    'datatime': data_time,
+                }
+        # test to found
+        if maps_out == {}:
+            return {
+                "result": False,
+                "error": "Maps not found",
+            }
+        else:
+            out['maps'] = maps_out
+        # delete
+        if kwargs.has_key('del') and kwargs.has_key('name'): 
+            if kwargs['del']:
+                del(self.maps[kwargs['name']])
+                out['delete'] = True
+        return out
     
     def api_serialize(self, **kwargs):
         if kwargs.has_key('replace'):
-            replace = bool(kwargs['replace'])
+            replace = kwargs['replace']
         else:
             replace = True
         if kwargs.has_key('map'):
@@ -741,7 +838,9 @@ class MapsAPI(MapsWEB):
                 "serialize": "full", 
                 "result": True,
             }
-        
+    
+    def api_timeout(self, **kwargs):
+        pass
         
     def request_api(self, env, data):
         # find query string value
@@ -812,14 +911,14 @@ class MapsAPI(MapsWEB):
             content_type = 'application/json'
             if not out.has_key('result'):
                 out['result'] = True
-            result = b'{}'.format(out)
+            result = b'{}'.format(json.dumps(out))
         else:
             out = {
                 "error": "Not valid output for API Method {}".format(query_method),
                 "result": False,
             }
             content_type = 'application/json'
-            result = b'{}'.format(out)
+            result = b'{}'.format(json.dumps(out))
             
         out_req = (content_type, result)
         return out_req
