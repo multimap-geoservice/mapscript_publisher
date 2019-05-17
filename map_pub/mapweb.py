@@ -168,12 +168,14 @@ class MapsWEB(object):
                 "preserial": self._preserial_fs,
                 "subserial": self._subserial_fs,
                 "path": (str, unicode),
+                "enable": bool,
             }, 
             "pgsql": {
                 "preserial": self._preserial_pgsql,
                 "subserial": self._subserial_pgsql,
                 "connect": dict,
                 "query": (str, unicode),
+                "enable": bool,
             }
         }
         """
@@ -371,6 +373,7 @@ class MapsWEB(object):
                 in self.serial_tps[src_type] 
                 if key not in ('subserial', 'preserial')
             ]
+            valid.append(src['enable'])
             if False not in valid:
                 preserial = self.serial_tps[src_type]['preserial']
                 all_map_names += preserial(**src)
@@ -407,6 +410,7 @@ class MapsWEB(object):
                 in self.serial_tps[src_type] 
                 if key not in ('subserial', 'preserial')
             ]
+            valid.append(src['enable'])
             if False not in valid:
                 subserial = self.serial_tps[src_type]['subserial']
                 out_subserial = subserial(map_name, **src)
@@ -543,6 +547,8 @@ class MapsWEB(object):
                     )
                 # fin response
                 if response:
+                    if self.maps[map_name]['timestamp'] != 0:
+                        self.maps[map_name]['timestamp'] = int(time.time())
                     resp_status = '200 OK'
                     resp_type = [('Content-type', response[0])]
                     start_response(resp_status, resp_type)
@@ -636,6 +642,7 @@ class MapsAPI(MapsWEB):
                     },
                     'opts': {} #optional args - type as 'args'
                 }
+            # int input for bool data type
         """
         self.api_args_keys = ["args"]
         self.api_opts_keys = ["opts"]
@@ -660,7 +667,7 @@ class MapsAPI(MapsWEB):
                 "obj": self.api_sources,
                 "opts": {
                     "index": int,
-                    "del": bool,
+                    "enable": bool,
                     },
                 },
             "maps": {
@@ -673,7 +680,7 @@ class MapsAPI(MapsWEB):
             "serialize": {
                 "obj": self.api_serialize,
                 "opts": {
-                    "map": str,
+                    "name": str,
                     "replace": bool,
                     },
                 },
@@ -683,7 +690,7 @@ class MapsAPI(MapsWEB):
                     "sec": int,
                     },
                 "opts": {
-                    "map": str,
+                    "name": str,
                     },
                 },
             }
@@ -725,18 +732,17 @@ class MapsAPI(MapsWEB):
         }
   
     def api_sources(self, **kwargs):
-        out = {}
         if kwargs.has_key('index'):
             index = kwargs['index']
             if index + 1 <= len(self.serial_src):
-                src_out = [copy.deepcopy(self.serial_src[index])]
+                src_out = [self.serial_src[index]]
             else:
                 return {
                     'result': False,
                     'error': 'Index too large',
                 }
         else: 
-            src_out = copy.deepcopy(self.serial_src)
+            src_out = self.serial_src
         # test to found
         if len(src_out) == 0:
             return {
@@ -744,17 +750,18 @@ class MapsAPI(MapsWEB):
                 "error": "Sources not found",
             }
         else:
+            # enable
+            if kwargs.has_key('enable'):
+                for src in src_out:
+                    src['enable'] = kwargs['enable']
             #query to list
-            for src in src_out:
+            out = copy.deepcopy(src_out)
+            for src in out:
                 if src.has_key('query'):
                     src['query'] = src['query'].split('\n')
-            out["sources"] = src_out
-        # delete
-        if kwargs.has_key('del') and kwargs.has_key('index'):
-            if kwargs['del']:
-                del(self.serial_src[index])
-                out['delete'] = True
-        return out
+        return {
+            "sources": out,
+        }
             
     def api_maps(self, **kwargs):
         out = {}
@@ -810,8 +817,8 @@ class MapsAPI(MapsWEB):
             replace = kwargs['replace']
         else:
             replace = True
-        if kwargs.has_key('map'):
-            map_name = kwargs['map']
+        if kwargs.has_key('name'):
+            map_name = kwargs['name']
             if self.maps.has_key(map_name) and not replace:
                 return {
                     "serialize": map_name,
@@ -840,7 +847,25 @@ class MapsAPI(MapsWEB):
             }
     
     def api_timeout(self, **kwargs):
-        pass
+        # find map for key 'name'
+        if kwargs.has_key('name'):
+            if self.maps.has_key(kwargs['name']):
+                all_map_nam = [kwargs['name']]
+            else:
+                all_map_nam = [] 
+        else:
+            all_map_nam = [my for my in self.maps]
+        # cleant map for timeout
+        clean_map_nam = []
+        cur_time = time.time()
+        for map_name in all_map_nam:
+            map_time = self.maps[map_name]['timestamp']
+            if cur_time - map_time > kwargs['sec'] and map_time != 0:
+                del(self.maps[map_name])
+                clean_map_nam.append(map_name)
+        return {
+            'clean': clean_map_nam,
+        }
         
     def request_api(self, env, data):
         # find query string value
@@ -870,7 +895,10 @@ class MapsAPI(MapsWEB):
                         for arg_type in arg_types:
                             valid = False
                             try:
-                                query_args[arg] = arg_type(arg_data)
+                                if arg_type is bool:
+                                    query_args[arg] = arg_type(int(arg_data))
+                                else:
+                                    query_args[arg] = arg_type(arg_data)
                             except:
                                 pass
                             else:

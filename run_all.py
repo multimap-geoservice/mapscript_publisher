@@ -9,6 +9,7 @@ if __name__ == "__main__":
         {
             "type": "fs",
             "path": maps_path,
+            "enable": True,
         }, 
         {
             "type": "pgsql", 
@@ -22,7 +23,8 @@ if __name__ == "__main__":
                 select name as map_name,
                        cont as map_cont
                 from maps
-            """
+            """,
+            "enable": True,
         }
     ]
     web = MapsAPI(srcs=srcs)
