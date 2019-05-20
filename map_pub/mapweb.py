@@ -1,5 +1,4 @@
 
-import mapscript
 import os
 import time
 import ast
@@ -9,6 +8,15 @@ from xml.etree import ElementTree
 from multiprocessing import Process, Queue
 from wsgiref.simple_server import make_server, WSGIServer
 from SocketServer import ThreadingMixIn
+
+import mapscript
+try:
+    import mapnik
+except ImportError:
+    try:
+        import mapnik2 as mapnik
+    except ImportError:
+        mapnik = False
 
 from interface import pgsqldb
 from mapublisher import PubMap
@@ -950,10 +958,6 @@ class MapsAPI(MapsWEB):
             
         out_req = (content_type, result)
         return out_req
-     
-    def maps_cleaner(self):
-        "cleaner maps as old timestamp"
-        pass
     
    
 ########################################################################
@@ -1022,31 +1026,3 @@ class MapsTinyOWS(object):
         return wsgi socket for Vector
         """
         pass
-
-
-########################################################################
-class MapsGraphQl(object):
-    """
-    class for publish every GIS protocol from GraphQl
-    """
-    
-    #----------------------------------------------------------------------
-    def __init__(self, port, host):
-        """
-        port - port GraphQl
-        host - port GraphQl
-        pub_list = [] list objects: PubMapWSGI, PubMapCache, PubTinyOWS
-        """
-        self.pub_list = []
-        pass
-    
-    def run(self):
-        for pub in self.pub_list:
-            pub.wsgi()  #start object from method wsgi
-            
-    def debug(self):
-        """
-        return json log GraphQl
-        """
-        pass
-
