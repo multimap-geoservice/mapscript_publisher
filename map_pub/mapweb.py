@@ -194,14 +194,17 @@ class MapsWEB(object):
         """
         self.serial_ops = {
             "json": {
+                "test": self.is_json,
                 "get": self.get_mapjson,
                 "request": self.request_mapscript,
                 },
             "map": {
+                "test": self.is_map,
                 "get": self.get_mapfile,
                 "request": self.request_mapscript,
                 },
             "xml": {
+                "test": self.is_xml,
                 "get": self.get_mapnik,
                 "request": self.request_mapnik,
                 },
@@ -221,7 +224,7 @@ class MapsWEB(object):
             else:
                 print(outdata)
              
-    def _is_json(self, test_cont):
+    def is_json(self, test_cont):
         try:
             _ = json.loads(test_cont)
         except:
@@ -229,7 +232,7 @@ class MapsWEB(object):
         else:
             return True    
 
-    def _is_xml(self, test_cont):
+    def is_xml(self, test_cont):
         try:
             _ = ElementTree.fromstring(test_cont)
         except:
@@ -237,7 +240,7 @@ class MapsWEB(object):
         else:
             return True
         
-    def _is_map(self, test_cont):
+    def is_map(self, test_cont):
         if "MAP" in test_cont and "EXTENT" in test_cont:
             return True
         else:
@@ -254,12 +257,9 @@ class MapsWEB(object):
         else:
             test_cont = cont
         # detect
-        if self._is_json(test_cont):
-            return "json"
-        elif self._is_xml(test_cont):
-            return "xml"
-        elif self._is_map(test_cont):
-            return "map"
+        for opt in self.serial_ops:
+            if self.serial_ops[opt]["test"](test_cont):
+                return opt
         
     def _preserial_fs(self, **kwargs):
         """
@@ -641,6 +641,11 @@ class MapsAPI(MapsWEB):
             }
         }
         self.maps.update(self.api2maps)
+        # output metadata for requests
+        self.request2metadata = {
+            'request_mapscript': self.metadata4mapscript,
+            'request_mapnik': self.metadata4mapnik,
+        }
         """
         API schema dict
             'api key name':{
@@ -791,14 +796,9 @@ class MapsAPI(MapsWEB):
                 else:
                     data_time = 'unlimited'
                 # request & map data
+                map_cont = self.maps[key]['content']
                 request = self.maps[key]['request'].__name__
-                metadata = 0
-                if request == 'request_mapscript':
-                    map_cont = self.maps[key]['content']
-                    matadata_keys = map_cont.web.metadata.keys() 
-                    metadata = {my: map_cont.web.metadata.get(my) for my in matadata_keys}
-                if request == 'request_mapnik':
-                    pass
+                metadata = self.request2metadata[request](map_cont)
                 maps_out[key] = {
                     'request': request,
                     'metadata': metadata,
@@ -874,6 +874,13 @@ class MapsAPI(MapsWEB):
         return {
             'clean': clean_map_nam,
         }
+    
+    def metadata4mapscript(self, map_cont):
+        matadata_keys = map_cont.web.metadata.keys() 
+        return {my: map_cont.web.metadata.get(my) for my in matadata_keys}
+
+    def metadata4mapnik(self, map_cont):
+        return {}
         
     def request_api(self, env, data):
         # find query string value
@@ -958,71 +965,3 @@ class MapsAPI(MapsWEB):
             
         out_req = (content_type, result)
         return out_req
-    
-   
-########################################################################
-class MapsCache(object):
-    """
-    class publish TMS Cache for objects PubMapWEB
-    """
-    
-    #----------------------------------------------------------------------
-    def __init__(self, pud_maps_wsgi):
-        """
-        pud_maps_wsgi - [
-            {
-                'OBJ': <PubMapWSGI object>,
-                'type': <cache type>
-                'bla1': <>,
-                'bla2': <>,
-                'bla3': <>
-            }
-        ]
-        """
-        pass
-  
-    def debug_xml(self):
-        """
-        return xml config MapCache
-        """
-        pass
-   
-    def wsgi(self):
-        """
-        return wsgi socket for TMS
-        """
-        pass
-
-    
-########################################################################
-class MapsTinyOWS(object):
-    """
-    class publish Vector Cache for objects PubMapWEB
-    """
-    
-    #----------------------------------------------------------------------
-    def __init__(self, pud_maps_wsgi):
-        """
-        pud_maps_wsgi - [
-            {
-                'OBJ': <PubMapWSGI object>,
-                'type': <cache type>
-                'bla1': <>,
-                'bla2': <>,
-                'bla3': <>
-            }
-        ]
-        """
-        pass
-  
-    def debug_xml(self):
-        """
-        return xml config TinyOWS
-        """
-        pass
-   
-    def wsgi(self):
-        """
-        return wsgi socket for Vector
-        """
-        pass
