@@ -226,7 +226,11 @@ class MapsWEB(object):
              
     def is_json(self, test_cont):
         try:
-            _ = json.loads(test_cont)
+            if os.path.isfile(test_cont):
+                with open(test_cont) as file_:  
+                    _ = json.load(file_)
+            else:
+                _ = json.loads(test_cont)
         except:
             return False
         else:
@@ -234,31 +238,32 @@ class MapsWEB(object):
 
     def is_xml(self, test_cont):
         try:
-            _ = ElementTree.fromstring(test_cont)
+            if os.path.isfile(test_cont):
+                _ = ElementTree.parse(test_cont)
+            else:
+                _ = ElementTree.fromstring(test_cont)
         except:
             return False
         else:
             return True
         
     def is_map(self, test_cont):
-        if "MAP" in test_cont and "EXTENT" in test_cont:
-            return True
-        else:
+        try:
+            if os.path.isfile(test_cont):
+                _ = mapscript.mapObj(test_cont)
+            else:
+                raise # map file content in DB: to do
+        except:
             return False
+        else:
+            return True
         
     def _detect_cont_ops(self, cont):
         """
         Detect content options as self.serial_ops
         """
-        # init test_cont
-        if os.path.isfile(cont):
-            with open(cont, 'r') as file_:
-                test_cont = file_.read()
-        else:
-            test_cont = cont
-        # detect
         for opt in self.serial_ops:
-            if self.serial_ops[opt]["test"](test_cont):
+            if self.serial_ops[opt]["test"](cont):
                 return opt
         
     def _preserial_fs(self, **kwargs):
@@ -447,10 +452,9 @@ class MapsWEB(object):
         """
         try:
             if os.path.isfile(content):
-                pub_map = PubMap()
-                pub_map.load_map(content)
+                pub_map = mapscript.mapObj(content)
             else:
-                raise  # to do
+                raise # map file content in DB: to do
         except:
             self._logging(
                 0, 
