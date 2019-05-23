@@ -1,8 +1,0 @@
-Written by Jean-Francois Doyon.
-
-Contributions from:
-
-Manel Clos
-Tom MacWright
-Dane Springmeyer
-Carsten Klein

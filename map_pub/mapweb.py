@@ -4,19 +4,11 @@ import time
 import ast
 import copy
 import json
-from xml.etree import ElementTree
 from multiprocessing import Process, Queue
 from wsgiref.simple_server import make_server, WSGIServer
 from SocketServer import ThreadingMixIn
 
 import mapscript
-try:
-    import mapnik
-except ImportError:
-    try:
-        import mapnik2 as mapnik
-    except ImportError:
-        mapnik = False
 
 from interface import pgsqldb
 from mapublisher import PubMap
@@ -203,11 +195,6 @@ class MapsWEB(object):
                 "get": self.get_mapfile,
                 "request": self.request_mapscript,
                 },
-            "xml": {
-                "test": self.is_xml,
-                "get": self.get_mapnik,
-                "request": self.request_mapnik,
-                },
         }
         self.wsgi_host = host
         self.wsgi_port = port
@@ -236,17 +223,6 @@ class MapsWEB(object):
         else:
             return True    
 
-    def is_xml(self, test_cont):
-        try:
-            if os.path.isfile(test_cont):
-                _ = ElementTree.parse(test_cont)
-            else:
-                _ = ElementTree.fromstring(test_cont)
-        except:
-            return False
-        else:
-            return True
-        
     def is_map(self, test_cont):
         try:
             if os.path.isfile(test_cont):
@@ -438,13 +414,6 @@ class MapsWEB(object):
                             "multi": True,
                         }
 
-    def get_mapnik(self, map_name, content):
-        """
-        get map on mapnik xml
-        mapnik.load_map_from_string()
-        """
-        pass
-    
     def get_mapfile(self, map_name, content):
         """
         get map on map file
@@ -596,12 +565,6 @@ class MapsWEB(object):
         else:
             que.put(out_req)
     
-    def request_mapnik(self, env, mapdata, que=None):
-        """
-        render on mapnik request
-        """
-        pass
-    
     def wsgi(self):
         """
         simple wsgi server
@@ -636,20 +599,14 @@ class MapsAPI(MapsWEB):
         """
         # invariable name for api
         self.invariable_name += ['api']
-        self.api2maps = {
+        self.maps.update({
             'api': {
                 "request": self.request_api,
                 "content": 'api',
                 "timestamp": 0,
                 "multi": False
             }
-        }
-        self.maps.update(self.api2maps)
-        # output metadata for requests
-        self.request2metadata = {
-            'request_mapscript': self.metadata4mapscript,
-            'request_mapnik': self.metadata4mapnik,
-        }
+        })
         """
         API schema dict
             'api key name':{
@@ -801,10 +758,9 @@ class MapsAPI(MapsWEB):
                     data_time = 'unlimited'
                 # request & map data
                 map_cont = self.maps[key]['content']
-                request = self.maps[key]['request'].__name__
-                metadata = self.request2metadata[request](map_cont)
+                matadata_keys = map_cont.web.metadata.keys() 
+                metadata = {my: map_cont.web.metadata.get(my) for my in matadata_keys}
                 maps_out[key] = {
-                    'request': request,
                     'metadata': metadata,
                     'multi': int(self.maps[key]['multi']),
                     'datatime': data_time,
@@ -883,9 +839,6 @@ class MapsAPI(MapsWEB):
         matadata_keys = map_cont.web.metadata.keys() 
         return {my: map_cont.web.metadata.get(my) for my in matadata_keys}
 
-    def metadata4mapnik(self, map_cont):
-        return {}
-        
     def request_api(self, env, data):
         # find query string value
         query_string = env['QUERY_STRING'].split('&')
