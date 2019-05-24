@@ -10,27 +10,22 @@ from mapweb import MapsWEB
 
 
 ########################################################################
-class MultiWEB(MapsWEB):
+class Protocol(object):
     """
     Class for serialization & render maps:
-    mapscript as mapscript_publisher
     mapnik as OGCServer
     """
     
     #----------------------------------------------------------------------
-    def __init__(self, *args, **kwargs):
-        """
-        Init MapsWEB constructor
-        """
-        MapsWEB.__init__(self, *args, **kwargs)
+    def __init__(self):
         
-        self.serial_ops.update({
+        self.proto_schema = {
             "xml": {
                 "test": self.is_xml,
                 "get": self.get_mapnik,
                 "request": self.request_mapnik,
                 },
-        })
+        }
             
     def is_xml(self, test_cont):
         try:
