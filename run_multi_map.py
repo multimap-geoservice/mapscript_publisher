@@ -1,5 +1,5 @@
 import os, sys
-from map_pub import LightAPI
+from multi_map import LightAPI
 
 
 if __name__ == "__main__":

@@ -5,8 +5,11 @@ from multiprocessing import Process, Queue
 from wsgiref.simple_server import make_server, WSGIServer
 from SocketServer import ThreadingMixIn
 
-from  interface import pgsqldb
-
+from interface import pgsqldb
+from requests import (
+    request_mapscript, 
+    request_mapnik
+) 
 
 ########################################################################
 class ThreadingWSGIServer(ThreadingMixIn, WSGIServer): 
@@ -112,18 +115,29 @@ class MultiWEB(object):
             }
         }
         """
-        Options for serialization
+        Mpa Formats for serialization:
         key: name
-        get: method for get map
-        request: method for request map
+        "test": test to find format
+        "get": method for get map
+        "request": method for request map
+        "metadata": return matadata dict
+        "enable": bool flag for use in serialize
         """
-        self.serial_ops = {}
-        
+        self.serial_formats = {}
+       
         # default web params
         self.wsgi_host = host
         self.wsgi_port = port
         self.url = "{0}:{1}".format(base_url, port)
         self.maps = {}
+
+        # add map requests 
+        self.map_requests = [
+            request_mapscript, 
+            request_mapnik
+        ]
+        self.init_map_requests() 
+
         if self.fullserial:
             self.full_serializer()
             
@@ -134,14 +148,22 @@ class MultiWEB(object):
                     logfile.write("{}\n".format(outdata))
             else:
                 print(outdata)
+
+    def init_map_requests(self):
+        self.map_req_objs = []
+        for map_req in self.map_requests:
+            protcol = map_req.Protocol(self.url, self.logging)
+            self.serial_formats.update(protcol.proto_schema)
+            self.map_req_objs.append(protcol)
              
-    def _detect_cont_ops(self, cont):
+    def _detect_cont_format(self, cont):
         """
-        Detect content options as self.serial_ops
+        Detect content format as self.serial_formats
         """
-        for opt in self.serial_ops:
-            if self.serial_ops[opt]["test"](cont):
-                return opt
+        for cont_format in self.serial_formats:
+            if self.serial_formats[cont_format]["enable"]:
+                if self.serial_formats[cont_format]["test"](cont):
+                    return cont_format
         
     def _preserial_fs(self, **kwargs):
         """
@@ -154,13 +176,13 @@ class MultiWEB(object):
             else:
                 exts = [kwargs['ext']]
         else:
-            exts = self.serial_ops
+            exts = self.serial_formats
         names = []
         for _file in os.listdir(_dir):
             file_name = _file.split('.')[0]
             file_ext = _file.split('.')[-1]
             if file_ext in exts:
-                self._logging(
+                self.logging(
                     2,
                     "INFO: In Dir:{0}, add Map name {1}".format(_dir, file_name)
                 )
@@ -178,18 +200,18 @@ class MultiWEB(object):
             else:
                 exts = [kwargs['ext']]
         else:
-            exts = self.serial_ops
+            exts = self.serial_formats
         for _file in os.listdir(_dir):
             for ext in exts:
                 if _file == "{0}.{1}".format(map_name, ext):
                     content = "{0}/{1}".format(_dir, _file)
-                    ops = self._detect_cont_ops(content)
-                    if ops is not None:
-                        self._logging(
+                    cont_format = self._detect_cont_format(content)
+                    if cont_format is not None:
+                        self.logging(
                             2,
                             "INFO: In Dir:{0}, load Map File {1}".format(_dir, _file)
                         )
-                        return ops, content
+                        return cont_format, content
                 
     def _preserial_pgsql(self, **kwargs):
         """
@@ -208,7 +230,7 @@ class MultiWEB(object):
         psql.close()
         if names is not None:
             names = [my[0] for my in names]
-            self._logging(
+            self.logging(
                 2,
                 "INFO: In Database:{0}, add Map name(s) {1}".format(
                     kwargs['connect']['dbname'],
@@ -237,16 +259,16 @@ class MultiWEB(object):
         psql.close()
         if content is not None:
             content = content[0]
-            ops = self._detect_cont_ops(content)
-            if ops is not None:
-                self._logging(
+            cont_format = self._detect_cont_format(content)
+            if cont_format is not None:
+                self.logging(
                     2,
                     "INFO: From Database:{0}, load Map {1}".format(
                         kwargs['connect']['dbname'],
                         map_name
                     )
                 )
-                return ops, content
+                return cont_format, content
     
     def full_serializer(self, replace=True):
         """
@@ -273,7 +295,7 @@ class MultiWEB(object):
         nam_uniq = [my for my in nam_count if nam_count[my] == 1]
         nam_dubl = [my for my in nam_count if nam_count[my] > 1]
         if len(nam_dubl) > 0: 
-            self._logging(
+            self.logging(
                 1,
                 "WARINIG: Found dublicate Map Names:{}".format(nam_dubl)
             )
@@ -305,11 +327,12 @@ class MultiWEB(object):
                 subserial = self.serial_tps[src_type]['subserial']
                 out_subserial = subserial(map_name, **src)
                 if out_subserial is not None:
-                    ops, content = out_subserial
-                    content = self.serial_ops[ops]['get'](map_name, content)
+                    cont_format, content = out_subserial
+                    content = self.serial_formats[cont_format]['get'](map_name, content)
                     if content is not None:
                         return {
-                            "request": self.serial_ops[ops]['request'],
+                            "format": cont_format,
+                            "request": self.serial_formats[cont_format]['request'],
                             "content": content,
                             "timestamp": int(time.time()),
                             "multi": True,
@@ -322,22 +345,22 @@ class MultiWEB(object):
         
         # text debug
         if self.debug >= 1:
-            self._logging(1, "-" * 30)
+            self.logging(1, "-" * 30)
             for key in self.MAPSERV_ENV:
                 if key in env:
                     os.environ[key] = env[key]
-                    self._logging(
+                    self.logging(
                         1, 
                         "{0}='{1}'".format(key, env[key])
                     )
                 else:
                     os.unsetenv(key)
             if self.debug >= 2:
-                self._logging(2, "QUERY_STRING=(")
+                self.logging(2, "QUERY_STRING=(")
                 for q_str in env['QUERY_STRING'].split('&'):
-                    self._logging(2, "    {},".format(q_str))
-                self._logging(2, ")")
-            self._logging(1, "-" * 30)
+                    self.logging(2, "    {},".format(q_str))
+                self.logging(2, ")")
+            self.logging(1, "-" * 30)
         
         # serialization & response  
         while True:
@@ -347,7 +370,7 @@ class MultiWEB(object):
                 if map_ and map_name not in self.invariable_name:
                     self.maps[map_name] = map_
                 else:
-                    self._logging(
+                    self.logging(
                         0,
                         "ERROR: Map:'{}' is not serialized".format(map_name)
                     )
@@ -385,7 +408,7 @@ class MultiWEB(object):
                     start_response(resp_status, resp_type)
                     return [response[1]]
                 else:
-                    self._logging(
+                    self.logging(
                         0,
                         "ERROR: Resource:{} error".format(map_name)
                     )
@@ -404,7 +427,7 @@ class MultiWEB(object):
             self.application,
             ThreadingWSGIServer
         )
-        self._logging(0, 'Serving on port %d...' % self.wsgi_port)
+        self.logging(0, 'Serving on port %d...' % self.wsgi_port)
         httpd.serve_forever()
     
     def __call__(self):

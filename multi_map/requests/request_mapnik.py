@@ -6,8 +6,6 @@ try:
 except ImportError:
     import mapnik2 as mapnik
 
-from mapweb import MapsWEB
-
 
 ########################################################################
 class Protocol(object):
@@ -17,13 +15,17 @@ class Protocol(object):
     """
     
     #----------------------------------------------------------------------
-    def __init__(self):
+    def __init__(self, url, logging):
         
+        self.url = url 
+        self.logging = logging
         self.proto_schema = {
             "xml": {
                 "test": self.is_xml,
                 "get": self.get_mapnik,
                 "request": self.request_mapnik,
+                "metadata": self.get_metadata,
+                "enable": True,
                 },
         }
             
@@ -50,3 +52,6 @@ class Protocol(object):
         render on mapnik request
         """
         pass
+    
+    def get_metadata(self, map_cont):
+        return {}

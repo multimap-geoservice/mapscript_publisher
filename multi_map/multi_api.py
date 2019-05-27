@@ -34,11 +34,6 @@ class LightAPI(MultiWEB):
             }
         }
         self.maps.update(self.api2maps)
-        # output metadata for requests
-        self.request2metadata = {
-            'request_mapscript': self.metadata4mapscript,
-            'request_mapnik': self.metadata4mapnik,
-        }
         """
         API schema dict
             'api key name':{
@@ -73,6 +68,13 @@ class LightAPI(MultiWEB):
                 "obj": self.api_sources,
                 "opts": {
                     "index": int,
+                    "enable": bool,
+                    },
+                },
+            "formats": {
+                "obj": self.api_formats,
+                "opts": {
+                    "name": str,
                     "enable": bool,
                     },
                 },
@@ -168,6 +170,25 @@ class LightAPI(MultiWEB):
         return {
             "sources": out,
         }
+    
+    def api_formats(self, **kwargs):
+        # find format for key 'name'
+        if kwargs.has_key('name'):
+            if self.serial_formats.has_key(kwargs['name']):
+                if kwargs.has_key('enable'):
+                    self.serial_formats[kwargs['name']]['enable'] = kwargs['enable']
+                all_formats = {kwargs['name']: self.serial_formats[kwargs['name']]}
+            else:
+                all_formats = {} 
+        else:
+            all_formats = self.serial_formats
+        # create out
+        out = {
+            "formats": {},
+        }
+        for key in all_formats:
+            out['formats'][key] = all_formats[key]['enable']
+        return out
             
     def api_maps(self, **kwargs):
         out = {}
@@ -190,10 +211,10 @@ class LightAPI(MultiWEB):
                     data_time = 'unlimited'
                 # request & map data
                 map_cont = self.maps[key]['content']
-                request = self.maps[key]['request'].__name__
-                metadata = self.request2metadata[request](map_cont)
+                map_format = self.maps[key]['format']
+                metadata = self.serial_formats[map_format]['metadata'](map_cont)
                 maps_out[key] = {
-                    'request': request,
+                    'format': map_format,
                     'metadata': metadata,
                     'multi': int(self.maps[key]['multi']),
                     'datatime': data_time,
@@ -268,10 +289,6 @@ class LightAPI(MultiWEB):
             'clean': clean_map_nam,
         }
     
-    def metadata4mapscript(self, map_cont):
-        matadata_keys = map_cont.web.metadata.keys() 
-        return {my: map_cont.web.metadata.get(my) for my in matadata_keys}
-
     def metadata4mapnik(self, map_cont):
         return {}
         

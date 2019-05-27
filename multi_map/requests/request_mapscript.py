@@ -5,7 +5,7 @@ import json
 
 import mapscript
 
-from .. import PubMap
+from map_pub import PubMap
 
 
 ########################################################################
@@ -16,18 +16,24 @@ class Protocol(object):
     """
     
     #----------------------------------------------------------------------
-    def __init__(self):
-
+    def __init__(self, url, logging):
+       
+        self.url = url 
+        self.logging = logging
         self.proto_schema = {
             "json": {
                 "test": self.is_json,
                 "get": self.get_mapjson,
                 "request": self.request_mapscript,
+                "metadata": self.get_metadata,
+                "enable": True,
                 },
             "map": {
                 "test": self.is_map,
                 "get": self.get_mapfile,
                 "request": self.request_mapscript,
+                "metadata": self.get_metadata,
+                "enable": True,
                 },
         }
             
@@ -65,7 +71,7 @@ class Protocol(object):
             else:
                 raise # map file content in DB: to do
         except:
-            self._logging(
+            self.logging(
                 0, 
                 "ERROR: Content {} not init as Map FILE".format(content)
             )
@@ -85,7 +91,7 @@ class Protocol(object):
                 content = ast.literal_eval(content)
                 pub_map = PubMap(content)
         except:
-            self._logging(
+            self.logging(
                 0, 
                 "ERROR: Content {} not init as Map JSON".format(content)
             )
@@ -125,3 +131,7 @@ class Protocol(object):
             return out_req
         else:
             que.put(out_req)
+            
+    def get_metadata(self, map_cont):
+        matadata_keys = map_cont.web.metadata.keys() 
+        return {my: map_cont.web.metadata.get(my) for my in matadata_keys}
