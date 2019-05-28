@@ -1,0 +1,23 @@
+Source: mapscript-publisher
+Section: python
+Priority: optional
+Maintainer: Baev Aleksandr <old_bay@mail.ru>
+Build-Depends: debhelper,
+               dh-python,
+               python-all,
+               python-setuptools,
+               python-mapscript,
+               python-jinja2,
+               python-psycopg2
+Standards-Version: 3.9.5.0
+Homepage: https://github.com/oldbay/mapscript_publisher
+X-Python-Version: 2.7
+
+Package: python-mapscript-publisher
+Architecture: all
+Section: python
+Depends: ${misc:Depends},
+         python-mapscript,
+         python-jinja2,
+         python-psycopg2
+Description: Alternative mapscript sintax and web runner.
