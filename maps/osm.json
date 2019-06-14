@@ -2,7 +2,7 @@
     "IMODS":["interface"],
     "VARS":{
         "name": "osm",
-        "wms_title": "Open Street Map",
+        "title": "Open Street Map",
         "up_scale": 332808204,
         "imagecolor": [153, 179, 204], 
         "extent": [
@@ -120,9 +120,9 @@
         "end_query_str": "as foo using unique osm_id using srid={}",
         "layer_dicts": [
             {
-                "layer_temp": "base_places",
+                "wms_layer_temp": "wms_base_places",
                 "name": "base_places",
-                "wms_abstract": "base places",
+                "abstract": "base places",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -147,9 +147,9 @@
                 }
             }, 
             {
-                "layer_temp": "transport_areas",
+                "wms_layer_temp": "wms_transport_areas",
                 "name": "transport_areas",
-                "wms_abstract": "transport areas",
+                "abstract": "transport areas",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -182,9 +182,9 @@
                 }
             }, 
             {
-                "layer_temp": "landuse",
+                "wms_layer_temp": "wms_landuse",
                 "name": "landuse",
-                "wms_abstract": "landuse",
+                "abstract": "landuse",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -258,9 +258,9 @@
                 }
             }, 
             {
-                "layer_temp": "waterareas",
+                "wms_layer_temp": "wms_waterareas",
                 "name": "waterareas",
-                "wms_abstract": "waterareas",
+                "abstract": "waterareas",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -314,9 +314,9 @@
                 }
             }, 
             {
-                "layer_temp": "waterways",
+                "wms_layer_temp": "wms_waterways",
                 "name": "waterways",
-                "wms_abstract": "waterways",
+                "abstract": "waterways",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -348,9 +348,9 @@
                 }
             }, 
             {
-                "layer_temp": "transport_areas",
+                "wms_layer_temp": "wms_transport_areas",
                 "name": "above_water_areas",
-                "wms_abstract": "above water areas",
+                "abstract": "above water areas",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -375,9 +375,9 @@
                 }
             }, 
             {
-                "layer_temp": "railways",
+                "wms_layer_temp": "wms_railways",
                 "name": "railways",
-                "wms_abstract": "railways",
+                "abstract": "railways",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -412,9 +412,9 @@
                 }
             }, 
             {
-                "layer_temp": "roads",
+                "wms_layer_temp": "wms_roads",
                 "name": "roads",
-                "wms_abstract": "roads",
+                "abstract": "roads",
                 "data5to7": {
                     "RUN":{
                         "interface.lst2str":[
@@ -617,9 +617,9 @@
                 }
             }, 
             {
-                "layer_temp": "aeroways",
+                "wms_layer_temp": "wms_aeroways",
                 "name": "aeroways",
-                "wms_abstract": "aeroways",
+                "abstract": "aeroways",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -649,9 +649,10 @@
                 }
             }, 
             {
-                "layer_temp": "buildings",
+                "wms_layer_temp": "wms_buildings",
+                "wfs_layer_temp": "wfs_buildings",
                 "name": "buildings",
-                "wms_abstract": "buildings",
+                "abstract": "buildings",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -675,9 +676,9 @@
                 }
             }, 
             {
-                "layer_temp": "places",
+                "wms_layer_temp": "wms_places",
                 "name": "places",
-                "wms_abstract": "places",
+                "abstract": "places",
                 "data1to2": {
                     "RUN":{
                         "interface.lst2str":[
@@ -859,7 +860,7 @@
             },
             { "TEMP": "{%- endmacro -%}"}
         ],
-        "base_places":[
+        "wms_base_places":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "1-20":{
@@ -881,8 +882,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -924,7 +926,7 @@
                 }
             }
         ],
-        "landuse":[
+        "wms_landuse":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "4-20":{
@@ -946,8 +948,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -1272,7 +1275,7 @@
                 }
             }
         ],
-        "transport_areas":[
+        "wms_transport_areas":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "11-20":{
@@ -1294,8 +1297,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -1372,7 +1376,7 @@
                 }
             }
         ],
-        "waterareas":[
+        "wms_waterareas":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "4-20":{
@@ -1394,8 +1398,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -1471,7 +1476,7 @@
                 }
             }
         ],
-        "waterways":[
+        "wms_waterways":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "6-20":{
@@ -1493,8 +1498,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -1608,7 +1614,7 @@
                 }
             }
         ],
-        "railways":[
+        "wms_railways":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "8-20":{
@@ -1630,8 +1636,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -1722,7 +1729,7 @@
                 }
             }
         ],
-        "roads":[
+        "wms_roads":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "5-20":{
@@ -1750,8 +1757,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -3001,7 +3009,7 @@
                 }
             }
         ],
-        "aeroways":[
+        "wms_aeroways":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "10-20":{
@@ -3023,8 +3031,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -3097,7 +3106,32 @@
                 }
             }
         ],
-        "buildings":[
+        "wfs_buildings":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "OBJ": "mapscript.layerObj",
+                "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                "status": {"OBJ": "mapscript.MS_ON"}, 
+                "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                "units": {"OBJ": "mapscript.MS_METERS"},
+                "tileitem": "location",
+                "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                "connection": {"VAR": "db_connection"},
+                "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                "metadata.set": [
+                    [
+                        "wfs_abstract",
+                        {"TEMP": "\"{{layer_var['abstract']}}\""}
+                    ],
+                    ["gml_include_items", "all"],
+                    ["gml_featureid", "ID"],
+                    ["wfs_enable_request", "*"]
+                ],
+                "labelitem": "name"
+            }
+        ],
+        "wms_buildings":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "15-20":{
@@ -3119,8 +3153,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -3190,7 +3225,7 @@
                 }
             }
         ],
-        "places":[
+        "wms_places":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
                 "1-20":{
@@ -3218,8 +3253,9 @@
                     "metadata.set": [
                         [
                             "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
                     ],
                     "classitem": "type",
                     "labelitem": "name",
@@ -3450,16 +3486,19 @@
                 "OBJ": "mapscript.MS_DD"
             },
             "web.metadata.set": [
-                ["ows_enable_request", "*"],
                 ["labelcache_map_edge_buffer", "-10"],
-                ["wms_srs", {"VAR": "wms_srs"}],
-                ["wms_title", {"VAR": "wms_title"}],
-                ["wms_enable_request", "*"]
+                ["wms_title", {"VAR": "title"}],
+                ["wfs_title", {"VAR": "title"}]
             ],
             "SUB_OBJ": [
                 {"TEMP": [
                         "{% for layer_var in layer_dicts %}",
-                        "    {% include layer_var['layer_temp'] %},",
+                        "    {% if layer_var['wfs_layer_temp'] is defined %}",
+                        "        {% include layer_var['wfs_layer_temp'] %},",
+                        "    {% endif %}",
+                        "    {% if layer_var['wms_layer_temp'] is defined %}",
+                        "        {% include layer_var['wms_layer_temp'] %},",
+                        "    {% endif %}",
                         "{% endfor %}"
                     ]
                 }

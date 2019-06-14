@@ -40,7 +40,7 @@
         "epsg_id": "32638",
         "db_table": "rasters",
         "db_column": "geom",
-        "db_host": "william",
+        "db_host": "localhost",
         "db_user": "gis",
         "db_pass": "gis",
         "layer_dicts": [
@@ -60,7 +60,7 @@
                             }
                         }
                     },
-                "wms_abstract": "raster1"
+                "abstract": "raster1"
             }, 
             {
                 "layer_temp": "layer_temp",
@@ -78,34 +78,29 @@
                             }
                         }
                     },
-                "wms_abstract": "raster2"
+                "abstract": "raster2"
             } 
         ]
     },
     "TEMPS":{
         "layer_temp":{
-                "1-25":{
-                    "OBJ": "mapscript.layerObj",
-                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
-                    "status": {"OBJ": "mapscript.MS_ON"}, 
-                    "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
-                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
-                    "units": {"OBJ": "mapscript.MS_METERS"},
-                    "tileitem": "location",
-                    "setProcessing":{
-                        "1-25": [
-                            {"1-3": "NODATA=0"}, 
-                            {"4-25": "NODATA=-999"}, 
-                            "SCALE=AUTO"
-                        ]
-                    }, 
-                    "metadata.set": [
-                        [
-                            "wms_abstract",
-                            {"TEMP": "\"{{layer_var['wms_abstract']}}\""}
-                        ]
-                    ]
-                }
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "setProcessing": [
+                    "NODATA=-999.0",
+                    "SCALE=AUTO"
+                ],
+            "metadata.set": [
+                [
+                    "wms_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ]
+            ]
         },
         "map_temp":{
             "OBJ": "mapscript.mapObj",
@@ -121,8 +116,7 @@
                 ["ows_enable_request", "*"],
                 ["labelcache_map_edge_buffer", "-10"],
                 ["wms_srs", {"VAR": "wms_srs"}],
-                ["wms_title", "Rasters"],
-                ["wms_enable_request", "*"]
+                ["wms_title", "Rasters"]
             ],
             "SUB_OBJ": [
                 {"TEMP": [
