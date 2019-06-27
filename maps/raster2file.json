@@ -1,0 +1,57 @@
+{
+    "VARS":{
+        "name": "raster",
+        "data": "./maps/rasters/raster_test_4326.tif",
+        "imagecolor": [255, 255, 255], 
+        "extent": [
+            -180,
+            -90,
+            180,
+            90
+        ],
+        "size": [800, 800],
+        "epsg_id": "4326"
+    },
+    "TEMPS":{
+        "layer_temp":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"VAR": "name"},
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "type": {"OBJ": "mapscript.MS_LAYER_RASTER"}, 
+            "data": {"VAR": "data"},
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "setProcessing": [
+                    "NODATA=0"
+                ],
+            "metadata.set": [
+                [
+                    "wms_abstract",
+                    {"VAR": "name"}
+                ]
+            ]
+        },
+        "map_temp":{
+            "OBJ": "mapscript.mapObj",
+            "name": {"VAR": "name"},
+            "imagecolor.setRGB": [{"VAR": "imagecolor"}],
+            "setExtent": [{"VAR": "extent"}],
+            "setProjection": {"TEMP": "'init=epsg:{{epsg_id}}'"},
+            "units": {
+                "OBJ": "mapscript.MS_DD"
+            },
+            "web.metadata.set": [
+                ["ows_enable_request", "*"],
+                ["labelcache_map_edge_buffer", "-10"],
+                ["wms_srs", "EPSG:4326 EPSG:32638 EPSG:3857 EPSG:900913"],
+                ["wms_title", {"VAR": "name"}]
+            ],
+            "SUB_OBJ": [
+                {"TEMP": "{% include 'layer_temp' %}"}
+            ]
+        }
+    },
+    "MAP":{
+        "TEMP":"map_temp"
+    }
+}

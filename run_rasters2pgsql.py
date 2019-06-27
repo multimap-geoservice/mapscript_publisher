@@ -5,7 +5,7 @@ if __name__ == "__main__":
     """
     script_name db_host
     """
-    mapjsonfile = "./maps/raster.json"
+    mapjsonfile = "./maps/rasters2pgsql.json"
     db_host = sys.argv[1]
     debug_path = "{}/GIS/mapserver/debug".format(os.environ["HOME"])
     
