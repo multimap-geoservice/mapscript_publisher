@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 #import mapscript
 import os
@@ -6,6 +8,7 @@ from jinja2 import Environment, DictLoader
 import ast
 import inspect
 import copy
+import codecs
 
 from interface import pgsqldb
 
@@ -74,15 +77,20 @@ class BuildMap(object):
                 log,
                 sort_keys=True,
                 indent=4,
-                separators=(',', ': ')
+                separators=(',', ': '), 
+                encoding='utf-8'
             )
-        log = "\n{0}\nSTEP: {1}\n{0}\n{2}".format("-"*60, description, log)
+        log = u"\n{0}\nSTEP: {1}\n{0}\n{2}".format(
+            "-"*60, 
+            description, 
+            log
+        )
         if isinstance(self.debug, (str, unicode)):
             if first:
                 write_mode = 'w'
             else:
                 write_mode = 'a'
-            _file = open(self.debug, write_mode)
+            _file = codecs.open(self.debug, write_mode, encoding='utf-8')
             _file.write(log)
             _file.close()
         else:
@@ -418,7 +426,8 @@ class BuildMap(object):
                 in_dict,
                 sort_keys=True,
                 indent=4,
-                separators=(',', ': ')
+                separators=(',', ': '), 
+                ensure_ascii=False
             ).split("\n")
         temp2text = []
         post_temp_cont = False
@@ -524,6 +533,7 @@ class BuildMap(object):
                 template = env.get_template(maptemp)
                 map_txt = template.render(**self.VARS)
                 self.MAP = ast.literal_eval(map_txt)
+                print self.MAP
             else:
                 raise Exception(
                     'TEMPS: "{}" for MAP not found'.format(maptemp)
@@ -606,7 +616,8 @@ class BuildMap(object):
             self.mapdict,
             sort_keys=True,
             indent=4,
-            separators=(',', ': ')
+            separators=(',', ': '), 
+            ensure_ascii=False
         )
     
     def __call__(self):
@@ -661,7 +672,7 @@ class BuildMapRes(BuildMap):
                 if not os.path.isdir(dir_):
                     os.makedirs(dir_)
             if os.path.isdir(dir_):
-                with open(path, 'w') as file_:
+                with codecs.open(path, 'w', encoding='utf-8') as file_:
                     file_.write(json_)
             else:
                 raise Exception('Dir {} not found'.format(dir_))

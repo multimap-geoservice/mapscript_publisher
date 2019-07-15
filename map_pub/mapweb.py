@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 import os
 from wsgiref.simple_server import make_server

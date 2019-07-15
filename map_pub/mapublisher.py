@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 import mapscript
 import json
 import inspect
 import copy
+import codecs
 
 #from tools import MapTools
 
@@ -90,7 +93,7 @@ class PubMap(object):
             
     def load_json(self, jsonfile):
         with open(jsonfile) as json_file:  
-            self.mapdict = json.load(json_file)
+            self.mapdict = json.load(json_file, encoding='utf-8')
 
     def load_map(self, mapfile):
         mapdict = {
@@ -182,7 +185,7 @@ class PubMap(object):
                 if isinstance(value['SUB_OBJ'], dict):
                     if not value['SUB_OBJ'].has_key('OBJ'):
                         raise Exception(
-                            'in {} OBJ: not found'.format(value['SUB_OBJ'])
+                            u'in {} OBJ: not found'.format(value['SUB_OBJ'])
                         )
                     elif value['SUB_OBJ'].has_key('OBJ_ARG'):
                         OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
@@ -198,7 +201,7 @@ class PubMap(object):
                     value = OBJ_VAR
                 else:
                     raise Exception(
-                        'SUB_OBJ: {} is not dict'.format(value['SUB_OBJ'])
+                        u'SUB_OBJ: {} is not dict'.format(value['SUB_OBJ'])
                     )
         elif value == None:
             raise Exception('None value in Template')
@@ -208,7 +211,7 @@ class PubMap(object):
             test_assigment = eval('{0}.{1}'.format(OBJ, method))
         except Exception as err:
             raise Exception( 
-                "ASSIGMENT METHOD\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
+                u"ASSIGMENT METHOD\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
                     '{0}.{1}'.format(OBJ, method), 
                     "type({0}) = {1}".format(
                         OBJ, 
@@ -245,7 +248,7 @@ class PubMap(object):
                 exec(script_str)
             except Exception as err:
                 raise Exception( 
-                    "SINTAX\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
+                    u"SINTAX\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
                         script_str, 
                         "type({0}) = {1}".format(
                             OBJ, 
@@ -317,12 +320,13 @@ class PubMap(object):
                 eval_str_obj = eval(str_obj)
             except Exception as err:
                 raise Exception( 
-                    "SYNTAX\nIN:\n{0}\nFOR:\n{1}\nERROR:\n{2}".format(
+                    u"SYNTAX\nIN:\n{0}\nFOR:\n{1}\nERROR:\n{2}".format(
                         json.dumps(
                             _dict,
                             sort_keys=True,
                             indent=4,
-                            separators=(',', ': ')
+                            separators=(',', ': '), 
+                            encoding='utf-8'
                         ), 
                         str_obj, 
                         err
@@ -332,12 +336,13 @@ class PubMap(object):
                 self.OBJS.append(eval_str_obj)
             except Exception as err:
                 raise Exception( 
-                    "STRUCTURE\nFOR:\n{0}\nIN:\n{1}\nASSIGMENT:\n{2}\nERROR:\n{3}".format(
+                    u"STRUCTURE\nFOR:\n{0}\nIN:\n{1}\nASSIGMENT:\n{2}\nERROR:\n{3}".format(
                         json.dumps(
                             _dict,
                             sort_keys=True,
                             indent=4,
-                            separators=(',', ': ')
+                            separators=(',', ': '), 
+                            encoding='utf-8'
                         ), 
                         "type({0}) = {1}".format(
                             SUB_OBJ, 
@@ -386,12 +391,13 @@ class PubMap(object):
                                     scale_test = False
                                 if not scale_test:
                                     raise Exception( 
-                                        "STRUCTURE\nIN:\n{}\nKEY:'name' not found".format(
+                                        u"STRUCTURE\nIN:\n{}\nKEY:'name' not found".format(
                                             json.dumps(
                                                 loopline,
                                                 sort_keys=True,
                                                 indent=4,
-                                                separators=(',', ': ')
+                                                separators=(',', ': '), 
+                                                encoding='utf-8'
                                             ), 
                                         )
                                     )
@@ -472,7 +478,8 @@ class PubMap(object):
             self.mapdict,
             sort_keys=True,
             indent=4,
-            separators=(',', ': ')
+            separators=(',', ': '),
+            encoding='utf-8'
         )
         if path:
             _file = open('{0}/{1}'.format(path, filename), 'w')

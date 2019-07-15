@@ -1,7 +1,7 @@
 {
     "VARS":{
         "name": "raster",
-        "data": "./maps/rasters/raster_test_4326.tif",
+        "data": "./maps/rasters/raster_тест_4326.tif",
         "imagecolor": [255, 255, 255], 
         "extent": [
             -180,

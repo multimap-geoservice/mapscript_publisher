@@ -1,5 +1,5 @@
-#!/usr/bin/python2
 # -*- coding: utf-8 -*-
+# encoding: utf-8
 
 import psycopg2
 from subprocess import Popen, PIPE

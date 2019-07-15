@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 import os, sys
 from map_pub import BuildMapRes, PubMapWEB
 
