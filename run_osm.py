@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# encoding: utf-8
+
 import os, sys
 from map_pub import BuildMapRes, PubMapWEB
 
@@ -5,7 +8,7 @@ if __name__ == "__main__":
     """
     script_name db_host map_name
     """
-    mapjsonfile = "./maps/osm.json"
+    mapjsonfile = "./maps/osm_utf8.json"
     fontsfile = "./maps/fonts/fonts.lst"
     db_host = sys.argv[1]
     map_name = sys.argv[2]

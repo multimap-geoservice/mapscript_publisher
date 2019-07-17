@@ -177,7 +177,7 @@ class PubMap(object):
             if value.find(hook) != -1 and value.find(fix_hook) == -1:
                 value = value.replace(hook, fix_hook)
             # insert str value
-            value = '\'{}\''.format(value)
+            value = u'\'{}\''.format(value)
         elif isinstance(value, dict):
             if value.has_key('OBJ'):
                 value = 'eval(\'{}\')'.format(value['OBJ'])
@@ -190,11 +190,11 @@ class PubMap(object):
                     elif value['SUB_OBJ'].has_key('OBJ_ARG'):
                         OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
                         if isinstance(OBJ_ARG, dict):
-                            OBJ_ARG = '**{}'.format(OBJ_ARG)
+                            OBJ_ARG = u'**{}'.format(OBJ_ARG)
                         elif isinstance(OBJ_ARG, (list, tuple)):
-                            OBJ_ARG = '*{}'.format(OBJ_ARG)
+                            OBJ_ARG = u'*{}'.format(OBJ_ARG)
                         else:
-                            OBJ_ARG = '{}'.format(OBJ_ARG)
+                            OBJ_ARG = u'{}'.format(OBJ_ARG)
                     else:
                         OBJ_ARG = ''
                     OBJ_VAR = self.engine(value['SUB_OBJ'], OBJ_ARG, _level)
@@ -223,15 +223,15 @@ class PubMap(object):
         # test assigment
         if inspect.ismethod(test_assigment):
             if isinstance(value, dict):
-                assigment = '(**{})'.format(value)
+                assigment = u'(**{})'.format(value)
             elif isinstance(value, (list, tuple)):
-                assigment = '(*{})'.format(value)
+                assigment = u'(*{})'.format(value)
             else:
-                assigment = '({})'.format(value)
+                assigment = u'({})'.format(value)
         else:
-            assigment = ' = {}'.format(value)
+            assigment = u' = {}'.format(value)
         # create script string
-        script_str = '{0}.{1}{2}'.format(
+        script_str = u'{0}.{1}{2}'.format(
             OBJ, 
             method, 
             assigment
@@ -240,7 +240,7 @@ class PubMap(object):
         # line script debug or run line
         if self.debug_mapscript:
             self.debug_mapscript.append(
-                '{0}{1}\n'.format(' '*8, script_str)
+                u'{0}{1}\n'.format(' '*8, script_str)
             )
         else:
             # run method processing and tracking exeptions
@@ -260,22 +260,6 @@ class PubMap(object):
             
         return True
             
-    def script_processing(self, script):
-        if type(script) is str:
-            script = script.split('\n')
-        if type(script) is not list:
-            raise Exception('Failed type from script')
-        for line in script:
-            exec('{}\n'.format(line), globals())
-            # create scrip debug
-            if self.debug_mapscript:
-                self.debug_mapscript.append(
-                    '{0}{1}\n'.format(
-                        ' '*8,
-                        line
-                    )
-                )
-    
     def engine(self, _dict=None, SUB_OBJ=None, _level=False):
         """
         recursive engine for dict
@@ -326,7 +310,7 @@ class PubMap(object):
                             sort_keys=True,
                             indent=4,
                             separators=(',', ': '), 
-                            encoding='utf-8'
+                            ensure_ascii=False
                         ), 
                         str_obj, 
                         err
@@ -342,7 +326,7 @@ class PubMap(object):
                             sort_keys=True,
                             indent=4,
                             separators=(',', ': '), 
-                            encoding='utf-8'
+                            ensure_ascii=False
                         ), 
                         "type({0}) = {1}".format(
                             SUB_OBJ, 
@@ -397,8 +381,8 @@ class PubMap(object):
                                                 sort_keys=True,
                                                 indent=4,
                                                 separators=(',', ': '), 
-                                                encoding='utf-8'
-                                            ), 
+                                                ensure_ascii=False
+                                        ), 
                                         )
                                     )
                                 # name layer for scale level
@@ -479,10 +463,10 @@ class PubMap(object):
             sort_keys=True,
             indent=4,
             separators=(',', ': '),
-            encoding='utf-8'
+            ensure_ascii=False
         )
         if path:
-            _file = open('{0}/{1}'.format(path, filename), 'w')
+            _file = codecs.open('{0}/{1}'.format(path, filename), 'w', encoding='utf-8')
             _file.write(_json)
             _file.close()
         else:
@@ -515,7 +499,7 @@ class PubMap(object):
             '    test().save("./debug.script.map")\n', 
         ]
         if path:
-            _file = open('{0}/{1}'.format(path, filename), 'w')
+            _file = codecs.open('{0}/{1}'.format(path, filename), 'w', encoding='utf-8')
             _file.writelines(self.debug_mapscript)
             _file.close()
         else:

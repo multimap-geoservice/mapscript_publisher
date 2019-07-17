@@ -1,0 +1,3511 @@
+{
+    "IMODS":["interface"],
+    "VARS":{
+        "name": "osm",
+        "title": "Открытая карта мира",
+        "up_scale": 332808204,
+        "imagecolor": [153, 179, 204], 
+        "extent": [
+            -20000000,
+            -20000000,
+            20000000,
+            20000000
+        ],
+        "size": [800, 800],
+        "wms_srs": {
+            "RUN":{
+                "interface.proj2str": [
+                    3857,
+                    4326,
+                    32638,
+                    2154,
+                    310642901,
+                    4171,
+                    310024802,
+                    310915814,
+                    310486805,
+                    310702807,
+                    310700806,
+                    310547809,
+                    310706808,
+                    310642810,
+                    310642801,
+                    310642812,
+                    310032811,
+                    310642813,
+                    2986
+                ]
+                
+            }
+        },
+        "map_symbolset":[
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.symbolObj",
+                    "OBJ_ARG": "'citycircle'",
+                    "type": {"OBJ": "mapscript.MS_SYMBOL_ELLIPSE"},
+                    "filled": {"OBJ": "mapscript.MS_TRUE"},
+                    "setPoints":{
+                        "SUB_OBJ":{
+                            "OBJ": "mapscript.lineObj",
+                            "add":{
+                                "SUB_OBJ":{
+                                    "OBJ": "mapscript.pointObj",
+                                    "OBJ_ARG": [1,1]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ],
+        "fontset": "",
+        "db_connection": "",
+        "epsg_id": 3857,
+        "label_polygon": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "encoding": "utf-8",
+            "partials": {"OBJ": "mapscript.MS_FALSE"},
+            "minfeaturesize":1,
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":2,
+            "wrap": " ",
+            "maxlength":6,
+            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"}
+        },
+        "label_line": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "encoding": "utf-8",
+            "minfeaturesize":1,
+            "mindistance": 200,
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":2,
+            "repeatdistance": 400,
+            "anglemode":{"OBJ": "mapscript.MS_FOLLOW"},
+            "position": {"OBJ": "mapscript.MS_AUTO"}
+        },
+        "label_point": {
+            "OBJ": "mapscript.labelObj",
+            "font": "sc",
+            "encoding": "utf-8",
+            "partials": {"OBJ": "mapscript.MS_FALSE"},
+            "size":8,
+            "color":{
+                "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+            },
+            "outlinecolor":{
+                "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+            },
+            "outlinewidth":1,
+            "wrap": " ",
+            "maxlength":8,
+            "buffer":4,
+            "align":{"OBJ": "mapscript.MS_ALIGN_CENTER"},
+            "position": {"OBJ": "mapscript.MS_AUTO"}
+        },
+        "end_query_str": "as foo using unique osm_id using srid={}",
+        "layer_dicts": [
+            {
+                "wms_layer_temp": "wms_base_places",
+                "name": "base_places",
+                "abstract": "base places",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "place as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where place is not null",
+                            "and boundary is null",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_transport_areas",
+                "name": "transport_areas",
+                "abstract": "transport areas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "place as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where railway = 'station'",
+                            "or place = 'square'",
+                            "or aeroway in",
+                            "(",
+                            "    'aerodrome',",
+                            "    'terminal',",
+                            "    'helipad',",
+                            "    'apron'",
+                            ")",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_landuse",
+                "name": "landuse",
+                "abstract": "landuse",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "concat(",
+                            "    landuse,",
+                            "    \"natural\",",
+                            "    leisure,",
+                            "    highway,",
+                            "    amenity",
+                            ") as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'forest',",
+                            "    'grass',",
+                            "    'meadow',",
+                            "    'cemetery',",
+                            "    'industrial',",
+                            "    'garages',",
+                            "    'construction',",
+                            "    'commercial',",
+                            "    'greenfield',",
+                            "    'brownfield',",
+                            "    'residential',",
+                            "    'quarry',",
+                            "    'military'",
+                            ")",
+                            "or leisure in",
+                            "(",
+                            "    'park',",
+                            "    'golf_course',",
+                            "    'playground',",
+                            "    'stadium',",
+                            "    'sports_center',",
+                            "    'pitch'",
+                            ")",
+                            "or amenity in",
+                            "(",
+                            "    'hospital',",
+                            "    'school',",
+                            "    'college',",
+                            "    'university',",
+                            "    'parking'",
+                            ")",
+                            "or \"natural\" in",
+                            "(",
+                            "    'wood',",
+                            "    'scrub',",
+                            "    'grassland',",
+                            "    'beach',",
+                            "    'sand',",
+                            "    'heath',",
+                            "    'wetland'",
+                            ")",
+                            "or highway = 'pedestrian'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_waterareas",
+                "name": "waterareas",
+                "abstract": "waterareas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "concat(",
+                            "    landuse,",
+                            "    \"natural\",",
+                            "    waterway,",
+                            "    amenity",
+                            ") as type,",
+                            "case",
+                            "     when \"name\" in (",
+                            "         select name",
+                            "         from planet_osm_line",
+                            "         where waterway in (",
+                            "             'stream',",
+                            "             'river',",
+                            "             'canal',",
+                            "             'drain'",
+                            "         )",
+                            "     )",
+                            "     then NULL",
+                            "     else \"name\"",
+                            "end \"name\"",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'basin',",
+                            "    'reservoir'",
+                            ")",
+                            "or \"natural\" in",
+                            "(",
+                            "    'water',",
+                            "    'bay'",
+                            ")",
+                            "or waterway = 'riverbank'",
+                            "or amenity = 'fountain'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_waterways",
+                "name": "waterways",
+                "abstract": "waterways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "waterway as type,",
+                            "name as name,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where waterway in",
+                            "(",
+                            "    'stream',",
+                            "    'river',",
+                            "    'canal',",
+                            "    'drain'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_transport_areas",
+                "name": "above_water_areas",
+                "abstract": "above water areas",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "man_made as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where man_made = 'pier'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_railways",
+                "name": "railways",
+                "abstract": "railways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "railway as type,",
+                            "name as name,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where railway in",
+                            "(",
+                            "    'rail',",
+                            "    'light_rail',",
+                            "    'subway',",
+                            "    'narrow_gauge',",
+                            "    'preserved',",
+                            "    'funicular',",
+                            "    'monorail'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_roads",
+                "name": "roads",
+                "abstract": "roads",
+                "data5to7": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "highway as type,",
+                            "name as name,",
+                            "ref,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'motorway'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data8": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "highway as type,",
+                            "name as name,",
+                            "ref,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'motorway',",
+                            "    'primary',",
+                            "    'primary_link'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data9": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "highway as type,",
+                            "name as name,",
+                            "ref,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'trunk_link',",
+                            "    'motorway',",
+                            "    'motorway_link',",
+                            "    'primary',",
+                            "    'primary_link',",
+                            "    'secondary',",
+                            "    'secondary_link'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data10to13": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "highway as type,",
+                            "name as name,",
+                            "ref,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'trunk_link',",
+                            "    'motorway',",
+                            "    'motorway_link',",
+                            "    'primary',",
+                            "    'primary_link',",
+                            "    'secondary',",
+                            "    'secondary_link',",
+                            "    'tertiary',",
+                            "    'tertiary_link',",
+                            "    'road',",
+                            "    'path',",
+                            "    'track',",
+                            "    'service',",
+                            "    'footway',",
+                            "    'bridleway',",
+                            "    'cycleway',",
+                            "    'steps',",
+                            "    'pedestrian',",
+                            "    'living_street',",
+                            "    'unclassified',",
+                            "    'residential'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data14to20": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "concat(",
+                            "    highway,",
+                            "    case",
+                            "        when bridge = 'yes'",
+                            "        then 1",
+                            "        else 0",
+                            "    end,",
+                            "    case",
+                            "        when tunnel = 'yes'",
+                            "        then 1",
+                            "        else 0",
+                            "    end",
+                            ") as type,",
+                            "name as name,",
+                            "ref,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'trunk_link',",
+                            "    'motorway',",
+                            "    'motorway_link',",
+                            "    'primary',",
+                            "    'primary_link',",
+                            "    'secondary',",
+                            "    'secondary_link',",
+                            "    'tertiary',",
+                            "    'tertiary_link',",
+                            "    'road',",
+                            "    'path',",
+                            "    'track',",
+                            "    'service',",
+                            "    'footway',",
+                            "    'bridleway',",
+                            "    'cycleway',",
+                            "    'steps',",
+                            "    'pedestrian',",
+                            "    'living_street',",
+                            "    'unclassified',",
+                            "    'residential'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_aeroways",
+                "name": "aeroways",
+                "abstract": "aeroways",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "aeroway as type,",
+                            "name as name,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where aeroway in",
+                            "(",
+                            "    'runway',",
+                            "    'taxiway'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_buildings",
+                "wfs_layer_temp": "wfs_buildings",
+                "name": "buildings",
+                "abstract": "buildings",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "building as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where building is not null",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wms_layer_temp": "wms_places",
+                "name": "places",
+                "abstract": "places",
+                "data1to2": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'continent'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data3to7": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'continent',",
+                            "    'city'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data8to10": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'city',",
+                            "    'town'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data11to12": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'city',",
+                            "    'town',",
+                            "    'village'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "data13to20": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'state',",
+                            "    'region',",
+                            "    'county',",
+                            "    'city',",
+                            "    'town',",
+                            "    'village',",
+                            "    'hamlet',",
+                            "    'suburb',",
+                            "    'locality'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            } 
+        ]
+    },
+    "TEMPS":{
+        "macros":[
+            { "TEMP": "{% macro color_rgb(r, g, b) -%}"},
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.colorObj",
+                    "OBJ_ARG": [
+                        {"TEMP": "{{r}}"},
+                        {"TEMP": "{{g}}"},
+                        {"TEMP": "{{b}}"}
+                    ]
+                }
+            },
+            { "TEMP": "{%- endmacro -%}"},
+            { "TEMP": "{% macro color_hex(hex) -%}"},
+            {
+                "SUB_OBJ":{
+                    "OBJ": "mapscript.colorObj",
+                    "setHex": {"TEMP": "\"{{hex}}\""}
+                }
+            },
+            { "TEMP": "{%- endmacro -%}"}
+        ],
+        "wms_base_places":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "1-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": "island",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "8-13": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "size": 7
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_landuse":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "4-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{forest,wood}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(203,216,195) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{grass,meadow,playground,grassland,greenfield}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#99cc6e') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{scrub,heath,brownfield}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#a4d17f') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["wetland"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#cebece') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{beach,sand}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#efefa0') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["residential"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(242,239,233) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{industrial,commercial,parking,garages,quarry,quarrywetland}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(209,208,205) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["construction"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#c1bf95') }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["military"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#91c3b0') }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{park,golf_course}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(181,210,156) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "12-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2,
+                                        "position": {"OBJ": "mapscript.MS_CC"}
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["cemetery"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#d1d1d1') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "priority": 2,
+                                        "position": {"OBJ": "mapscript.MS_CC"}
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["pedestrian"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(250,250,245) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "size":0,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#333333') }}"
+                                        },
+                                        "-": "align"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["hospital"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(229,198,195) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ":{
+                                        "VAR": "label_polygon",
+                                        "priority": 1
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{school,college,university}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(222,210,172) }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ":{
+                                        "VAR": "label_polygon",
+                                        "priority": 1
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{sports_center,stadium,pitch}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#ded1ab') }}"
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ":{
+                                        "VAR": "label_polygon",
+                                        "priority": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_transport_areas":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "11-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["square"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#e5e5e5') }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "13-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["pier"],
+                            "SUB_OBJ": [
+                                {
+                                    "15-20":{
+                                        "OBJ": "mapscript.styleObj",
+                                        "color": {
+                                            "TEMP": "{{ macros.color_hex('#dbdbdb') }}"
+                                        },
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(124,124,124) }}"
+                                        },
+                                        "outlinewidth": [
+                                            {"14-15": 0.1},
+                                            {"16-20": 0.5}
+                                        ],
+                                        "opacity": 50
+                                    }
+                                }
+                            ],
+                            "addLabel": {
+                                "16-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                    },
+                                    "opacity": 50
+                                }
+                            ],
+                            "addLabel": {
+                                "11-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_waterareas":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "4-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{riverbank, waterriverbank}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#b3c6d4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ]
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{water,fountain}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "15-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#e3ded4') }}"
+                                    },
+                                    "outlinewidth": 0
+                                }
+                            ],
+                            "addLabel": {
+                                "10-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_waterways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "6-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["river"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-6": 0.15},
+                                        {"7-7": 0.25},
+                                        {"8-8": 0.5},
+                                        {"9-10": 1},
+                                        {"11-12": 2},
+                                        {"13-14": 3},
+                                        {"15-15": 4},
+                                        {"16-16": 5},
+                                        {"17-17": 6},
+                                        {"18-20": 7}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "6-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size": [
+                                            {"6-14": 8},
+                                            {"15-16": 9},
+                                            {"17-20": 10}
+                                        ],
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        },
+                                        "priority": 2
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["stream"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-9": 0},
+                                        {"10-11": 0.5},
+                                        {"12-13": 1},
+                                        {"14-20": 2}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "15-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["canal"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(153,179,204) }}"
+                                    },
+                                    "width": [
+                                        {"6-9": 0},
+                                        {"10-11": 0.5},
+                                        {"12-13": 1},
+                                        {"14-14": 2},
+                                        {"15-15": 4},
+                                        {"16-16": 8},
+                                        {"17-17": 16},
+                                        {"18-18": 30},
+                                        {"19-19": 60},
+                                        {"20-20": 120}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "14-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_line",
+                                        "size":8,
+                                        "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#6b94b0') }}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_railways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "8-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "18-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["subway"],
+                                "SUB_OBJ": [
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"18-18": 0.5},
+                                            {"19-20": 1}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_hex('#ffffff') }}"
+                                        },
+                                        "outlinewidth": [
+                                            {"18-18": 0.1},
+                                            {"19-20": 0.5}
+                                        ],
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                        },
+                                        "opacity": 40,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"18-18": 0.5},
+                                            {"19-20": 1}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_hex('#777777') }}"
+                                        },
+                                        "pattern":[
+                                            [2, 10]
+                                        ],
+                                        "opacity": 40,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["{rail,light_rail,narrow_gauge,preserved,funicular,monorail}"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"8-10": 0.5},
+                                        {"11-20": 1}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#ffffff') }}"
+                                    },
+                                    "outlinewidth": [
+                                        {"8-10": 0.1},
+                                        {"11-20": 0.5}
+                                    ],
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#777777') }}"
+                                    },
+                                    "opacity": 40,
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                },
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"8-10": 0.5},
+                                        {"11-20": 1}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#777777') }}"
+                                    },
+                                    "pattern":[
+                                        [2, 4]
+                                    ],
+                                    "opacity": 40,
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_roads":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "5-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": [
+                        {"5-7":{"TEMP": "\"{{layer_var['data5to7']}}\""}},
+                        {"8-8":{"TEMP": "\"{{layer_var['data8']}}\""}},
+                        {"9-9":{"TEMP": "\"{{layer_var['data9']}}\""}},
+                        {"10-13":{"TEMP": "\"{{layer_var['data10to13']}}\""}},
+                        {"14-20":{"TEMP": "\"{{layer_var['data14to20']}}\""}}
+                    ],
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "11-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"11-13": ["{unclassified,residential,service,road,living_street}"]},
+                                    {"14-20": ["{unclassified00,residential00,service00,road00,living_street00}"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "14-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"14-14": 2.5},
+                                                {"15-15": 4},
+                                                {"16-18": 6},
+                                                {"19-20": 7}
+                                            ],
+                                            "outlinewidth": [
+                                                {"14-14": 0.5},
+                                                {"17-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"11-13": 0.5},
+                                            {"14-14": 2.5},
+                                            {"15-15": 4},
+                                            {"16-18": 6},
+                                            {"19-20": 7}
+                                        ],
+                                        "color": [
+                                            {
+                                                "11-13":{"TEMP": "{{ macros.color_rgb(193,181,157) }}"}
+                                            },
+                                            {
+                                                "14-20":{"TEMP": "{{ macros.color_rgb(255,255,255) }}"}
+                                            }
+                                        ]                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "15-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":8,
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "12-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"12-13": ["track"]},
+                                    {"14-20": ["track00"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"12-14": 0.75},
+                                            {"15-20": 1}
+                                        ],
+                                        "pattern":[
+                                            {"12-14":[2, 2]},
+                                            {"15-20":[2, 3]}
+                                        ],
+                                        "color": [
+                                            {
+                                                "12-14":{"TEMP": "{{ macros.color_hex('#aaaaaa') }}"}
+                                            },
+                                            {
+                                                "15-20":{"TEMP": "{{ macros.color_hex('#ffffff') }}"}
+                                            }
+                                        ]                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "15-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":8,
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "10-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"10-13": ["{tertiary,tertiary_link}"]},
+                                    {"14-20": ["{tertiary00,tertiary_link00}"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "11-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"11-11": 0.75},
+                                                {"12-12": 1},
+                                                {"13-13": 1.5},
+                                                {"14-14": 2},
+                                                {"15-15": 2.5},
+                                                {"16-16": 5},
+                                                {"17-17": 6},
+                                                {"18-18": 7},
+                                                {"19-19": 8},
+                                                {"20-20": 9}
+                                            ],
+                                            "outlinewidth": [
+                                                {"11-14": 0.5},
+                                                {"15-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"10-10": 0.5},
+                                            {"11-11": 0.75},
+                                            {"12-12": 1},
+                                            {"13-13": 1.5},
+                                            {"14-14": 2},
+                                            {"15-15": 2.5},
+                                            {"16-16": 5},
+                                            {"17-17": 6},
+                                            {"18-18": 7},
+                                            {"19-19": 8},
+                                            {"20-20": 9}
+                                        ],
+                                        "color": [
+                                            {
+                                                "10-10":{"TEMP": "{{ macros.color_rgb(193,181,157) }}"}
+                                            },
+                                            {
+                                                "11-20":{"TEMP": "{{ macros.color_rgb(255,253,139) }}"}
+                                            }
+                                        ]                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "15-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":8,
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "9-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"9-13": ["{secondary,secondary_link}"]},
+                                    {"14-20": ["{secondary00,secondary_link00}"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "10-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"10-10": 0.75},
+                                                {"11-11": 1},
+                                                {"12-12": 1.5},
+                                                {"13-13": 2},
+                                                {"14-14": 2.5},
+                                                {"15-15": 3.5},
+                                                {"16-16": 6},
+                                                {"17-17": 7},
+                                                {"18-18": 8},
+                                                {"19-19": 9},
+                                                {"20-20": 10}
+                                            ],
+                                            "outlinewidth": [
+                                                {"10-12": 0.5},
+                                                {"13-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"9-9": 0.5},
+                                            {"10-10": 0.75},
+                                            {"11-11": 1},
+                                            {"12-12": 1.5},
+                                            {"13-13": 2},
+                                            {"14-14": 2.5},
+                                            {"15-15": 3.5},
+                                            {"16-16": 6},
+                                            {"17-17": 7},
+                                            {"18-18": 8},
+                                            {"19-19": 9},
+                                            {"20-20": 10}
+                                        ],
+                                        "color": [
+                                            {
+                                                "9-9":{"TEMP": "{{ macros.color_rgb(193,181,157) }}"}
+                                            },
+                                            {
+                                                "10-20":{"TEMP": "{{ macros.color_rgb(255,253,139) }}"}
+                                            }
+                                        ]                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "13-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":[
+                                                {"13-14": 8},
+                                                {"15-20": 9}
+                                            ],
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "15-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{footway00,path00}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": 1,
+                                        "pattern":[
+                                            [2, 3]
+                                        ],
+                                        "color":{
+                                            "TEMP": "{{ macros.color_hex('#ffffff') }}"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "8-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"8-13": ["{primary,primary_link}"]},
+                                    {"14-20": ["{primary00,primary_link00}"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "9-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"9-9": 0.75},
+                                                {"10-10": 1},
+                                                {"11-11": 1.5},
+                                                {"12-12": 2},
+                                                {"13-13": 2.5},
+                                                {"14-14": 3},
+                                                {"15-15": 4},
+                                                {"16-16": 7},
+                                                {"17-17": 8},
+                                                {"18-18": 9},
+                                                {"19-19": 10},
+                                                {"20-20": 11}
+                                            ],
+                                            "outlinewidth": [
+                                                {"9-10": 0.5},
+                                                {"11-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"8-8": 0.5},
+                                            {"9-9": 0.75},
+                                            {"10-10": 1},
+                                            {"11-11": 1.5},
+                                            {"12-12": 2},
+                                            {"13-13": 2.5},
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "13-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":[
+                                                {"13-14": 8},
+                                                {"15-20": 9}
+                                            ],
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "12-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"12-13": ["pedestrian"]},
+                                    {"14-20": ["pedestrian00"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "13-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"13-13": 1},
+                                                {"14-14": 1.5},
+                                                {"15-15": 2},
+                                                {"16-16": 2.5},
+                                                {"17-17": 3},
+                                                {"18-18": 3.5},
+                                                {"19-19": 4},
+                                                {"20-20": 4.5}
+                                            ],
+                                            "outlinewidth": [
+                                                {"13-16": 0.5},
+                                                {"17-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(193,181,157) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"12-12": 0.75},
+                                            {"13-13": 1},
+                                            {"14-14": 1.5},
+                                            {"15-15": 2},
+                                            {"16-16": 2.5},
+                                            {"17-17": 3},
+                                            {"18-18": 3.5},
+                                            {"19-19": 4},
+                                            {"20-20": 4.5}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
+                                        }                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "15-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":8,
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#333333') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "5-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"5-13": ["motorway"]},
+                                    {"14-20": ["motorway00"]}
+                                ] ,
+                                "setText":["(\"[ref]\")"],
+                                "SUB_OBJ":[
+                                    {
+                                        "7-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"5-7": 0.5},
+                                                {"8-8": 1},
+                                                {"9-10": 2},
+                                                {"11-11": 3},
+                                                {"12-13": 4},
+                                                {"14-14": 5},
+                                                {"15-15": 6},
+                                                {"16-16": 8},
+                                                {"17-17": 9},
+                                                {"18-18": 10},
+                                                {"19-19": 11},
+                                                {"20-20": 12}
+                                            ],
+                                            "outlinewidth": [
+                                                {"7-9": 0.5},
+                                                {"10-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(186,110,39) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"5-7": 0.5},
+                                            {"8-8": 1},
+                                            {"9-10": 2},
+                                            {"11-11": 3},
+                                            {"12-13": 4},
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "10-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":[
+                                                {"10-13": 8},
+                                                {"13-20": 9}
+                                            ],
+                                            "font": "scb",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#555555') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "9-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"9-13": ["motorway_link"]},
+                                    {"14-20": ["motorway_link00"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"9-9": 0.75},
+                                            {"10-10": 1},
+                                            {"11-11": 1.5},
+                                            {"12-12": 2},
+                                            {"13-13": 2.5},
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "outlinewidth": [
+                                            {"9-9": 0.5},
+                                            {"10-20": 1}
+                                        ],
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(186,110,39) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"9-9": 0.75},
+                                            {"10-10": 1},
+                                            {"11-11": 1.5},
+                                            {"12-12": 2},
+                                            {"13-13": 2.5},
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "5-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"5-13": ["trunk"]},
+                                    {"14-20": ["trunk00"]}
+                                ] ,
+                                "setText":["(\"[ref]\")"],
+                                "SUB_OBJ":[
+                                    {
+                                        "7-20":
+                                        {
+                                            "OBJ": "mapscript.styleObj",
+                                            "width": [
+                                                {"5-7": 0.5},
+                                                {"8-8": 1},
+                                                {"9-10": 2},
+                                                {"11-11": 3},
+                                                {"12-13": 4},
+                                                {"14-14": 5},
+                                                {"15-15": 6},
+                                                {"16-16": 8},
+                                                {"17-17": 9},
+                                                {"18-18": 10},
+                                                {"19-19": 11},
+                                                {"20-20": 12}
+                                            ],
+                                            "outlinewidth": [
+                                                {"7-9": 0.5},
+                                                {"10-20": 1}
+                                            ],
+                                            "outlinecolor": {
+                                                "TEMP": "{{ macros.color_rgb(221,159,17) }}"
+                                            }                                    
+                                        }
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"5-7": 0.5},
+                                            {"8-8": 1},
+                                            {"9-10": 2},
+                                            {"11-11": 3},
+                                            {"12-13": 4},
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ],
+                                "addLabel": {
+                                    "10-20": {
+                                        "SUB_OBJ": {
+                                            "VAR": "label_line",
+                                            "size":[
+                                                {"10-13": 8},
+                                                {"13-20": 9}
+                                            ],
+                                            "font": "scb",
+                                            "partials": {"OBJ": "mapscript.MS_FALSE"},
+                                            "buffer": 3,
+                                            "color":{
+                                                "TEMP": "{{ macros.color_hex('#555555') }}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "9-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression":[
+                                    {"9-13": ["trunk_link"]},
+                                    {"14-20": ["trunk_link00"]}
+                                ] ,
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"9-9": 0.75},
+                                            {"10-10": 1},
+                                            {"11-11": 1.5},
+                                            {"12-12": 2},
+                                            {"13-13": 2.5},
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "outlinewidth": [
+                                            {"9-9": 0.5},
+                                            {"10-20": 1}
+                                        ],
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(221,159,17) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"9-9": 0.75},
+                                            {"10-10": 1},
+                                            {"11-11": 1.5},
+                                            {"12-12": 2},
+                                            {"13-13": 2.5},
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{unclassified10,residential10,service10,road10,living_street10}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 4},
+                                            {"16-18": 6},
+                                            {"19-20": 7}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 4},
+                                            {"16-18": 6},
+                                            {"19-20": 7}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{tertiary10,tertiary_link10}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2},
+                                            {"15-15": 2.5},
+                                            {"16-16": 5},
+                                            {"17-17": 6},
+                                            {"18-18": 7},
+                                            {"19-19": 8},
+                                            {"20-20": 9}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2},
+                                            {"15-15": 2.5},
+                                            {"16-16": 5},
+                                            {"17-17": 6},
+                                            {"18-18": 7},
+                                            {"19-19": 8},
+                                            {"20-20": 9}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{secondary10,secondary_link10}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 3.5},
+                                            {"16-16": 6},
+                                            {"17-17": 7},
+                                            {"18-18": 8},
+                                            {"19-19": 9},
+                                            {"20-20": 10}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 3.5},
+                                            {"16-16": 6},
+                                            {"17-17": 7},
+                                            {"18-18": 8},
+                                            {"19-19": 9},
+                                            {"20-20": 10}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{primary10,primary_link10}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{pedestrian10,footway10,path10}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 1.5},
+                                            {"15-15": 2},
+                                            {"16-16": 2.5},
+                                            {"17-17": 3},
+                                            {"18-18": 3.5},
+                                            {"19-19": 4},
+                                            {"20-20": 4.5}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 1.5},
+                                            {"15-15": 2},
+                                            {"16-16": 2.5},
+                                            {"17-17": 3},
+                                            {"18-18": 3.5},
+                                            {"19-19": 4},
+                                            {"20-20": 4.5}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "motorway10",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "motorway_link10",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "trunk10",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "trunk_link10",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "outlinewidth": 1,
+                                        "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                        "outlinecolor": {
+                                            "TEMP": "{{ macros.color_rgb(136,136,136) }}"
+                                        }                                    
+                                    },
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{unclassified01,residential01,service01,living_street01}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 4},
+                                            {"16-18": 6},
+                                            {"19-20": 7}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,255,255) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{pedestrian01,footway01,path01}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 1.5},
+                                            {"15-15": 2},
+                                            {"16-16": 2.5},
+                                            {"17-17": 3},
+                                            {"18-18": 3.5},
+                                            {"19-19": 4},
+                                            {"20-20": 4.5}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(250,250,245) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{tertiary01,tertiary_link01}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2},
+                                            {"15-15": 2.5},
+                                            {"16-16": 5},
+                                            {"17-17": 6},
+                                            {"18-18": 7},
+                                            {"19-19": 8},
+                                            {"20-20": 9}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{secondary01,secondary_link01}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 2.5},
+                                            {"15-15": 3.5},
+                                            {"16-16": 6},
+                                            {"17-17": 7},
+                                            {"18-18": 8},
+                                            {"19-19": 9},
+                                            {"20-20": 10}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "{primary01,primary_link01}",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,253,139) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "motorway01",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "motorway_link01",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(253,146,58) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "trunk01",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 5},
+                                            {"15-15": 6},
+                                            {"16-16": 8},
+                                            {"17-17": 9},
+                                            {"18-18": 10},
+                                            {"19-19": 11},
+                                            {"20-20": 12}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "14-20":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": "trunk_link01",
+                                "SUB_OBJ":[
+                                    {
+                                        "OBJ": "mapscript.styleObj",
+                                        "width": [
+                                            {"14-14": 3},
+                                            {"15-15": 4},
+                                            {"16-16": 7},
+                                            {"17-17": 8},
+                                            {"18-18": 9},
+                                            {"19-19": 10},
+                                            {"20-20": 11}
+                                        ],
+                                        "opacity": 40,
+                                        "color": {
+                                            "TEMP": "{{ macros.color_rgb(255,195,69) }}"
+                                        }                                    
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_aeroways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "10-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["runway"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-10": 1},
+                                        {"11-11": 2},
+                                        {"12-12": 3},
+                                        {"13-13": 5},
+                                        {"14-14": 7},
+                                        {"15-15": 11},
+                                        {"16-16": 15},
+                                        {"17-17": 19},
+                                        {"18-18": 23},
+                                        {"19-19": 29},
+                                        {"20-20": 36}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(180,180,180) }}"
+                                    },
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"},
+                                    "linejoin": {"OBJ": "mapscript.MS_CJC_MITER"}
+                                },
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-14": 0},
+                                        {"15-20": 1}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(80,80,80) }}"
+                                    },
+                                    "pattern":[
+                                        [2, 2]
+                                    ],
+                                    "linecap": {"OBJ": "mapscript.MS_CJC_BUTT"}
+                                }
+                            ]
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": ["taxiway"],
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "width": [
+                                        {"10-12": 0.2},
+                                        {"13-13": 1},
+                                        {"14-14": 1.5},
+                                        {"15-15": 2},
+                                        {"16-16": 3},
+                                        {"17-17": 4},
+                                        {"18-18": 5},
+                                        {"19-19": 6},
+                                        {"20-20": 7}
+                                    ],
+                                    "color": {
+                                        "TEMP": "{{ macros.color_rgb(180,180,180) }}"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "wfs_buildings":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "OBJ": "mapscript.layerObj",
+                "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                "status": {"OBJ": "mapscript.MS_ON"}, 
+                "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                "units": {"OBJ": "mapscript.MS_METERS"},
+                "tileitem": "location",
+                "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                "connection": {"VAR": "db_connection"},
+                "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                "metadata.set": [
+                    [
+                        "wfs_abstract",
+                        {"TEMP": "\"{{layer_var['abstract']}}\""}
+                    ],
+                    ["gml_include_items", "all"],
+                    ["gml_featureid", "ID"],
+                    ["wfs_enable_request", "*"]
+                ],
+                "labelitem": "name"
+            }
+        ],
+        "wms_buildings":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "15-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "setExpression": "construction",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#bcb862') }}"
+                                    },
+                                    "opacity": 50
+                                },
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#333333') }}"
+                                    },
+                                    "width": [
+                                         {"15-16": 0.1},
+                                         {"17-20": 0.5}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "17-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "size": 7
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "OBJ": "mapscript.classObj",
+                            "SUB_OBJ": [
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "color": {
+                                        "TEMP": "{{ macros.color_hex('#bbbbbb') }}"
+                                    },
+                                    "opacity": 50
+                                },
+                                {
+                                    "OBJ": "mapscript.styleObj",
+                                    "outlinecolor": {
+                                        "TEMP": "{{ macros.color_hex('#333333') }}"
+                                    },
+                                    "width": [
+                                         {"15-16": 0.1},
+                                         {"17-20": 0.5}
+                                    ]
+                                }
+                            ],
+                            "addLabel": {
+                                "17-20": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_polygon",
+                                        "size": 7
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "wms_places":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "1-20":{
+                    "OBJ": "mapscript.layerObj",
+                    "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "group": {"TEMP": "\"{{layer_var['name']}}\""},
+                    "status": {"OBJ": "mapscript.MS_ON"}, 
+                    "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                    "type": {"OBJ": "mapscript.MS_LAYER_POINT"}, 
+                    "units": {"OBJ": "mapscript.MS_METERS"},
+                    "tileitem": "location",
+                    "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                    "connection": {"VAR": "db_connection"},
+                    "data": [
+                        {"1-2":{"TEMP": "\"{{layer_var['data1to2']}}\""}},
+                        {"3-7":{"TEMP": "\"{{layer_var['data3to7']}}\""}},
+                        {"8-10":{"TEMP": "\"{{layer_var['data8to10']}}\""}},
+                        {"11-12":{"TEMP": "\"{{layer_var['data11to12']}}\""}},
+                        {"13-20":{"TEMP": "\"{{layer_var['data13to20']}}\""}}
+                    ],
+                    "setProcessing":[
+                            "LABEL_NO_CLIP=ON", 
+                            "CLOSE_CONNECTION=DEFER"
+                        ], 
+                    "metadata.set": [
+                        [
+                            "wms_abstract",
+                            {"TEMP": "\"{{layer_var['abstract']}}\""}
+                        ],
+                        ["wms_enable_request", "*"]
+                    ],
+                    "classitem": "type",
+                    "labelitem": "name",
+                    "SUB_OBJ":[
+                        {
+                            "1-2":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["continents"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "font": "scb",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(100,100,100) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(-1,-1,-1) }}"
+                                        },
+                                        "position": {"OBJ": "mapscript.MS_CC"},
+                                        "-":"wrap"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "2-7":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["country"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "font": "scb",
+                                        "size":8,
+                                        "color":{
+                                            "TEMP": "{{ macros.color_rgb(100,100,100) }}"
+                                        },
+                                        "outlinecolor":{
+                                            "TEMP": "{{ macros.color_rgb(-1,-1,-1) }}"
+                                        },
+                                        "position": {"OBJ": "mapscript.MS_CC"},
+                                        "-":"wrap"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "3-15":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["city"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"3-7":8},
+                                            {"8-9":9},
+                                            {"10-10":10},
+                                            {"11-12":11},
+                                            {"13-14":12},
+                                            {"15-15":13}
+                                        ],
+                                        "outlinewidth":[
+                                            {"3-9":2},
+                                            {"10-20":3}
+                                        ],
+                                        "color":[
+                                            {
+                                                "3-7":{"TEMP": "{{ macros.color_rgb(68,68,68) }}"}
+                                            },
+                                            {
+                                                "8-15":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ],
+                                        "priority": [
+                                            {"3-9":4}
+                                        ],
+                                        "insertStyle":{
+                                            "3-9": {
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.styleObj",
+                                                    "size": 5,
+                                                    "symbol": 1,
+                                                    "setGeomTransform": "labelpnt",
+                                                    "color": {
+                                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                                    },
+                                                    "outlinecolor": {
+                                                        "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "8-18":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["town"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"8-9":8},
+                                            {"10-11":9},
+                                            {"12-14":10},
+                                            {"15-18":11}
+                                        ],
+                                        "outlinewidth":2,
+                                        "color":[
+                                            {
+                                                "8-10":{"TEMP": "{{ macros.color_hex('#666666') }}"}
+                                            },
+                                            {
+                                                "11-18":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ],
+                                        "priority": [
+                                            {"8-11":3}
+                                        ],
+                                        "insertStyle":{
+                                            "8-11": {
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.styleObj",
+                                                    "size": 3,
+                                                    "symbol": 1,
+                                                    "setGeomTransform": "labelpnt",
+                                                    "color": {
+                                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                                    },
+                                                    "outlinecolor": {
+                                                        "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "11-18":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["village"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"11-12":8},
+                                            {"13-14":9},
+                                            {"15-18":10}
+                                        ],
+                                        "outlinewidth":2,
+                                        "color":[
+                                            {
+                                                "11-12":{"TEMP": "{{ macros.color_hex('#444444') }}"}
+                                            },
+                                            {
+                                                "13-18":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ],
+                                        "priority": [
+                                            {"11-12":3}
+                                        ],
+                                        "insertStyle":{
+                                            "11-12": {
+                                                "SUB_OBJ":{
+                                                    "OBJ": "mapscript.styleObj",
+                                                    "size": 3,
+                                                    "symbol": 1,
+                                                    "setGeomTransform": "labelpnt",
+                                                    "color": {
+                                                        "TEMP": "{{ macros.color_rgb(200,200,200) }}"
+                                                    },
+                                                    "outlinecolor": {
+                                                        "TEMP": "{{ macros.color_rgb(0,0,0) }}"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "13-18":{
+                                "OBJ": "mapscript.classObj",
+                                "setExpression": ["{hamlet,locality,suburb}"],
+                                "addLabel": {
+                                    "SUB_OBJ": {
+                                        "VAR": "label_point",
+                                        "size":[
+                                            {"13-14":8},
+                                            {"15-15":9}
+                                        ],
+                                        "outlinewidth":2,
+                                        "color":[
+                                            {
+                                                "13-14":{"TEMP": "{{ macros.color_hex('#444444') }}"}
+                                            },
+                                            {
+                                                "15-18":{"TEMP": "{{ macros.color_rgb(0,0,0) }}"}
+                                            }
+                                        ],
+                                        "priority": [
+                                            {"13-14":3}
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "map_temp":{
+            "SCALES": {"VAR": "up_scale"},
+            "OBJ": "mapscript.mapObj",
+            "name": {"VAR": "name"},
+            "setFontSet":[{"VAR": "fontset"}],
+            "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
+            "setExtent": [{"VAR": "extent"}],
+            "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},
+            "setSize": [{"VAR": "size"}],
+            "symbolset.appendSymbol": {"VAR":"map_symbolset"},
+            "units": {
+                "OBJ": "mapscript.MS_DD"
+            },
+            "web.metadata.set": [
+                ["labelcache_map_edge_buffer", "-10"],
+                ["wms_title", {"VAR": "title"}],
+                ["wfs_title", {"VAR": "title"}]
+            ],
+            "SUB_OBJ": [
+                {"TEMP": [
+                        "{% for layer_var in layer_dicts %}",
+                        "    {% if layer_var['wfs_layer_temp'] is defined %}",
+                        "        {% include layer_var['wfs_layer_temp'] %},",
+                        "    {% endif %}",
+                        "    {% if layer_var['wms_layer_temp'] is defined %}",
+                        "        {% include layer_var['wms_layer_temp'] %},",
+                        "    {% endif %}",
+                        "{% endfor %}"
+                    ]
+                }
+            ]
+        }
+    },
+    "MAP":{
+        "TEMP":"map_temp"
+    }
+}
