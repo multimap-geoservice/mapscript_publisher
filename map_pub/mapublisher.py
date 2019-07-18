@@ -113,6 +113,25 @@ class PubMap(object):
             self.scales.append(self.scales[-1]/2)
         self.scales.append(0)
         
+    def lst2str(self, lst):
+        out = u"["
+        for dat in lst:
+            if isinstance(dat, (str, unicode)):
+                out = u"{0}'{1}',".format(out, dat)
+            else:
+                out = u"{0}{1},".format(out, dat)
+        return u"{}]".format(out) 
+
+    def dct2str(self, dct):
+        out = u"{"
+        for key in dct:
+            if isinstance(dct[key], (str, unicode)):
+                out = u"{0}{1}:'{2}',".format(out, key, dct[key])
+            else:
+                out = u"{0}{1}:{2},".format(out, key, dct[key])
+        return u"{}}".format(out)
+                
+        
     def find_level_scale(self, _value, _level=False):
         """
         _value - value for method object mapscript, for level: {"1-2": value}
@@ -190,9 +209,9 @@ class PubMap(object):
                     elif value['SUB_OBJ'].has_key('OBJ_ARG'):
                         OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
                         if isinstance(OBJ_ARG, dict):
-                            OBJ_ARG = u'**{}'.format(OBJ_ARG)
+                            OBJ_ARG = u'**{}'.format(self.dct2str(OBJ_ARG))
                         elif isinstance(OBJ_ARG, (list, tuple)):
-                            OBJ_ARG = u'*{}'.format(OBJ_ARG)
+                            OBJ_ARG = u'*{}'.format(self.lst2str(OBJ_ARG))
                         else:
                             OBJ_ARG = u'{}'.format(OBJ_ARG)
                     else:
@@ -223,9 +242,9 @@ class PubMap(object):
         # test assigment
         if inspect.ismethod(test_assigment):
             if isinstance(value, dict):
-                assigment = u'(**{})'.format(value)
+                assigment = u'(**{})'.format(self.dct2str(value))
             elif isinstance(value, (list, tuple)):
-                assigment = u'(*{})'.format(value)
+                assigment = u'(*{})'.format(self.lst2str(value))
             else:
                 assigment = u'({})'.format(value)
         else:

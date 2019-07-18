@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #builder.debug = True
     builder.debug = '{}/build.log'.format(debug_path)
     builder.mapjson["VARS"]["db_connection"] = db_connection 
-    builder.mapjson["VARS"]["name"] = "osm_{}".format(map_name) 
+    builder.mapjson["VARS"]["name"] = u"ОСМ_{}".format(map_name) 
     builder.mapjson["VARS"]["wms_title"] = "Open Street Map {}".format(map_name) 
     builder.mapjson["VARS"]["fontset"] = fontsfile 
     builder.build()

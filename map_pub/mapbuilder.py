@@ -677,7 +677,7 @@ class BuildMapRes(BuildMap):
                 with codecs.open(path, 'w', encoding='utf-8') as file_:
                     file_.write(json_)
             else:
-                raise Exception('Dir {} not found'.format(dir_))
+                raise Exception(u'Dir {} not found'.format(dir_))
         else:
             print(json_)
         
@@ -703,7 +703,7 @@ class BuildMapRes(BuildMap):
 
         # kwargs
         if kwargs.has_key('path'):
-            cont = kwargs.pop('path')
+            cont = kwargs.pop('path').decode('utf-8')
             cont_type = 'text'
             self.save2file(path=cont)
         else:
@@ -713,19 +713,19 @@ class BuildMapRes(BuildMap):
         
         # SQL data
         SQL = {
-            'create_table': """
+            'create_table': u"""
                 create table if not exists "{0}" (
                     "id" serial primary key,
                     "{1}" text unique,
                     "{2}" text
                 )
                 """,
-            'find_name': """
+            'find_name': u"""
                 select *
                 from "{0}"
                 where "{1}" = '{2}'; 
                 """,
-            'insert_all': """
+            'insert_all': u"""
                 insert into "{0}" 
                 (
                     "{1}",
@@ -737,18 +737,18 @@ class BuildMapRes(BuildMap):
                     '{4}'::{5}{7}
                 );
                 """,
-            'update_all': """
+            'update_all': u"""
                 update "{0}"
                 set "{2}" = '{4}'::{5}{6}
                 where "{1}" = '{3}';            
                 """,
-            'find_extra': """
+            'find_extra': u"""
                 select *
                 from information_schema.columns
                 where table_name = '{0}'
                 and column_name = '{1}' 
                 """,
-            'alter_extra': """
+            'alter_extra': u"""
                 alter table "{0}"
                 add column "{1}" {2};
                 """,
@@ -799,17 +799,17 @@ class BuildMapRes(BuildMap):
                         )
                         psql.commit()
                 # text data for extra columns
-                ins_ex_cols = '{0},\n{1}"{2}"'.format(
+                ins_ex_cols = u'{0},\n{1}"{2}"'.format(
                     ins_ex_cols, 
                     " "*20, 
                     col_extra
                 )
-                ins_ex_vals = "{0},\n{1}'{2}'".format(
+                ins_ex_vals = u"{0},\n{1}'{2}'".format(
                     ins_ex_vals, 
                     " "*20, 
                     cont_extra
                 )
-                upd_ex_sets = '{0},\n{1}"{2}" = \'{3}\''.format(
+                upd_ex_sets = u'{0},\n{1}"{2}" = \'{3}\''.format(
                     upd_ex_sets, 
                     " "*20, 
                     col_extra, 

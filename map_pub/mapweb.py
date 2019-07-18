@@ -31,6 +31,7 @@ class PubMapWEB(PubMap):
         self.wsgi_port = port
         self.mapdict = mapdict
         PubMap.__init__(self)
+        self.mapscript_obj = self.get_mapobj()
     
     def application(self, env, start_response):
         print "-" * 30
@@ -42,13 +43,12 @@ class PubMapWEB(PubMap):
                 os.unsetenv(key)
         print "-" * 30
     
-        mapfile = self.get_mapobj()
         request = mapscript.OWSRequest()
         mapscript.msIO_installStdoutToBuffer()
         request.loadParamsFromURL(env['QUERY_STRING'])
     
         try:
-            status = mapfile.OWSDispatch(request)
+            status = self.mapscript_obj.OWSDispatch(request)
         except Exception as err:
             pass
     
