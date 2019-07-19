@@ -112,11 +112,13 @@ class PubMap(object):
         while not self.scales[-1] == 1:
             self.scales.append(self.scales[-1]/2)
         self.scales.append(0)
-        
+
     def lst2str(self, lst):
         out = u"["
         for dat in lst:
             if isinstance(dat, (str, unicode)):
+                if isinstance(dat, str):
+                    dat = u'{}'.format(dat.decode('utf-8'))
                 out = u"{0}'{1}',".format(out, dat)
             else:
                 out = u"{0}{1},".format(out, dat)
@@ -125,10 +127,13 @@ class PubMap(object):
     def dct2str(self, dct):
         out = u"{"
         for key in dct:
-            if isinstance(dct[key], (str, unicode)):
-                out = u"{0}{1}:'{2}',".format(out, key, dct[key])
+            dat = copy.deepcopy(dct[key])
+            if isinstance(dat, (str, unicode)):
+                if isinstance(dat, str):
+                    dat = u'{}'.format(dat.decode('utf-8'))
+                out = u"{0}{1}:'{2}',".format(out, key, dat)
             else:
-                out = u"{0}{1}:{2},".format(out, key, dct[key])
+                out = u"{0}{1}:{2},".format(out, key, dat)
         return u"{}}".format(out)
                 
         
@@ -191,11 +196,12 @@ class PubMap(object):
         # tests value as type
         if isinstance(value, (str, unicode)):
             # fix hooks in str value
+            if isinstance(value,str):
+                value = u'{}'.format(value.decode('utf-8'))
             hook = "'"
             fix_hook = "\\'"
             if value.find(hook) != -1 and value.find(fix_hook) == -1:
                 value = value.replace(hook, fix_hook)
-            # insert str value
             value = u'\'{}\''.format(value)
         elif isinstance(value, dict):
             if value.has_key('OBJ'):

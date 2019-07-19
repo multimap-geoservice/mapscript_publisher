@@ -95,7 +95,7 @@ class BuildMap(object):
             _file.close()
         else:
             print (log)
-   
+    
     def var_proc(self, proc_data):
         """
         enter VAR:{} keys 
@@ -109,6 +109,9 @@ class BuildMap(object):
         #proc
         if self.VARS.has_key(var):
             if isinstance(var, (str, unicode)):
+                # fix unicode & load var_data
+                if isinstance(self.VARS[var], str):
+                    self.VARS[var] = u'{}'.format(self.VARS[var].decode('utf-8'))
                 var_data = copy.deepcopy(self.VARS[var])
                 # init arguments
                 if args is not None:
@@ -311,7 +314,7 @@ class BuildMap(object):
         separator = ''
         eval_data = ''
         for item in data:
-            eval_data += '{0}{1}'.format(separator, self.run_proc_item(item))
+            eval_data += u'{0}{1}'.format(separator, self.run_proc_item(item))
             separator = '.'
         return eval(eval_data)
 
@@ -331,11 +334,14 @@ class BuildMap(object):
                     out_str.append("{}".format(line))
             out_str='\n'.join(out_str)
         elif isinstance(data, (str, unicode)):
-            out_str = data
+            if isinstance(data, str):
+                out_str = u'{}'.format(data.decode('utf-8'))
+            else:
+                out_str = data
         elif isinstance(data, dict):
             out_str = self.temp_str_parser(data)
         else:
-            out_str = "{}".format(data)
+            out_str = u"{}".format(data)
         return {"TEMP":out_str}
     
     def recurs_proc(self, val, key, proc):
@@ -441,6 +447,14 @@ class BuildMap(object):
             if temp_pos != -2:
                 # find template
                 try:
+                    data = json.loads(
+                        json.dumps(
+                            ast.literal_eval(
+                                "{%s}"%string[temp_pos:]
+                            )['TEMP'].split("\n"), 
+                            ensure_ascii=False
+                        )
+                    )
                     data = ast.literal_eval(
                         "{%s}"%string[temp_pos:]
                         )['TEMP'].split("\n")
@@ -512,7 +526,7 @@ class BuildMap(object):
                         temp2text = self.temp_str_parser(block)
                     else:
                         temp2text = block
-                    full_template = "{0}\n{1}".format(full_template, temp2text)
+                    full_template = u"{0}\n{1}".format(full_template, temp2text)
             self.TEMPS[key] = full_template
                     
             
