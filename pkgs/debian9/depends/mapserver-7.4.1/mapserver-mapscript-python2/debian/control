@@ -1,0 +1,152 @@
+Source: mapserver-mapscript-python2
+Maintainer: Debian GIS Project <pkg-grass-devel@lists.alioth.debian.org>
+Uploaders: Francesco Paolo Lovergine <frankie@debian.org>,
+           Alan Boudreault <aboudreault@mapgears.com>,
+           Bas Couwenberg <sebastic@debian.org>
+Section: devel
+Priority: optional
+Build-Depends: debhelper (>= 9.20160114),
+               dh-python,
+               dpkg-dev (>= 1.16.1.1),
+               cmake (>= 2.8.12.1-1.2),
+               chrpath,
+               libcairo2-dev,
+               libcurl4-gnutls-dev | libcurl-ssl-dev,
+               libfcgi-dev,
+               libfreetype6-dev (>= 2.0.9),
+               libfribidi-dev,
+               libgdal-dev (>= 1.10.1-0~),
+               libgeos-dev (>= 3.3.1-1~),
+               libgif-dev,
+               libharfbuzz-dev,
+               libjpeg-dev,
+               libpng-dev,
+               libprotobuf-c-dev,
+               libpq-dev,
+               libproj-dev,
+               librsvg2-dev,
+               libxml2-dev,
+               libxslt1-dev,
+               zlib1g-dev (>= 1.1.4),
+               pkg-config,
+               pkg-kde-tools,
+               protobuf-c-compiler,
+               python-all,
+               python-all-dev,
+               python-setuptools,
+               swig,
+               docbook2x,
+               docbook-xsl,
+               docbook-xml,
+               xsltproc
+Build-Conflicts: libcurl3-openssl-dev
+Standards-Version: 4.4.0
+Vcs-Browser: https://salsa.debian.org/debian-gis-team/mapserver
+Vcs-Git: https://salsa.debian.org/debian-gis-team/mapserver.git -b buster-backports
+Homepage: http://www.mapserver.org
+X-Python-Version: >= 2.7
+
+Package: libmapserver2
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Suggests: cgi-mapserver,
+          mapserver-bin,
+          mapserver-doc,
+          python-mapscript
+Pre-Depends: ${misc:Pre-Depends}
+Description: Shared library for MapServer
+ This package contains the shared library.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards. Scripting
+ functionality in MapScript is provided by the suggested mapscript
+ library packages.
+
+Package: libmapserver-dev
+Architecture: any
+Section: libdevel
+Depends: libmapserver2 (= ${binary:Version}),
+         ${misc:Depends}
+Suggests: cgi-mapserver,
+          mapserver-bin,
+          mapserver-doc,
+          python-mapscript
+Breaks: libmapserver-6.2.1-dev (<< 6.4.0-1~),
+        libmapserver1-dev (<< 7.0.0~)
+Replaces: libmapserver-6.2.1-dev (<< 6.4.0-1~),
+          libmapserver1-dev (<< 7.0.0~)
+Description: Shared library development files for MapServer
+ This package contains the development files for the shared library.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards. Scripting
+ functionality in MapScript is provided by the suggested mapscript
+ library packages.
+
+Package: cgi-mapserver
+Architecture: any
+Section: web
+Depends: mapserver-bin,
+         ${misc:Depends}
+Suggests: mapserver-doc,
+          python-mapscript
+Description: CGI executable for MapServer
+ This package contains the mapserv CGI program. It provides the
+ MapServer template language, and can be used to implement Web Map
+ Service applications.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards. Scripting
+ functionality in MapScript is provided by the suggested mapscript
+ library packages.
+
+Package: mapserver-bin
+Architecture: any
+Section: misc
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Suggests: cgi-mapserver,
+          mapserver-doc,
+          shapelib,
+          python-mapscript
+Description: MapServer utilities
+ This package provides command-line utilities for MapServer.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards. Scripting
+ functionality in MapScript is provided by the suggested mapscript
+ library packages.
+
+Package: mapserver-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends}
+Suggests: cgi-mapserver,
+          python-mapscript
+Description: documentation for MapServer
+ This package provides some brief documentation for MapServer.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards. Scripting
+ functionality in MapScript is provided by the suggested mapscript
+ library packages.
+
+Package: python-mapscript
+Architecture: any
+Section: python
+Depends: ttf-bitstream-vera,
+         libmapserver2 (= ${binary:Version}),
+         ${python:Depends},
+         ${shlibs:Depends},
+         ${misc:Depends}
+Suggests: mapserver-bin,
+          mapserver-doc
+Provides: ${python:Provides}
+Description: Python library for MapServer
+ Python 2 MapScript provides MapServer functions for Python scripts.
+ .
+ MapServer is a CGI-based framework for Internet map services which
+ supports Open Geospatial Consortium (OGC) standards.
+
