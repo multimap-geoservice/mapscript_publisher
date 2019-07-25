@@ -3125,7 +3125,11 @@
                         {"TEMP": "\"{{layer_var['abstract']}}\""}
                     ],
                     ["gml_include_items", "all"],
-                    ["gml_featureid", "ID"],
+                    ["gml_featureid", "osm_id"],
+                    [
+                        "wfs_filter", 
+                        "<PropertyIsEqualTo><PropertyName>osm_id</PropertyName><Literal>-8841754</Literal></PropertyIsEqualTo>"
+                    ],
                     ["wfs_enable_request", "*"]
                 ],
                 "labelitem": "name"

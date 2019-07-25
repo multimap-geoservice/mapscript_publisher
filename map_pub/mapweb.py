@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import os
+import copy
 from wsgiref.simple_server import make_server
 
 import mapscript
@@ -41,20 +42,32 @@ class PubMapWEB(PubMap):
                 print "{0}='{1}'".format(key, env[key])
             else:
                 os.unsetenv(key)
+        print "QUERY_STRING=("
+        for q_str in env['QUERY_STRING'].split('&'):
+            print "    {},".format(q_str)
+        print ")"
         print "-" * 30
     
         request = mapscript.OWSRequest()
         mapscript.msIO_installStdoutToBuffer()
         request.loadParamsFromURL(env['QUERY_STRING'])
+        rec_obj = self.mapscript_obj.clone()
     
         try:
-            status = self.mapscript_obj.OWSDispatch(request)
+            status_id = rec_obj.OWSDispatch(request)
         except Exception as err:
             pass
-    
+        
         content_type = mapscript.msIO_stripStdoutBufferContentType()
         result = mapscript.msIO_getStdoutBufferBytes()
-        start_response('200 OK', [('Content-type', content_type)])
+        # status:
+        if not status_id:
+            status = '200 OK'
+        else:
+            status = '400 Bad request'
+            result = '\n'.join(result.split('\n')[2:])
+            
+        start_response(status, [('Content-type', str(content_type))])
         return [result]
     
     def wsgi(self):
