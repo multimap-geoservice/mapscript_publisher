@@ -3124,12 +3124,12 @@
                         "wfs_abstract",
                         {"TEMP": "\"{{layer_var['abstract']}}\""}
                     ],
+                    [
+                        "wfs_title",
+                        {"TEMP": "\"{{layer_var['title']}}\""}
+                    ],
                     ["gml_include_items", "all"],
                     ["gml_featureid", "osm_id"],
-                    [
-                        "wfs_filter", 
-                        "<PropertyIsEqualTo><PropertyName>osm_id</PropertyName><Literal>-8841754</Literal></PropertyIsEqualTo>"
-                    ],
                     ["wfs_enable_request", "*"]
                 ],
                 "labelitem": "name"
