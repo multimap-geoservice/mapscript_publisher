@@ -35,6 +35,13 @@ class PubMapWEB(PubMap):
         self.mapscript_obj = self.get_mapobj()
     
     def application(self, env, start_response):
+        q_str = {
+            my.split("=")[0].upper(): my.split("=")[1]
+            for my 
+            in env['QUERY_STRING'].split('&')
+        }
+        serv_ver = [q_str.get('SERVICE', False), q_str.get('VERSION', False)]
+        
         print "-" * 30
         for key in self.MAPSERV_ENV:
             if key in env:
@@ -43,8 +50,8 @@ class PubMapWEB(PubMap):
             else:
                 os.unsetenv(key)
         print "QUERY_STRING=("
-        for q_str in env['QUERY_STRING'].split('&'):
-            print "    {},".format(q_str)
+        for key in q_str:
+            print "    {0}={1},".format(key, q_str[key])
         print ")"
         print "-" * 30
     
@@ -56,17 +63,29 @@ class PubMapWEB(PubMap):
         try:
             status_id = rec_obj.OWSDispatch(request)
         except Exception as err:
-            pass
+            print "OWSDispatch Error: {}".format(err)
+            err_def = unicode(err).split(':')[0]
+            status_id = None
         
         content_type = mapscript.msIO_stripStdoutBufferContentType()
         result = mapscript.msIO_getStdoutBufferBytes()
+        mapscript.msIO_resetHandlers()
+
         # status:
-        if not status_id:
+        if status_id == mapscript.MS_SUCCESS:
             status = '200 OK'
-        else:
+        elif status_id == mapscript.MS_FAILURE:
             status = '400 Bad request'
-            result = '\n'.join(result.split('\n')[2:])
-            
+            if serv_ver == ['WFS', '2.0.0']:
+                result = '\n'.join(result.split('\n')[2:])
+        elif status_id is None:
+            if serv_ver[0] == "WMS" and err_def == "msPostGISLayerGetExtent()":
+                status = '200 OK'
+            elif serv_ver == ['WFS', '1.0.0'] and err_def == "msWFSGetFeature()":
+                status = '400 Bad request'
+            else:
+                status = '500 Server Error'
+
         start_response(status, [('Content-type', str(content_type))])
         return [result]
     
