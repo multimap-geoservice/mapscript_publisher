@@ -8,17 +8,19 @@ from owslib.fes import PropertyIsLike
 from owslib.fes import PropertyIsEqualTo
 
 wfs_ver = '1.1.0' 
-#wfs_ver = '2.0.0' 
 
 wfs = WebFeatureService('http://localhost:3007', version=wfs_ver)
 
-filter_ = PropertyIsEqualTo(propertyname="osm_id", literal="-8841754")
-#filter_ = PropertyIsLike(propertyname="osm_id", literal="-8841754", wildCard="*")
-filterxml = etree.tostring(filter_.toXML()).decode("utf-8")
+#filter_ = PropertyIsEqualTo(propertyname="osm_id", literal="-8841754")
+#filter_ = PropertyIsLike(propertyname="type", literal="yes", wildCard="*")
+filter_ = PropertyIsLike(propertyname="name", literal=u"Санкт-Петербург", wildCard="*")
+filterxml = u"<Filter>{}</Filter>".format(
+    etree.tostring(filter_.toXML()).decode("utf-8")
+)
 
 out = wfs.getfeature(
     typename='buildings', 
-    propertyname='msGeometry',
+    #propertyname='msGeometry',
     filter=filterxml, 
     maxfeatures=10
 )
