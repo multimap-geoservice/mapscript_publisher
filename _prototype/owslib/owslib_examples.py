@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 # encoding: utf-8
 
+import ogr
+import ast
+import json
+
 from owslib.wfs import WebFeatureService
 
 from owslib.etree import etree
@@ -21,12 +25,64 @@ wfs_ver = '1.1.0'
 
 wfs = WebFeatureService('http://localhost:3007', version=wfs_ver)
 
-#filter_ = PropertyIsEqualTo(propertyname="osm_id", literal="-8841754")
-#filter_ = PropertyIsLike(propertyname="type", literal="yes", wildCard="*")
-#filter_ = PropertyIsLike(propertyname="name", literal=u"Санкт-Петербург", wildCard="*")
-#filterxml = u"<Filter>{}</Filter>".format(
-    #etree.tostring(filter_.toXML()).decode("utf-8")
-#)
+
+def gml2json(gml, echo=False):
+    json_out = {
+        "type": "FeatureCollection",
+        "features": [],
+    }
+    geom_crs = None
+    tree = etree.fromstring(gml)
+    nsmap = tree.nsmap
+    tag_name = lambda t: t.tag.split("{%s}" % nsmap[t.prefix])[-1]
+    for feature in tree.getiterator("{%s}featureMember" % nsmap["gml"]):
+        json_feature = {
+            "type": "Feature",
+            "id": None,
+            #"layer": None,
+            "properties": None,
+            "geometry": None,
+        }
+        for layer in feature.iterfind('{%s}*' % nsmap["ms"]):
+            json_feature["id"] = layer.get("{%s}id" % nsmap["gml"], None)
+            #json_feature["layer"] = tag_name(layer)
+            for prop in layer.iterfind('{%s}*' % nsmap["ms"]):
+                get_prop = True
+                for geom in prop.iterfind("{%s}*" % nsmap["gml"]):
+                    get_prop = False
+                    geom_crs = geom.get("srsName", None)
+                    ogr_geom = ogr.CreateGeometryFromGML(etree.tostring(geom))
+                    if isinstance(ogr_geom, ogr.Geometry):
+                        json_feature["geometry"] = ast.literal_eval(
+                            ogr_geom.ExportToJson()
+                        )
+                if get_prop:
+                    if not json_feature["properties"]:
+                        json_feature["properties"] = {}
+                    json_feature["properties"][tag_name(prop)] = prop.text
+            json_out["features"].append(json_feature)
+    if geom_crs:
+        geom_crs = geom_crs.split(":")
+        if len(geom_crs) == 2:
+            print geom_crs
+            if geom_crs[0].lower() == "epsg":
+                json_out["crs"] = {
+                    "type": "EPSG",
+                    "properties": {
+                            "code": geom_crs[-1],
+                        },
+                    }
+    
+    if echo:
+        print json.dumps(
+            json_out,
+            sort_keys=True,
+            indent=4,
+            separators=(',', ': '), 
+            ensure_ascii=False, 
+        )
+    
+    return json_out
 
 
 filter1 = PropertyIsEqualTo(propertyname="type", literal=u"hotel")
@@ -52,7 +108,8 @@ filterxml = u"<Filter><OR><AND>{0}{1}</AND><AND>{0}{2}</AND></OR></Filter>".form
 
 out = wfs.getfeature(
     typename='buildings', 
-    #propertyname=['msGeometry', 'osm_id'],
+    propertyname=['type', 'name'],
+    #propertyname=['msGeometry', 'osm_id', 'name'],
     filter=filterxml, 
     maxfeatures=10
 )
@@ -60,25 +117,9 @@ out = wfs.getfeature(
 print "*" * 30
 print "Metadata"
 print "*" * 30
-tree = etree.fromstring(out.read())
-nsmap = tree.nsmap
-for feature in tree.getiterator("{%s}featureMember" % nsmap["gml"]):
-    for layer in feature.iterfind('{%s}*' % nsmap["ms"]):
-        print "-" * 30
-        for meta in layer.iterfind('{%s}*' % nsmap["ms"]):
-            meta_name = meta.tag.split("{%s}" % nsmap[meta.prefix])[-1]
-            for geom in meta.iterfind("{%s}*" % nsmap["gml"]):
-                geom_type = geom.tag.split("{%s}" % nsmap[geom.prefix])[-1]
-                geom_srs = geom.get("srsName", None)
-                for ex in geom.iterfind("{%s}exterior" % nsmap["gml"]):
-                    for lr in ex.iterfind("{%s}LinearRing" % nsmap["gml"]):
-                        for ps in lr.iterfind("{%s}posList" % nsmap["gml"]):
-                            geom_data = [float(my) for my in ps.text.split(" ")[:-1]]
-                print geom_type
-                print geom_srs
-                print geom_data
-            else:
-                print u"{0}={1}".format(meta_name, meta.text)
+#for lst in [my for my in out.read().split('\n')]:
+    #print lst
+gml2json(out.read(), echo=True)
 
 
 filter1 = BBox(
@@ -89,10 +130,10 @@ filter1 = BBox(
             #30.22170792876364942,
         #], 
     bbox=[
-            59.98198,
-            30.21001, 
-            59.98198,
-            30.21001, 
+            59.94617,
+            30.23334, 
+            59.94618,
+            30.23335, 
         ], 
     #crs="urn:ogc:def:crs:EPSG::4326",
     crs="EPSG:4326"
@@ -118,11 +159,12 @@ out = wfs.getfeature(
     maxfeatures=10
 )
 
-#print "*" * 30
-#print "Bbox"
-#print "*" * 30
+print "*" * 30
+print "Bbox"
+print "*" * 30
 #for lst in [my for my in out.read().split('\n')]:
     #print lst
+gml2json(out.read(), echo=True)
 
 
 print "*" * 30
