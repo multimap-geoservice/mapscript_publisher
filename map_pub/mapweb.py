@@ -39,6 +39,7 @@ class PubMapWEB(PubMap):
             my.split("=")[0].upper(): my.split("=")[1]
             for my 
             in env['QUERY_STRING'].split('&')
+            if "=" in my
         }
         serv_ver = [q_str.get('SERVICE', False), q_str.get('VERSION', False)]
         

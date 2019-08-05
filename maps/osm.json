@@ -183,6 +183,7 @@
             }, 
             {
                 "wms_layer_temp": "wms_landuse",
+                "wfs_layer_temp": "wfs_landuse",
                 "name": "landuse",
                 "abstract": "landuse",
                 "data": {
@@ -1273,6 +1274,35 @@
                         }
                     ]
                 }
+            }
+        ],
+        "wfs_landuse":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "OBJ": "mapscript.layerObj",
+                "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                "status": {"OBJ": "mapscript.MS_ON"}, 
+                "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+                "units": {"OBJ": "mapscript.MS_METERS"},
+                "tileitem": "location",
+                "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                "connection": {"VAR": "db_connection"},
+                "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                "metadata.set": [
+                    [
+                        "wfs_abstract",
+                        {"TEMP": "\"{{layer_var['abstract']}}\""}
+                    ],
+                    [
+                        "wfs_title",
+                        {"TEMP": "\"{{layer_var['title']}}\""}
+                    ],
+                    ["gml_include_items", "all"],
+                    ["gml_featureid", "osm_id"],
+                    ["wfs_enable_request", "*"]
+                ],
+                "labelitem": "name"
             }
         ],
         "wms_transport_areas":[
