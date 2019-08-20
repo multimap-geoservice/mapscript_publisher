@@ -29,24 +29,147 @@ class WfsFilter(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
-        self.tags = {
-            "and": None,
-            "or": None,
-            "not": None,
+        self.filter_tags = {
+            "and": self.filter_tag_and,
+            "or": self.filter_tag_or,
+            "not": self.filter_tag_not,
         } 
-        self.ops = {
-            "between": PropertyIsBetween,
-            "=": PropertyIsEqualTo,
-            ">": PropertyIsGreaterThan,
-            ">=": PropertyIsGreaterThanOrEqualTo,
-            "<": PropertyIsLessThan,
-            "<=": PropertyIsLessThanOrEqualTo,
-            "!=": PropertyIsNotEqualTo,
-            "like": PropertyIsLike,
-            "null": PropertyIsNull,
-            "bbox": BBox,
+        self.filter_opts = {
+            "=": self.filter_opt_equal_to,
+            "!=": self.filter_opt_not_equal_to,
+            ">": self.filter_opt_greater_than,
+            ">=": self.filter_opt_graater_than_or_equal_to,
+            "<": self.filter_opt_less_than,
+            "<=": self.filter_opt_less_than_or_equal_to,
+            "between": self.filter_opt_beetwen,
+            "null": self.filter_opt_null,
+            "like": self.filter_opt_like,
+            "bbox": self.filter_opt_bbox,
         }
+   
+    def filters_tags(method):
+        def wrapper(self, *args):
+            if args:
+                all_args = []
+                for arg in args:
+                    all_args.append(arg)
+                return method(self).format("".join(all_args))
+            else:
+                return ["filter opts"]
+        return wrapper
+   
+    @filters_tags
+    def filter_tag_and(self):
+        return "<AND>{}</AND>"
     
+    @filters_tags
+    def filter_tag_or(self):
+        return "<OR>{}</OR>"
+   
+    @filters_tags
+    def filter_tag_not(self):
+        return "<NOT>{}</NOT>"
+    
+    def filters_literal_opts(method):
+        def wrapper(self, propertyname=None, literal=None):
+            if propertyname and literal:
+                tag = method(
+                    self, 
+                    propertyname=propertyname, 
+                    literal=literal, 
+                )
+                return etree.tostring(tag.toXML()).decode("utf-8")
+            elif not propertyname and not literal:
+                return "value"
+            else:
+                raise Exception("Filter error")
+        return wrapper
+    
+    @filters_literal_opts 
+    def filter_opt_equal_to(self, **kwargs):
+        return PropertyIsEqualTo(**kwargs)
+
+    @filters_literal_opts 
+    def filter_opt_not_equal_to(self, **kwargs):
+        return PropertyIsNotEqualTo(**kwargs)
+
+    @filters_literal_opts 
+    def filter_opt_greater_than(self, **kwargs):
+        return PropertyIsGreaterThan(**kwargs)
+
+    @filters_literal_opts 
+    def filter_opt_graater_than_or_equal_to(self, **kwargs):
+        return PropertyIsGreaterThanOrEqualTo(**kwargs)
+
+    @filters_literal_opts 
+    def filter_opt_less_than(self, **kwargs):
+        return PropertyIsLessThan(**kwargs)
+
+    @filters_literal_opts 
+    def filter_opt_less_than_or_equal_to(self, **kwargs):
+        return PropertyIsLessThanOrEqualTo(**kwargs)
+
+    def filter_opt_beetwen(self, propertyname=None, lower=None, upper=None):
+        if propertyname and lower and upper:
+            tag = PropertyIsBetween(
+                propertyname=propertyname, 
+                lower=lower, 
+                upper=upper, 
+            )
+            return etree.tostring(tag.toXML()).decode("utf-8")
+        elif not propertyname and not lower and not upper:
+            return [
+                "lower value", 
+                "upper value", 
+            ]
+        else:
+            raise Exception("Filter error")
+
+    def filter_opt_null(self, propertyname=None):
+        if propertyname:
+            tag = PropertyIsNull(
+                propertyname=propertyname, 
+            )
+            return etree.tostring(tag.toXML()).decode("utf-8")
+        else:
+            return None
+
+    def filter_opt_like(self, propertyname=None, literal=None):
+        if propertyname and literal:
+            tag = PropertyIsLike(
+                propertyname=propertyname,
+                literal=literal, 
+                wildCard="*", 
+                singleChar=".", 
+                escapeChar="!", 
+            )
+            return etree.tostring(tag.toXML()).decode("utf-8")
+        elif not propertyname and not literal:
+            return "value"
+        else:
+            raise Exception("Filter error")
+
+    def filter_opt_bbox(self, propertyname=None, bbox=None, epsg_code=None):
+        if propertyname and bbox and epsg_code:
+            tag = BBox(
+                propertyname=propertyname,
+                bbox=bbox, 
+                crs="EPSG:{}".foramt(epsg_code), 
+            )
+            return etree.tostring(tag.toXML()).decode("utf-8")
+        elif not propertyname and not bbox and not epsg_code:
+            return {
+                "bbox": [
+                    "Upper Left Coord", 
+                    "Lower Left Coord", 
+                    "Upper Right Coord", 
+                    "Lower Right Coord", 
+                    ],
+                "crs": "epsg code projection",
+            }
+        else:
+            raise Exception("Filter error")
+
 
 ########################################################################
 class GeoCoder(WfsFilter):
@@ -118,6 +241,38 @@ class GeoCoder(WfsFilter):
         if self.debug:
             self.echo2json(json_out)
         return json_out
+   
+    def get_help(self):
+        filter_tags = {
+            my: self.filter_tags[my]()
+            for my
+            in self.filter_tags
+        }
+        filter_opts = {
+            my: self.filter_opts[my]()
+            for my
+            in self.filter_opts
+        }
+        json_out = {
+            "filter":{
+                "tags": filter_tags,
+                "opts": filter_opts,
+                "example": {
+                    "tag": {
+                        "property 1": {
+                            "opt": "value",
+                            },
+                        "property 2": {
+                            "opt 1": "value",
+                            "opt 2": ["value 1", "value 2"],
+                        },
+                    },
+                },
+            }, 
+        }
+        if self.debug:
+            self.echo2json(json_out)
+        return json_out
     
     def get_info(self):
         json_out = {}
@@ -152,7 +307,7 @@ class GeoCoder(WfsFilter):
                 "epsg_code": epsg_code, 
                 "layer_property": layer_property,
                 "max_features": 0,
-                "filter": None,
+                "filter": {},
             }
         if self.debug:
             self.echo2json(json_out)
@@ -243,7 +398,6 @@ if __name__ == "__main__":
         etree.tostring(filter1.toXML()).decode("utf-8") 
     )
     
-    
     print "*" * 30
     print "Bbox"
     print "*" * 30
@@ -270,3 +424,18 @@ if __name__ == "__main__":
     print "*" * 30
     
     print gcoder.get_info()
+
+    print "*" * 30
+    print "GetHelp"
+    print "*" * 30
+    
+    print gcoder.get_help()
+
+    print "*" * 30
+    print "filter"
+    print "*" * 30
+    
+    opts = []
+    opts.append(gcoder.filter_opts[">"]("bla", "blabla"))
+    opts.append(gcoder.filter_opts["between"]("bla", 1, 2))
+    print gcoder.filter_tags["and"](*opts)
