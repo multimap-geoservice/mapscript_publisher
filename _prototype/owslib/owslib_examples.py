@@ -3,6 +3,7 @@
 
 import ogr
 import json
+import copy
 
 from owslib.wfs import WebFeatureService
 
@@ -33,6 +34,7 @@ class WfsFilter(object):
             "and": self.filter_tag_and,
             "or": self.filter_tag_or,
             "not": self.filter_tag_not,
+            "filter": self.filter_tag_filter,
         } 
         self.filter_opts = {
             "=": self.filter_opt_equal_to,
@@ -46,8 +48,58 @@ class WfsFilter(object):
             "like": self.filter_opt_like,
             "bbox": self.filter_opt_bbox,
         }
+        
+    def filter_create(self, content):
+        pass
+    
+    def filter_engine(self, content, bool_tag=True, filter_tag=True):
+        all_filter = u""
+        for key in content:
+            cont_key = copy.deepcopy(content[key])
+            if self.filter_tags.has_key(key):
+                if isinstance(cont_key, dict):
+                    cont = self.filter_engine(
+                                cont_key, 
+                                bool_tag=False, 
+                                filter_tag=False
+                            )
+                    all_filter = "{0}{1}".format(
+                        all_filter,
+                        self.filter_tags[key](cont)
+                    )
+                elif isinstance(cont_key, list):
+                    cont_arr = []
+                    for cont_next in cont_key:
+                        cont_arr.append(
+                            self.filter_engine(
+                                cont_next, 
+                                bool_tag=True, 
+                                filter_tag=False
+                            )
+                        )
+                    all_filter = "{0}{1}".format(
+                        all_filter,
+                        self.filter_tags[key](*cont_arr)
+                    )
+            else:
+                for f_opt in cont_key:
+                    if self.filter_opts.has_key(f_opt):
+                        f_arg = cont_key[f_opt]
+                        if not isinstance(f_arg, list):
+                            f_arg = [f_arg]
+                        f_arg.insert(0, key)
+                        all_filter = "{0}{1}".format(
+                            all_filter, 
+                            self.filter_opts[f_opt](*f_arg)
+                        )
+        if bool_tag:
+            if len(content) != 1:
+                all_filter = self.filter_tags['and'](all_filter)
+        if filter_tag:
+            all_filter = self.filter_tags['filter'](all_filter)
+        return all_filter
    
-    def filters_tags(method):
+    def dec_filters_tags(method):
         def wrapper(self, *args):
             if args:
                 all_args = []
@@ -58,25 +110,34 @@ class WfsFilter(object):
                 return ["filter opts"]
         return wrapper
    
-    @filters_tags
+    @dec_filters_tags
     def filter_tag_and(self):
         return "<AND>{}</AND>"
     
-    @filters_tags
+    @dec_filters_tags
     def filter_tag_or(self):
         return "<OR>{}</OR>"
    
-    @filters_tags
+    @dec_filters_tags
     def filter_tag_not(self):
         return "<NOT>{}</NOT>"
     
-    def filters_literal_opts(method):
+    @dec_filters_tags
+    def filter_tag_filter(self):
+        return "<Filter>{}</Filter>"
+
+    def data2literal(self, data):
+        if isinstance(data, (int, float)):
+            data = str(data)
+        return u"{}".format(data.decode('utf-8'))
+
+    def dec_filters_literal_opts(method):
         def wrapper(self, propertyname=None, literal=None):
             if propertyname and literal:
                 tag = method(
                     self, 
-                    propertyname=propertyname, 
-                    literal=literal, 
+                    propertyname=self.data2literal(propertyname), 
+                    literal=self.data2literal(literal), 
                 )
                 return etree.tostring(tag.toXML()).decode("utf-8")
             elif not propertyname and not literal:
@@ -85,36 +146,36 @@ class WfsFilter(object):
                 raise Exception("Filter error")
         return wrapper
     
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_equal_to(self, **kwargs):
         return PropertyIsEqualTo(**kwargs)
 
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_not_equal_to(self, **kwargs):
         return PropertyIsNotEqualTo(**kwargs)
 
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_greater_than(self, **kwargs):
         return PropertyIsGreaterThan(**kwargs)
 
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_graater_than_or_equal_to(self, **kwargs):
         return PropertyIsGreaterThanOrEqualTo(**kwargs)
 
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_less_than(self, **kwargs):
         return PropertyIsLessThan(**kwargs)
 
-    @filters_literal_opts 
+    @dec_filters_literal_opts 
     def filter_opt_less_than_or_equal_to(self, **kwargs):
         return PropertyIsLessThanOrEqualTo(**kwargs)
 
     def filter_opt_beetwen(self, propertyname=None, lower=None, upper=None):
         if propertyname and lower and upper:
             tag = PropertyIsBetween(
-                propertyname=propertyname, 
-                lower=lower, 
-                upper=upper, 
+                propertyname=self.data2literal(propertyname), 
+                lower=self.data2literal(lower), 
+                upper=self.data2literal(upper), 
             )
             return etree.tostring(tag.toXML()).decode("utf-8")
         elif not propertyname and not lower and not upper:
@@ -128,7 +189,7 @@ class WfsFilter(object):
     def filter_opt_null(self, propertyname=None):
         if propertyname:
             tag = PropertyIsNull(
-                propertyname=propertyname, 
+                propertyname=self.data2literal(propertyname), 
             )
             return etree.tostring(tag.toXML()).decode("utf-8")
         else:
@@ -137,8 +198,8 @@ class WfsFilter(object):
     def filter_opt_like(self, propertyname=None, literal=None):
         if propertyname and literal:
             tag = PropertyIsLike(
-                propertyname=propertyname,
-                literal=literal, 
+                propertyname=self.data2literal(propertyname), 
+                literal=self.data2literal(literal), 
                 wildCard="*", 
                 singleChar=".", 
                 escapeChar="!", 
@@ -152,7 +213,7 @@ class WfsFilter(object):
     def filter_opt_bbox(self, propertyname=None, bbox=None, epsg_code=None):
         if propertyname and bbox and epsg_code:
             tag = BBox(
-                propertyname=propertyname,
+                propertyname=self.data2literal(propertyname), 
                 bbox=bbox, 
                 crs="EPSG:{}".foramt(epsg_code), 
             )
@@ -206,15 +267,14 @@ class GeoCoder(WfsFilter):
                 "type": "Feature",
                 "id": None,
                 "layer": None,
-                "properties": None,
+                "properties": {},
                 "geometry": None,
             }
             for layer in feature.iterfind('{%s}*' % nsmap["ms"]):
                 json_feature["id"] = layer.get("{%s}id" % nsmap["gml"], None)
-                json_feature["layer"] = tag_name(layer)
+                json_feature["properties"]["layer"] = tag_name(layer)
                 for prop in layer.iterfind('{%s}*' % nsmap["ms"]):
                     get_prop = True
-                    geom_crs = None
                     for geom in prop.iterfind("{%s}*" % nsmap["gml"]):
                         get_prop = False
                         geom_crs = geom.get("srsName", None)
@@ -224,20 +284,18 @@ class GeoCoder(WfsFilter):
                                 ogr_geom.ExportToJson()
                             )
                     if get_prop:
-                        if not json_feature["properties"]:
-                            json_feature["properties"] = {}
                         json_feature["properties"][tag_name(prop)] = prop.text
-                    if geom_crs:
-                        geom_crs = geom_crs.split(":")
-                        if len(geom_crs) == 2:
-                            if geom_crs[0].lower() == "epsg":
-                                json_feature["crs"] = {
-                                    "type": "EPSG",
-                                    "properties": {
-                                            "code": geom_crs[-1],
-                                        },
-                                    }
                 json_out["features"].append(json_feature)
+        if geom_crs:
+            geom_crs = geom_crs.split(":")
+            if len(geom_crs) == 2:
+                if geom_crs[0].lower() == "epsg":
+                    json_out["crs"] = {
+                        "type": "EPSG",
+                        "properties": {
+                                "code": geom_crs[-1],
+                            },
+                        }
         if self.debug:
             self.echo2json(json_out)
         return json_out
@@ -313,14 +371,15 @@ class GeoCoder(WfsFilter):
             self.echo2json(json_out)
         return json_out
 
-    def get_feature(self, layer_name, filter_xml, **kwargs):
+    def get_feature(self, layer_name, filter_json, **kwargs):
         feature_args = [
             "propertyname", 
-            "maxfeatures"
+            "maxfeatures", 
+            "srsname"
         ]
         out_args = {
             "typename": layer_name,
-            "filter": filter_xml,
+            "filter": self.filter_engine(filter_json),
         }
         for arg in feature_args:
             if kwargs.get(arg, False):
@@ -355,17 +414,17 @@ if __name__ == "__main__":
         etree.tostring(filter3.toXML()).decode("utf-8"), 
     )
     
-    print "*" * 30
-    print "Metadata"
-    print "*" * 30
+    #print "*" * 30
+    #print "Metadata"
+    #print "*" * 30
 
-    print gcoder.get_feature(
-        layer_name='buildings', 
-        propertyname=['type', 'name'],
-        #propertyname=['msGeometry', 'osm_id', 'name'],
-        filter_xml=filterxml, 
-        maxfeatures=10
-    )
+    #print gcoder.get_feature(
+        #layer_name='buildings', 
+        #propertyname=['type', 'name'],
+        ##propertyname=['msGeometry', 'osm_id', 'name'],
+        #filter_xml=filterxml, 
+        #maxfeatures=10
+    #)
     
     
     filter1 = BBox(
@@ -398,20 +457,20 @@ if __name__ == "__main__":
         etree.tostring(filter1.toXML()).decode("utf-8") 
     )
     
-    print "*" * 30
-    print "Bbox"
-    print "*" * 30
-    print gcoder.get_feature(
-        layer_name='landuse', 
-        propertyname=[
-            'msGeometry', 
-            'osm_id', 
-            'name', 
-            'type'
-        ],
-        filter_xml=filterxml, 
-        maxfeatures=10
-    )
+    #print "*" * 30
+    #print "Bbox"
+    #print "*" * 30
+    #print gcoder.get_feature(
+        #layer_name='landuse', 
+        #propertyname=[
+            #'msGeometry', 
+            #'osm_id', 
+            #'name', 
+            #'type'
+        #],
+        #filter_xml=filterxml, 
+        #maxfeatures=10
+    #)
     
     print "*" * 30
     print "GetCapabilites"
@@ -419,23 +478,52 @@ if __name__ == "__main__":
     
     print gcoder.get_capabilities()
 
-    print "*" * 30
-    print "GetInfo"
-    print "*" * 30
+    #print "*" * 30
+    #print "GetInfo"
+    #print "*" * 30
     
-    print gcoder.get_info()
+    #print gcoder.get_info()
 
-    print "*" * 30
-    print "GetHelp"
-    print "*" * 30
+    #print "*" * 30
+    #print "GetHelp"
+    #print "*" * 30
     
-    print gcoder.get_help()
+    #print gcoder.get_help()
 
     print "*" * 30
     print "filter"
     print "*" * 30
     
-    opts = []
-    opts.append(gcoder.filter_opts[">"]("bla", "blabla"))
-    opts.append(gcoder.filter_opts["between"]("bla", 1, 2))
-    print gcoder.filter_tags["and"](*opts)
+    filter_json = {
+        "or": [
+            {
+                #"and": {
+                    "name": {
+                        "like": "*Пет*",
+                    },
+                    "type": {
+                        "=": "hotel",
+                    },
+                #},
+            }, 
+            {
+                #"and": {
+                    "name": {
+                        "like": "*Бал*",
+                    },
+                    "type": {
+                        "=": "hotel",
+                    },
+                #},
+            }, 
+        ],
+    }
+    
+    print gcoder.get_feature(
+        layer_name='buildings', 
+        propertyname=['type', 'name'],
+        #propertyname=['msGeometry', 'osm_id', 'name'],
+        filter_json=filter_json, 
+        maxfeatures=10, 
+        #srsname="EPSG:900913", 
+    )
