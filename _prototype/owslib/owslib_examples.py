@@ -85,7 +85,9 @@ class WfsFilter(object):
                 for f_opt in cont_key:
                     if self.filter_opts.has_key(f_opt):
                         f_arg = cont_key[f_opt]
-                        if not isinstance(f_arg, list):
+                        if not f_arg:
+                            f_arg = []
+                        elif not isinstance(f_arg, list):
                             f_arg = [f_arg]
                         f_arg.insert(0, key)
                         all_filter = "{0}{1}".format(
@@ -243,6 +245,7 @@ class GeoCoder(WfsFilter):
         WfsFilter.__init__(self)
         self.debug = debug
         self.wfs = WebFeatureService(wfs_url, version=self.wfs_ver)
+        self.capabilities = self.get_capabilities()
         
     def echo2json(self, dict_):
         print json.dumps(
@@ -266,7 +269,6 @@ class GeoCoder(WfsFilter):
             json_feature = {
                 "type": "Feature",
                 "id": None,
-                "layer": None,
                 "properties": {},
                 "geometry": None,
             }
@@ -346,7 +348,13 @@ class GeoCoder(WfsFilter):
         return json_out
     
     def get_capabilities(self):
-        json_out = {}
+        json_out = {
+            "max_features": None,
+            "filter": None,
+            "layers": {},
+        }
+        all_epsg_code = None
+        all_layer_property = None
         for layer_name in self.wfs.contents:
             wfs_response = self.wfs.getfeature(
                 typename=layer_name, 
@@ -361,12 +369,28 @@ class GeoCoder(WfsFilter):
                         meta_name = meta.tag.split("{%s}" % nsmap[meta.prefix])[-1]
                         layer_property.append(meta_name)
             epsg_code = [my.code for my in self.wfs.contents[layer_name].crsOptions]
-            json_out[layer_name] = {
+            json_out['layers'][layer_name] = {
                 "epsg_code": epsg_code, 
                 "layer_property": layer_property,
-                "max_features": 0,
-                "filter": {},
+                "max_features": None,
+                "filter": None,
             }
+            if not all_layer_property:
+                all_layer_property = layer_property
+            else:
+                all_layer_property = list(
+                    set(all_layer_property).intersection(set(layer_property))
+                )
+            if not all_epsg_code:
+                all_epsg_code = epsg_code
+            else:
+                all_epsg_code = list(
+                    set(all_epsg_code).intersection(set(epsg_code))
+                )
+        json_out.update({
+            "epsg_code": all_epsg_code,
+            "layer_property": all_layer_property,
+        })
         if self.debug:
             self.echo2json(json_out)
         return json_out
@@ -382,13 +406,71 @@ class GeoCoder(WfsFilter):
             "filter": self.filter_engine(filter_json),
         }
         for arg in feature_args:
-            if kwargs.get(arg, False):
+            if kwargs.get(arg, None):
                 out_args[arg] = kwargs[arg]
                 
         return self.gml2json(
             self.wfs.getfeature(**out_args).read()
         )
     
+    def get_response(self, request_):
+        def_com_opts = {
+            "layer_name": [u"{}", "layer"],
+            "filter_json": [{}, "filter"],
+            "propertyname": [[], "layer_property"],
+            "maxfeatures": [u"{}", "max_features"],
+            "srsname": [u"EPSG:{}", "epsg_code"],
+        }
+        response = []
+        capabilities = copy.deepcopy(self.capabilities)
+        cap_layers = {my:{} for my in capabilities["layers"]}
+        req_layers = {
+            my:request_.get("layers", cap_layers)[my] 
+            for my 
+            in request_.get("layers", cap_layers)
+            if cap_layers.has_key(my)
+        }
+        req_opts = copy.deepcopy(request_)
+        if req_opts.has_key("layers"):
+            del(req_opts["layers"])
+        for layer in req_layers:
+            capabilities['layers'][layer]["layer"] = None
+            layer_opts = {"layer": layer}
+            layer_opts.update(req_opts)
+            if isinstance(req_layers[layer], dict):
+                layer_opts.update(req_layers[layer])
+            com_opts = copy.deepcopy(def_com_opts)
+            for opt in com_opts:
+                cap_param = capabilities['layers'][layer][def_com_opts[opt][1]]
+                param = layer_opts.get(com_opts[opt][1], None)
+                if cap_param:
+                    # test param from capabilites
+                    cap_param = [self.data2literal(my) for my in cap_param]
+                    if isinstance(param, list):
+                        param = [self.data2literal(my) for my in param]
+                        param = list(set(param).intersection(set(cap_param)))
+                    elif isinstance(param, (str, unicode, int, float)):
+                        param = self.data2literal(param)
+                        if param not in cap_param:
+                            param = None
+                if param:
+                    if isinstance(com_opts[opt][0], unicode):
+                        if isinstance(param, (str, unicode, int, float)):
+                            com_opts[opt] = com_opts[opt][0].format(param)
+                    elif isinstance(com_opts[opt][0], (dict)):
+                        if isinstance(param, dict):
+                            com_opts[opt] = copy.deepcopy(param)
+                    elif isinstance(com_opts[opt][0], list):
+                        if isinstance(param, list):
+                            com_opts[opt] = copy.deepcopy(param)
+                    else:
+                        com_opts[opt] = None
+                else:
+                    com_opts[opt] = None
+            response.append(
+                self.get_feature(**com_opts)
+            )
+        return response
 
 if __name__ == "__main__":
     gcoder = GeoCoder(debug=True)
@@ -478,11 +560,11 @@ if __name__ == "__main__":
     
     print gcoder.get_capabilities()
 
-    #print "*" * 30
-    #print "GetInfo"
-    #print "*" * 30
+    print "*" * 30
+    print "GetInfo"
+    print "*" * 30
     
-    #print gcoder.get_info()
+    print gcoder.get_info()
 
     #print "*" * 30
     #print "GetHelp"
@@ -494,36 +576,48 @@ if __name__ == "__main__":
     print "filter"
     print "*" * 30
     
-    filter_json = {
-        "or": [
-            {
-                #"and": {
-                    "name": {
-                        "like": "*Пет*",
-                    },
+    request_ = {
+        "epsg_code": 900913,
+        "max_features": 1,
+        #"layer_property": [
+            #"type", 
+            #"name",
+            #"osm_id", 
+            #"msGeometry", 
+        #],
+        "layers": {
+            "buildings": None,
+            "landuse": {
+                "filter": {
                     "type": {
-                        "=": "hotel",
+                        "null": None,
                     },
-                #},
-            }, 
-            {
-                #"and": {
-                    "name": {
-                        "like": "*Бал*",
-                    },
-                    "type": {
-                        "=": "hotel",
-                    },
-                #},
-            }, 
-        ],
+                },
+            },
+        },
+        "filter": {
+            "or": [
+                {
+                    #"and": {
+                        "name": {
+                            "like": "*Пет*",
+                        },
+                        "type": {
+                            "=": "hotel",
+                        },
+                    #},
+                }, 
+                {
+                    #"and": {
+                        "name": {
+                            "like": "*Бал*",
+                        },
+                        "type": {
+                            "=": "hotel",
+                        },
+                    #},
+                }, 
+            ],
+        }
     }
-    
-    print gcoder.get_feature(
-        layer_name='buildings', 
-        propertyname=['type', 'name'],
-        #propertyname=['msGeometry', 'osm_id', 'name'],
-        filter_json=filter_json, 
-        maxfeatures=10, 
-        #srsname="EPSG:900913", 
-    )
+    print gcoder.get_response(request_)
