@@ -30,6 +30,10 @@ class WfsFilter(object):
     #----------------------------------------------------------------------
     def __init__(self):
         """Constructor"""
+        self.epsg_code_cap = None
+        self.epsg_code_use = None
+        self.layer_property_cap = None
+        self.layer_property_use = None
         self.filter_tags = {
             "and": self.filter_tag_and,
             "or": self.filter_tag_or,
@@ -49,9 +53,6 @@ class WfsFilter(object):
             "bbox": self.filter_opt_bbox,
         }
         
-    def filter_create(self, content):
-        pass
-    
     def filter_engine(self, content, bool_tag=True, filter_tag=True):
         all_filter = u""
         for key in content:
@@ -86,13 +87,20 @@ class WfsFilter(object):
                     if self.filter_opts.has_key(f_opt):
                         f_arg = cont_key[f_opt]
                         if not f_arg:
+                            f_kwarg = {}
                             f_arg = []
-                        elif not isinstance(f_arg, list):
-                            f_arg = [f_arg]
+                        elif isinstance(f_arg, dict):
+                            f_kwarg = copy.deepcopy(f_arg)
+                            f_arg = []
+                        elif isinstance(f_arg, list):
+                            f_kwarg = {}
+                        else:
+                            f_kwarg = {}
+                            f_arg = [f_arg] 
                         f_arg.insert(0, key)
                         all_filter = "{0}{1}".format(
                             all_filter, 
-                            self.filter_opts[f_opt](*f_arg)
+                            self.filter_opts[f_opt](*f_arg, **f_kwarg)
                         )
         if bool_tag:
             if len(content) != 1:
@@ -145,33 +153,57 @@ class WfsFilter(object):
             elif not propertyname and not literal:
                 return "value"
             else:
-                raise Exception("Filter error")
+                raise Exception("Filter literal error")
         return wrapper
     
+    def dec_test_propertiname(method):
+        def wrapper(self, propertyname=None, *args, **kwargs):
+            if propertyname: 
+                layer_property_cap = [
+                    self.data2literal(my) 
+                    for my 
+                    in self.layer_property_cap
+                ] 
+                if self.data2literal(propertyname) not in layer_property_cap:
+                    raise Exception(
+                        "Filter: error 'layer_property'='{}' not in capabilites".format(
+                            propertyname
+                        )
+                    )
+            return method(self, propertyname, *args, **kwargs)
+        return wrapper
+    
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_equal_to(self, **kwargs):
         return PropertyIsEqualTo(**kwargs)
 
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_not_equal_to(self, **kwargs):
         return PropertyIsNotEqualTo(**kwargs)
 
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_greater_than(self, **kwargs):
         return PropertyIsGreaterThan(**kwargs)
 
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_graater_than_or_equal_to(self, **kwargs):
         return PropertyIsGreaterThanOrEqualTo(**kwargs)
 
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_less_than(self, **kwargs):
         return PropertyIsLessThan(**kwargs)
 
+    @dec_test_propertiname
     @dec_filters_literal_opts 
     def filter_opt_less_than_or_equal_to(self, **kwargs):
         return PropertyIsLessThanOrEqualTo(**kwargs)
 
+    @dec_test_propertiname
     def filter_opt_beetwen(self, propertyname=None, lower=None, upper=None):
         if propertyname and lower and upper:
             tag = PropertyIsBetween(
@@ -188,6 +220,7 @@ class WfsFilter(object):
         else:
             raise Exception("Filter error")
 
+    @dec_test_propertiname
     def filter_opt_null(self, propertyname=None):
         if propertyname:
             tag = PropertyIsNull(
@@ -197,6 +230,7 @@ class WfsFilter(object):
         else:
             return None
 
+    @dec_test_propertiname
     def filter_opt_like(self, propertyname=None, literal=None):
         if propertyname and literal:
             tag = PropertyIsLike(
@@ -211,32 +245,49 @@ class WfsFilter(object):
             return "value"
         else:
             raise Exception("Filter error")
+        
+    def dec_test_epsg_code(method):
+        def wrapper(self, propertyname=None, **kwargs):
+            if kwargs.get("epsg_code", False):
+                epsg_code_cap = [self.data2literal(my) for my in self.epsg_code_cap] 
+                if self.data2literal(kwargs["epsg_code"]) not in epsg_code_cap:
+                    raise Exception(
+                        "Filter: error 'epsg_code'='{}' not in capabilites".format(
+                            kwargs["epsg_code"]
+                        )
+                    )
+            else:
+                kwargs["epsg_code"] = self.epsg_code_use
+            return method(self, propertyname, **kwargs)
+        return wrapper
 
-    def filter_opt_bbox(self, propertyname=None, bbox=None, epsg_code=None):
-        if propertyname and bbox and epsg_code:
+    @dec_test_epsg_code
+    def filter_opt_bbox(self, propertyname=None, coord=None, epsg_code=None):
+        if coord:
             tag = BBox(
-                propertyname=self.data2literal(propertyname), 
-                bbox=bbox, 
-                crs="EPSG:{}".foramt(epsg_code), 
+                bbox=coord, 
+                crs="EPSG:{}".format(epsg_code), 
             )
             return etree.tostring(tag.toXML()).decode("utf-8")
-        elif not propertyname and not bbox and not epsg_code:
+        elif not propertyname and not coord and not epsg_code:
             return {
-                "bbox": [
+                "coord": [
                     "Upper Left Coord", 
                     "Lower Left Coord", 
                     "Upper Right Coord", 
                     "Lower Right Coord", 
                     ],
-                "crs": "epsg code projection",
+                "epsg_code": "epsg code projection",
             }
         else:
-            raise Exception("Filter error")
+            raise Exception("Filter bbox: error")
 
 
 ########################################################################
 class GeoCoder(WfsFilter):
-    """"""
+    """
+    geocoder
+    """
     wfs_ver = '1.1.0'
     
 
@@ -246,6 +297,14 @@ class GeoCoder(WfsFilter):
         self.debug = debug
         self.wfs = WebFeatureService(wfs_url, version=self.wfs_ver)
         self.capabilities = self.get_capabilities()
+        self._set_def_resp_params()
+        
+    def _set_def_resp_params(self):
+        self.epsg_code_cap = self.capabilities["epsg_code"]
+        self.epsg_code_use = self.capabilities["epsg_code"][0]
+        self.layer_property_cap = self.capabilities["layer_property"]
+        self.layer_property_use = self.capabilities["layer_property"]
+        self.response = []
         
     def echo2json(self, dict_):
         print json.dumps(
@@ -413,6 +472,43 @@ class GeoCoder(WfsFilter):
             self.wfs.getfeature(**out_args).read()
         )
     
+    def merge_gjson(self, gjson):
+        if not isinstance(self.response, list) or not isinstance(gjson, dict):
+            return
+        elif not gjson['features']:
+            return
+        elif not self.response:
+            self.response = [gjson]
+        else:
+            gj = {}
+            gj_test_fea = copy.deepcopy(gjson['features'][0])
+            gj['props'] = set(gj_test_fea['properties'].keys())
+            if isinstance(gj_test_fea['geometry'], dict):
+                gj['crs'] = copy.deepcopy(gjson['crs'])
+                gj['geom'] = gj_test_fea['geometry']['type']
+            else:
+                gj['crs'] = None
+                gj['geom'] = None
+            merge = False
+            for lst_element in self.response:
+                if isinstance(lst_element, dict):
+                    lst = {}
+                    lst_test_fea = copy.deepcopy(lst_element['features'][0])
+                    lst['props'] = set(lst_test_fea['properties'].keys())
+                    if isinstance(lst_test_fea['geometry'], dict):
+                        lst['crs'] = copy.deepcopy(lst_element['crs'])
+                        lst['geom'] = lst_test_fea['geometry']['type']
+                    else:
+                        lst['crs'] = None
+                        lst['geom'] = None
+                    if gj == lst:
+                        index = self.response.index(lst_element)
+                        self.response[index]['features'].extend(gjson['features'])
+                        merge = True
+                        break
+            if not merge:
+                self.response.append(gjson)
+    
     def get_response(self, request_):
         def_com_opts = {
             "layer_name": [u"{}", "layer"],
@@ -421,7 +517,7 @@ class GeoCoder(WfsFilter):
             "maxfeatures": [u"{}", "max_features"],
             "srsname": [u"EPSG:{}", "epsg_code"],
         }
-        response = []
+        self._set_def_resp_params()  # start response
         capabilities = copy.deepcopy(self.capabilities)
         cap_layers = {my:{} for my in capabilities["layers"]}
         req_layers = {
@@ -467,115 +563,47 @@ class GeoCoder(WfsFilter):
                         com_opts[opt] = None
                 else:
                     com_opts[opt] = None
-            response.append(
+            # data for use in filter
+            self.epsg_code_cap = capabilities["layers"][layer]["epsg_code"]
+            self.epsg_code_use = layer_opts.get(
+                "epsg_code", 
+                capabilities["layers"][layer]["epsg_code"][0]
+            )
+            self.layer_property_cap = capabilities["layers"][layer]["layer_property"]
+            self.layer_property_use = layer_opts.get(
+                "layer_property", 
+                capabilities["layers"][layer]["layer_property"]
+            )
+            # return gjson & merge
+            self.merge_gjson(
                 self.get_feature(**com_opts)
             )
-        return response
+        
+        resp_out = copy.deepcopy(self.response)
+        self._set_def_resp_params()  # end response
+        if len(resp_out) == 1:
+            return resp_out[0]
+        else:
+            return resp_out
+        
+    def __call__(self, *args, **kwargs):
+        return self.get_response(*args, **kwargs)
+
+
+def json_format(cont):
+    print json.dumps(
+        cont,
+        sort_keys=True,
+        indent=4,
+        separators=(',', ': '), 
+        ensure_ascii=False, 
+    )
+
 
 if __name__ == "__main__":
-    gcoder = GeoCoder(debug=True)
-    
-    filter1 = PropertyIsEqualTo(propertyname="type", literal=u"hotel")
-    filter2 = PropertyIsLike(
-        propertyname="name", 
-        literal=u"*Пет*",
-        wildCard="*", 
-        singleChar=".", 
-        escapeChar="!"
-    )
-    filter3 = PropertyIsLike(
-        propertyname="name", 
-        literal=u"Бал*", 
-        wildCard="*", 
-        singleChar=".", 
-        escapeChar="!"
-    )
-    filterxml = u"<Filter><OR><AND>{0}{1}</AND><AND>{0}{2}</AND></OR></Filter>".format(
-        etree.tostring(filter1.toXML()).decode("utf-8"), 
-        etree.tostring(filter2.toXML()).decode("utf-8"), 
-        etree.tostring(filter3.toXML()).decode("utf-8"), 
-    )
-    
-    #print "*" * 30
-    #print "Metadata"
-    #print "*" * 30
+    #gcoder = GeoCoder(debug=True)
+    gcoder = GeoCoder()
 
-    #print gcoder.get_feature(
-        #layer_name='buildings', 
-        #propertyname=['type', 'name'],
-        ##propertyname=['msGeometry', 'osm_id', 'name'],
-        #filter_xml=filterxml, 
-        #maxfeatures=10
-    #)
-    
-    
-    filter1 = BBox(
-        bbox=[
-                59.97111801186481728,
-                30.21720754623224181,
-                59.97569926211409097,
-                30.22404557000332304, 
-            ], 
-        #bbox=[
-                #59.94617,
-                #30.23334, 
-                #59.94618,
-                #30.23335, 
-            #], 
-        #crs="urn:ogc:def:crs:EPSG::4326",
-        crs="EPSG:4326"
-    )
-    #filter1 = BBox(
-        #bbox=[
-                #3364107.934602736961,
-                #8393636.548086917028,
-                #3364263.219452924561,
-                #8393740.583811631426
-            #], 
-        ##crs="urn:ogc:def:crs:EPSG::3857",
-        #crs="EPSG:3857"
-    #)
-    filterxml = u"<Filter>{}</Filter>".format(
-        etree.tostring(filter1.toXML()).decode("utf-8") 
-    )
-    
-    #print "*" * 30
-    #print "Bbox"
-    #print "*" * 30
-    #print gcoder.get_feature(
-        #layer_name='landuse', 
-        #propertyname=[
-            #'msGeometry', 
-            #'osm_id', 
-            #'name', 
-            #'type'
-        #],
-        #filter_xml=filterxml, 
-        #maxfeatures=10
-    #)
-    
-    print "*" * 30
-    print "GetCapabilites"
-    print "*" * 30
-    
-    print gcoder.get_capabilities()
-
-    print "*" * 30
-    print "GetInfo"
-    print "*" * 30
-    
-    print gcoder.get_info()
-
-    #print "*" * 30
-    #print "GetHelp"
-    #print "*" * 30
-    
-    #print gcoder.get_help()
-
-    print "*" * 30
-    print "filter"
-    print "*" * 30
-    
     request_ = {
         "epsg_code": 900913,
         "max_features": 1,
@@ -583,16 +611,22 @@ if __name__ == "__main__":
             #"type", 
             #"name",
             #"osm_id", 
-            #"msGeometry", 
+            ##"msGeometry", 
         #],
         "layers": {
             "buildings": None,
             "landuse": {
                 "filter": {
                     "type": {
-                        "null": None,
+                        "=": "military",
                     },
                 },
+                #"layer_property": [
+                    #"type", 
+                    #"name",
+                    #"osm_id", 
+                    #"msGeometry", 
+                #],
             },
         },
         "filter": {
@@ -620,4 +654,67 @@ if __name__ == "__main__":
             ],
         }
     }
-    print gcoder.get_response(request_)
+    
+    print "*" * 30
+    print "Metadata"
+    print "*" * 30
+    json_format(gcoder.get_response(request_))
+    
+    request_ = {
+        "epsg_code": 900913,
+        #"epsg_code": 3857,
+        "max_features": 1,
+        "layer_property": [
+            #"type", 
+            "name",
+            #"osm_id", 
+            "msGeometry", 
+        ],
+        "layers": {
+            "buildings": None,
+            #"landuse": None, 
+        }, 
+        "filter": {
+            "msGeometrytt": {
+                "bbox": {
+                    "coord": [
+                        59.97111801186481728,
+                        30.21720754623224181,
+                        59.97569926211409097,
+                        30.22404557000332304, 
+                    ],
+                    "epsg_code": 4326,
+                    #"coord": [
+                        #3364107.934602736961,
+                        #8393636.548086917028,
+                        #3364263.219452924561,
+                        #8393740.583811631426
+                    #],
+                    #"epsg_code": 3857,
+                    },
+                },
+        }, 
+    }
+    
+    print "*" * 30
+    print "Bbox"
+    print "*" * 30
+    json_format(gcoder.get_response(request_))
+    
+    print "*" * 30
+    print "GetCapabilites"
+    print "*" * 30
+    json_format(gcoder.get_capabilities())
+
+    #print "*" * 30
+    #print "GetInfo"
+    #print "*" * 30
+    
+    #json_format(gcoder.get_info())
+
+    #print "*" * 30
+    #print "GetHelp"
+    #print "*" * 30
+    
+    #json_format(gcoder.get_help())
+    
