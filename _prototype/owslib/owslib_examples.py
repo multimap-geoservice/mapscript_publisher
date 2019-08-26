@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # encoding: utf-8
 
+import os
 import ogr
 import json
 import copy
@@ -20,6 +21,8 @@ from owslib.fes import (
     PropertyIsNull,  # =NULL
     BBox
 )
+import urllib
+from wsgiref.simple_server import make_server
 
 ########################################################################
 class WfsFilter(object):
@@ -101,6 +104,10 @@ class WfsFilter(object):
                         all_filter = "{0}{1}".format(
                             all_filter, 
                             self.filter_opts[f_opt](*f_arg, **f_kwarg)
+                        )
+                    else:
+                        raise Exception(
+                            "Error: filter option '{}' not found".format(f_opt)
                         )
         if bool_tag:
             if len(content) != 1:
@@ -258,7 +265,7 @@ class WfsFilter(object):
                     )
             else:
                 kwargs["epsg_code"] = self.epsg_code_use
-            return method(self, propertyname, **kwargs)
+            return method(self, propertyname=None, **kwargs)
         return wrapper
 
     @dec_test_epsg_code
@@ -269,7 +276,7 @@ class WfsFilter(object):
                 crs="EPSG:{}".format(epsg_code), 
             )
             return etree.tostring(tag.toXML()).decode("utf-8")
-        elif not propertyname and not coord and not epsg_code:
+        elif not propertyname and not coord:
             return {
                 "coord": [
                     "Upper Left Coord", 
@@ -367,25 +374,46 @@ class GeoCoder(WfsFilter):
             for my
             in self.filter_tags
         }
-        filter_opts = {
+        comparsion_opts = {
             my: self.filter_opts[my]()
             for my
             in self.filter_opts
+            if isinstance(self.filter_opts[my](),(str, unicode, list))
+        }
+        spatial_opts = {
+            my: self.filter_opts[my]()
+            for my
+            in self.filter_opts
+            if isinstance(self.filter_opts[my](),dict)
         }
         json_out = {
             "filter":{
                 "tags": filter_tags,
-                "opts": filter_opts,
+                "comparsion opts": comparsion_opts,
+                "spatial opts": spatial_opts,
                 "example": {
-                    "tag": {
-                        "property 1": {
-                            "opt": "value",
-                            },
-                        "property 2": {
-                            "opt 1": "value",
-                            "opt 2": ["value 1", "value 2"],
+                    "tag": [
+                        {
+                            "tag": {
+                                "property 1": {
+                                    "comparsion opt": "value",
+                                },
+                                "property 2": {
+                                    "comparsion opt 1": "value",
+                                    "comparsion opt 2": ["value 1", "value 2"],
+                                },
+                            }, 
                         },
-                    },
+                        {
+                            "property 3": {
+                                "comparsion opt": "value",
+                                "spatial opt": {
+                                    "opt key 1": "value", 
+                                    "opt key 2": "value",
+                                },
+                            },
+                        }, 
+                    ],
                 },
             }, 
         }
@@ -454,7 +482,7 @@ class GeoCoder(WfsFilter):
             self.echo2json(json_out)
         return json_out
 
-    def get_feature(self, layer_name, filter_json, **kwargs):
+    def get_feature(self, layer_name, filter_json=None, **kwargs):
         feature_args = [
             "propertyname", 
             "maxfeatures", 
@@ -462,8 +490,10 @@ class GeoCoder(WfsFilter):
         ]
         out_args = {
             "typename": layer_name,
-            "filter": self.filter_engine(filter_json),
         }
+        if isinstance(filter_json, dict):
+            out_args["filter"] = self.filter_engine(filter_json)
+
         for arg in feature_args:
             if kwargs.get(arg, None):
                 out_args[arg] = kwargs[arg]
@@ -581,13 +611,106 @@ class GeoCoder(WfsFilter):
         
         resp_out = copy.deepcopy(self.response)
         self._set_def_resp_params()  # end response
-        if len(resp_out) == 1:
+        if len(resp_out) == 0:
+            return {}
+        elif len(resp_out) == 1:
             return resp_out[0]
         else:
             return resp_out
         
+    def get_properties(self):
+        disable_prop = [
+            "layer", 
+            "id", 
+            "osm_id"
+        ]
+        out = {}
+        layers = self.capabilities["layers"].keys()
+        for layer in layers:
+            out[layer] = {}
+            req = {
+                "layers": {
+                    layer: None,
+                    },
+            }
+            resp = self.get_response(req)
+            prop_list = resp["features"][0]["properties"].keys()
+            for prop in prop_list:
+                if prop not in disable_prop:
+                    out[layer][prop] = list(set([
+                        my["properties"][prop]
+                        for
+                        my
+                        in
+                        resp["features"]
+                    ]))
+        return out
+        
     def __call__(self, *args, **kwargs):
         return self.get_response(*args, **kwargs)
+
+
+########################################################################
+class MapGK(GeoCoder):
+    """
+    Tiny gcoder server
+    """
+    MAPSERV_ENV = [
+        'CONTENT_LENGTH',
+        'CONTENT_TYPE', 
+        'CURL_CA_BUNDLE', 
+        'HTTP_COOKIE',
+        'HTTP_HOST', 
+        'HTTPS', 
+        'HTTP_X_FORWARDED_HOST', 
+        'HTTP_X_FORWARDED_PORT',
+        'HTTP_X_FORWARDED_PROTO', 
+        'PROJ_LIB', 
+        'QUERY_STRING', 
+        'REMOTE_ADDR',
+        'REQUEST_METHOD', 
+        'SCRIPT_NAME', 
+        'SERVER_NAME', 
+        'SERVER_PORT'
+    ]
+
+    #----------------------------------------------------------------------
+    def __init__(self, port=3008, host='0.0.0.0'):
+        self.wsgi_host = host
+        self.wsgi_port = port
+        GeoCoder.__init__(self)
+    
+    def application(self, env, start_response):
+        print "-" * 30
+        for key in self.MAPSERV_ENV:
+            if key in env:
+                os.environ[key] = env[key]
+                print "{0}='{1}'".format(key, env[key])
+            else:
+                os.unsetenv(key)
+        print "-" * 30
+    
+        # status:
+        status = '200 OK'
+        req = json.loads(urllib.unquote(env["QUERY_STRING"]))
+        resp = json.dumps(self.get_response(req), ensure_ascii=False)
+        result = b'{}'.format(resp.encode('utf-8'))
+        #status = '500 Server Error'
+
+        start_response(status, [('Content-type', 'application/json')])
+        return [result]
+    
+    def wsgi(self):
+        httpd = make_server(
+            self.wsgi_host,
+            self.wsgi_port,
+            self.application
+        )
+        print('Serving on port %d...' % self.wsgi_port)
+        httpd.serve_forever()
+        
+    def __call__(self):
+        self.wsgi()
 
 
 def json_format(cont):
@@ -601,6 +724,10 @@ def json_format(cont):
 
 
 if __name__ == "__main__":
+    gk = MapGK()
+    gk()
+    
+    
     #gcoder = GeoCoder(debug=True)
     gcoder = GeoCoder()
 
@@ -655,10 +782,10 @@ if __name__ == "__main__":
         }
     }
     
-    print "*" * 30
-    print "Metadata"
-    print "*" * 30
-    json_format(gcoder.get_response(request_))
+    #print "*" * 30
+    #print "Metadata"
+    #print "*" * 30
+    #json_format(gcoder.get_response(request_))
     
     request_ = {
         "epsg_code": 900913,
@@ -672,10 +799,11 @@ if __name__ == "__main__":
         ],
         "layers": {
             "buildings": None,
-            #"landuse": None, 
+            "landuse": None, 
         }, 
         "filter": {
-            "msGeometrytt": {
+            "name": {
+                "null": None,
                 "bbox": {
                     "coord": [
                         59.97111801186481728,
@@ -691,20 +819,20 @@ if __name__ == "__main__":
                         #8393740.583811631426
                     #],
                     #"epsg_code": 3857,
-                    },
                 },
+            },
         }, 
     }
     
-    print "*" * 30
-    print "Bbox"
-    print "*" * 30
-    json_format(gcoder.get_response(request_))
+    #print "*" * 30
+    #print "Bbox"
+    #print "*" * 30
+    #json_format(gcoder.get_response(request_))
     
-    print "*" * 30
-    print "GetCapabilites"
-    print "*" * 30
-    json_format(gcoder.get_capabilities())
+    #print "*" * 30
+    #print "GetCapabilites"
+    #print "*" * 30
+    #json_format(gcoder.get_capabilities())
 
     #print "*" * 30
     #print "GetInfo"
@@ -718,3 +846,21 @@ if __name__ == "__main__":
     
     #json_format(gcoder.get_help())
     
+
+    #request_ = {
+        #"layer_property": [
+            #"type", 
+            #"name",
+            #"osm_id", 
+        #],
+    #}
+
+    #print "*" * 30
+    #print "HZ"
+    #print "*" * 30
+    #json_format(gcoder.get_response(request_))
+
+    #print "*" * 30
+    #print "GetPropperties"
+    #print "*" * 30
+    #json_format(gcoder.get_properties())
