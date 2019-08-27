@@ -281,10 +281,10 @@ class WfsFilter(object):
         elif not propertyname and not coord:
             return {
                 "coord": [
-                    "Upper Left Coord", 
-                    "Lower Left Coord", 
-                    "Upper Right Coord", 
-                    "Lower Right Coord", 
+                    "Latitude down left", 
+                    "Longitude down left", 
+                    "Latitude up right", 
+                    "Longitude up right", 
                     ],
                 "epsg_code": "epsg code projection",
             }
@@ -760,103 +760,9 @@ if __name__ == "__main__":
     gk = MapGK()
     gk()
     
-    
     #gcoder = GeoCoder(debug=True)
-    gcoder = GeoCoder()
+    #gcoder = GeoCoder()
 
-    request_ = {
-        "epsg_code": 900913,
-        "max_features": 1,
-        #"layer_property": [
-            #"type", 
-            #"name",
-            #"osm_id", 
-            ##"msGeometry", 
-        #],
-        "layers": {
-            "buildings": None,
-            "landuse": {
-                "filter": {
-                    "type": {
-                        "=": "military",
-                    },
-                },
-                #"layer_property": [
-                    #"type", 
-                    #"name",
-                    #"osm_id", 
-                    #"msGeometry", 
-                #],
-            },
-        },
-        "filter": {
-            "or": [
-                {
-                    #"and": {
-                        "name": {
-                            "like": "*Пет*",
-                        },
-                        "type": {
-                            "=": "hotel",
-                        },
-                    #},
-                }, 
-                {
-                    #"and": {
-                        "name": {
-                            "like": "*Бал*",
-                        },
-                        "type": {
-                            "=": "hotel",
-                        },
-                    #},
-                }, 
-            ],
-        }
-    }
-    
-    #print "*" * 30
-    #print "Metadata"
-    #print "*" * 30
-    #json_format(gcoder.get_response(request_))
-    
-    request_ = {
-        "epsg_code": 900913,
-        #"epsg_code": 3857,
-        "max_features": 1,
-        "layer_property": [
-            #"type", 
-            "name",
-            #"osm_id", 
-            "msGeometry", 
-        ],
-        "layers": {
-            "buildings": None,
-            "landuse": None, 
-        }, 
-        "filter": {
-            "name": {
-                "null": None,
-                "bbox": {
-                    "coord": [
-                        59.97111801186481728,
-                        30.21720754623224181,
-                        59.97569926211409097,
-                        30.22404557000332304, 
-                    ],
-                    "epsg_code": 4326,
-                    #"coord": [
-                        #3364107.934602736961,
-                        #8393636.548086917028,
-                        #3364263.219452924561,
-                        #8393740.583811631426
-                    #],
-                    #"epsg_code": 3857,
-                },
-            },
-        }, 
-    }
-    
     #print "*" * 30
     #print "Bbox"
     #print "*" * 30
@@ -870,29 +776,13 @@ if __name__ == "__main__":
     #print "*" * 30
     #print "GetInfo"
     #print "*" * 30
-    
     #json_format(gcoder.get_info())
 
     #print "*" * 30
     #print "GetHelp"
     #print "*" * 30
-    
     #json_format(gcoder.get_help())
     
-
-    #request_ = {
-        #"layer_property": [
-            #"type", 
-            #"name",
-            #"osm_id", 
-        #],
-    #}
-
-    #print "*" * 30
-    #print "HZ"
-    #print "*" * 30
-    #json_format(gcoder.get_response(request_))
-
     #print "*" * 30
     #print "GetPropperties"
     #print "*" * 30
