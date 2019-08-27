@@ -146,7 +146,9 @@ class WfsFilter(object):
     def data2literal(self, data):
         if isinstance(data, (int, float)):
             data = str(data)
-        return u"{}".format(data.decode('utf-8'))
+        if isinstance(data, str):
+            data = data.decode('utf-8')
+        return u"{}".format(data)
 
     def dec_filters_literal_opts(method):
         def wrapper(self, propertyname=None, literal=None):
@@ -673,9 +675,14 @@ class MapGK(GeoCoder):
         'SERVER_NAME', 
         'SERVER_PORT'
     ]
-
     #----------------------------------------------------------------------
     def __init__(self, port=3008, host='0.0.0.0'):
+        self.gk_commands = {
+            "GetCapabilites": self.get_capabilities, 
+            "GetInfo": self.get_info, 
+            "GetHelp": self.get_help, 
+            "GetPropperties": self.get_properties,
+        }
         self.wsgi_host = host
         self.wsgi_port = port
         GeoCoder.__init__(self)
@@ -689,14 +696,37 @@ class MapGK(GeoCoder):
             else:
                 os.unsetenv(key)
         print "-" * 30
-    
-        # status:
+   
         status = '200 OK'
-        req = json.loads(urllib.unquote(env["QUERY_STRING"]))
-        resp = json.dumps(self.get_response(req), ensure_ascii=False)
+        if not env["QUERY_STRING"]:
+            gk_comm_list = [my for my in self.gk_commands]
+            gk_comm_list.append({})
+            resp = json.dumps(
+                gk_comm_list,
+                ensure_ascii=False
+            )
+        elif self.gk_commands.has_key(env["QUERY_STRING"]):
+            resp = json.dumps(
+                self.gk_commands[env["QUERY_STRING"]](), 
+                ensure_ascii=False
+            )
+        else:
+            try:
+                req = json.loads(urllib.unquote(env["QUERY_STRING"]))
+                resp = json.dumps(
+                    self.get_response(req), 
+                    ensure_ascii=False
+                )
+            except Exception as err:
+                status = '500 Server Error'
+                resp = json.dumps(
+                    {
+                        "ERROR": u"{}".format(err),
+                    }, 
+                    ensure_ascii=False
+                )
+    
         result = b'{}'.format(resp.encode('utf-8'))
-        #status = '500 Server Error'
-
         start_response(status, [('Content-type', 'application/json')])
         return [result]
     
