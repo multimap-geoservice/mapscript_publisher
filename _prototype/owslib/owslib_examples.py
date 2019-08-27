@@ -426,8 +426,11 @@ class GeoCoder(WfsFilter):
     def get_info(self):
         json_out = {}
         for layer_name in self.wfs.contents:
-            wfs_opts = self.wfs.contents[layer_name].metadataUrls[0]
-            wfs_opts["gml"] = self.wfs.contents[layer_name].outputFormats[0]
+            if self.wfs.contents[layer_name].metadataUrls:
+                wfs_opts = self.wfs.contents[layer_name].metadataUrls[0]
+                wfs_opts["gml"] = self.wfs.contents[layer_name].outputFormats[0]
+            else:
+                wfs_opts = None
             json_out[layer_name] = {
                 "wgs84_bbox": list(self.wfs.contents[layer_name].boundingBoxWGS84),
                 "wfs_opts": wfs_opts, 
