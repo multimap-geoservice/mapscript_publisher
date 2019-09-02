@@ -324,6 +324,17 @@ class GeoCoder(WfsFilter):
             ensure_ascii=False, 
         )
  
+    def create_json_crs(self, crs_string):
+        crs_string = crs_string.split(":")
+        if len(crs_string) == 2:
+            if crs_string[0].lower() == "epsg":
+                return {
+                    "type": "EPSG",
+                    "properties": {
+                            "code": crs_string[-1],
+                        },
+                    }
+ 
     def gml2json(self, gml):
         json_out = {
             "type": "FeatureCollection",
@@ -353,19 +364,15 @@ class GeoCoder(WfsFilter):
                             json_feature["geometry"] = json.loads(
                                 ogr_geom.ExportToJson()
                             )
+                            if geom_crs:
+                                json_feature["geometry"]["crs"] = self.create_json_crs(
+                                    geom_crs
+                                )
                     if get_prop:
                         json_feature["properties"][tag_name(prop)] = prop.text
                 json_out["features"].append(json_feature)
         if geom_crs:
-            geom_crs = geom_crs.split(":")
-            if len(geom_crs) == 2:
-                if geom_crs[0].lower() == "epsg":
-                    json_out["crs"] = {
-                        "type": "EPSG",
-                        "properties": {
-                                "code": geom_crs[-1],
-                            },
-                        }
+            json_out["crs"] = self.create_json_crs(geom_crs)
         if self.debug:
             self.echo2json(json_out)
         return json_out
@@ -380,7 +387,7 @@ class GeoCoder(WfsFilter):
             my: self.filter_opts[my]()
             for my
             in self.filter_opts
-            if isinstance(self.filter_opts[my](),(str, unicode, list))
+            if not isinstance(self.filter_opts[my](), dict)
         }
         spatial_opts = {
             my: self.filter_opts[my]()
@@ -403,15 +410,18 @@ class GeoCoder(WfsFilter):
                                 "property 2": {
                                     "comparsion opt 1": "value",
                                     "comparsion opt 2": ["value 1", "value 2"],
+                                    "spatial opt": {
+                                        "spatial opt key 1": "value", 
+                                        "spatial opt key 2": "value",
+                                    },
                                 },
                             }, 
                         },
                         {
-                            "property 3": {
-                                "comparsion opt": "value",
+                            "any key": {
                                 "spatial opt": {
-                                    "opt key 1": "value", 
-                                    "opt key 2": "value",
+                                    "spatial opt key 1": "value", 
+                                    "spatial opt key 2": "value",
                                 },
                             },
                         }, 
@@ -759,31 +769,3 @@ def json_format(cont):
 if __name__ == "__main__":
     gk = MapGK()
     gk()
-    
-    #gcoder = GeoCoder(debug=True)
-    #gcoder = GeoCoder()
-
-    #print "*" * 30
-    #print "Bbox"
-    #print "*" * 30
-    #json_format(gcoder.get_response(request_))
-    
-    #print "*" * 30
-    #print "GetCapabilites"
-    #print "*" * 30
-    #json_format(gcoder.get_capabilities())
-
-    #print "*" * 30
-    #print "GetInfo"
-    #print "*" * 30
-    #json_format(gcoder.get_info())
-
-    #print "*" * 30
-    #print "GetHelp"
-    #print "*" * 30
-    #json_format(gcoder.get_help())
-    
-    #print "*" * 30
-    #print "GetPropperties"
-    #print "*" * 30
-    #json_format(gcoder.get_properties())

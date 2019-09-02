@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import json
+import requests
 
 def json_format(cont):
     print json.dumps(
@@ -11,6 +12,22 @@ def json_format(cont):
         separators=(',', ': '), 
         ensure_ascii=False, 
     )
+
+
+def get_response(request_):
+    if isinstance(request_, dict):
+        request_ = json.dumps(
+            request_, 
+            ensure_ascii=False
+        )
+    json_format(
+        requests.get(
+            "http://localhost:3008/?{}".format(
+                request_
+            )
+        ).json()
+    )
+    
 
 if __name__ == "__main__":
     request_ = {
@@ -64,11 +81,19 @@ if __name__ == "__main__":
         }
     }
     
-    json_format(request_)
     #print "*" * 30
     #print "Metadata"
     #print "*" * 30
-    #json_format(gcoder.get_response(request_))
+    #json_format(
+        #requests.get(
+            #"http://localhost:3008/?{}".format(
+                #json.dumps(
+                    #request_, 
+                    #ensure_ascii=False
+                #)
+            #)
+        #).json()
+    #)
     
     request_ = {
         "epsg_code": 900913,
@@ -106,9 +131,58 @@ if __name__ == "__main__":
             },
         }, 
     }
-    
-    json_format(request_)
+        
     #print "*" * 30
     #print "Bbox"
     #print "*" * 30
-    #json_format(gcoder.get_response(request_))
+    #get_response(request_)
+
+    request_ = {
+        "epsg_code": 900913,
+        "layer_property": [
+            "name",
+            "msGeometry"
+        ],
+        "max_features": 1,
+        "filter": {
+            "name": {
+              "null": None
+            },
+            "coord1": {
+                "bbox": {
+                    "coord": [
+                        59.97111801186481728,
+                        30.21720754623224181,
+                        59.97569926211409097,
+                        30.22404557000332304, 
+                    ],
+                    "epsg_code": 4326
+                },
+            }, 
+        }, 
+    }
+
+    print "*" * 30
+    print "HZ"
+    print "*" * 30
+    get_response(request_)
+    
+    print "*" * 30
+    print "GetCapabilites"
+    print "*" * 30
+    get_response("GetCapabilites")
+
+    #print "*" * 30
+    #print "GetInfo"
+    #print "*" * 30
+    #get_response("GetInfo")
+
+    #print "*" * 30
+    #print "GetHelp"
+    #print "*" * 30
+    #get_response("GetHelp")
+    
+    #print "*" * 30
+    #print "GetPropperties"
+    #print "*" * 30
+    #get_response("GetPropperties")
