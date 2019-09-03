@@ -345,8 +345,14 @@ class WfsFilter(object):
 class GeoCoder(WfsFilter):
     """
     geocoder
+    
+    Default settings
+    ----------------
+    wfs_ver - 1.1.0 default!!!
+    out_geom - (Default - None - json)|gml|wkt
     """
     wfs_ver = '1.1.0'
+    out_geom = None
     
 
     #----------------------------------------------------------------------
@@ -363,6 +369,7 @@ class GeoCoder(WfsFilter):
         self.layer_property_cap = self.capabilities["layer_property"]
         self.layer_property_use = None
         self.geom_property_cap = None
+        self.map_name_use = None  # to do !!!
         self.response = []
         
     def echo2json(self, dict_):
@@ -397,13 +404,18 @@ class GeoCoder(WfsFilter):
         for feature in tree.getiterator("{%s}featureMember" % nsmap["gml"]):
             json_feature = {
                 "type": "Feature",
-                "id": None,
                 "properties": {},
                 "geometry": None,
             }
             for layer in feature.iterfind('{%s}*' % nsmap["ms"]):
-                json_feature["id"] = layer.get("{%s}id" % nsmap["gml"], None)
                 json_feature["properties"]["layer"] = tag_name(layer)
+                wfs_id = layer.get("{%s}id" % nsmap["gml"], None)
+                if wfs_id and self.map_name_use:
+                    wfs_id = u"{0}.{1}".format(
+                        self.map_name_use, 
+                        wfs_id
+                    )
+                json_feature["properties"]["id"] = wfs_id
                 for prop in layer.iterfind('{%s}*' % nsmap["ms"]):
                     get_prop = True
                     for geom in prop.iterfind("{%s}*" % nsmap["gml"]):
@@ -418,6 +430,25 @@ class GeoCoder(WfsFilter):
                                 json_feature["geometry"]["crs"] = self.create_json_crs(
                                     geom_crs
                                 )
+                            if self.out_geom:
+                                ogr_geom = ogr.CreateGeometryFromJson(
+                                    str(
+                                        json.dumps(
+                                            json_feature["geometry"], 
+                                            ensure_ascii=False
+                                        )
+                                    )
+                                )
+                                if self.out_geom == "gml":
+                                    json_feature["geometry"] = ogr_geom.ExportToGML()
+                                elif self.out_geom == "wkt":
+                                    json_feature["geometry"] = ogr_geom.ExportToWkt()
+                                else:
+                                    raise Exception(
+                                        'out_geom="{} is not valid (None,gml,wkt)use"'.format(
+                                            self.out_geom
+                                        )
+                                    )
                     if get_prop:
                         json_feature["properties"][tag_name(prop)] = prop.text
                 json_out["features"].append(json_feature)
@@ -818,5 +849,8 @@ def json_format(cont):
 
 
 if __name__ == "__main__":
-    gk = MapGK()
+    mk = MapGK
+    mk.out_geom = "gml"
+    #mk.out_geom = "wkt"
+    gk = mk()
     gk()

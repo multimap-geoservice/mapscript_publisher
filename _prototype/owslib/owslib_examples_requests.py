@@ -150,17 +150,17 @@ if __name__ == "__main__":
         "filter": {
             "coord1": {
                 "buffer": {
-                    #"coord": [
-                        #59.93903,
-                        #30.31589,
-                    #],
                     "coord": [
-                        3374749.506,
-                        8386175.766,
+                        59.93903,
+                        30.31589,
                     ],
-                    "radius": 122,
-                    #"epsg_code": 4326, 
-                    "epsg_code": 3857, 
+                    #"coord": [
+                        #3374749.506,
+                        #8386175.766,
+                    #],
+                    "radius": 0.001,
+                    "epsg_code": 4326, 
+                    #"epsg_code": 3857, 
                 },
             }, 
         }, 
@@ -181,10 +181,10 @@ if __name__ == "__main__":
     #print "*" * 30
     #get_response("GetInfo")
 
-    print "*" * 30
-    print "GetHelp"
-    print "*" * 30
-    get_response("GetHelp")
+    #print "*" * 30
+    #print "GetHelp"
+    #print "*" * 30
+    #get_response("GetHelp")
     
     #print "*" * 30
     #print "GetPropperties"
