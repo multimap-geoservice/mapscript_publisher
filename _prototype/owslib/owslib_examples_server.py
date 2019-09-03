@@ -37,6 +37,7 @@ class WfsFilter(object):
         self.epsg_code_use = None
         self.layer_property_cap = None
         self.layer_property_use = None
+        self.geom_property_cap = None
         self.filter_tags = {
             "and": self.filter_tag_and,
             "or": self.filter_tag_or,
@@ -44,16 +45,17 @@ class WfsFilter(object):
             "filter": self.filter_tag_filter,
         } 
         self.filter_opts = {
-            "=": self.filter_opt_equal_to,
-            "!=": self.filter_opt_not_equal_to,
-            ">": self.filter_opt_greater_than,
-            ">=": self.filter_opt_graater_than_or_equal_to,
-            "<": self.filter_opt_less_than,
-            "<=": self.filter_opt_less_than_or_equal_to,
-            "between": self.filter_opt_beetwen,
-            "null": self.filter_opt_null,
-            "like": self.filter_opt_like,
-            "bbox": self.filter_opt_bbox,
+            "=": self.filter_comp_equal_to,
+            "!=": self.filter_comp_not_equal_to,
+            ">": self.filter_comp_greater_than,
+            ">=": self.filter_comp_graater_than_or_equal_to,
+            "<": self.filter_comp_less_than,
+            "<=": self.filter_comp_less_than_or_equal_to,
+            "between": self.filter_comp_beetwen,
+            "null": self.filter_comp_null,
+            "like": self.filter_comp_like,
+            "bbox": self.filter_spat_bbox,
+            "buffer": self.filter_spat_buffer,
         }
         
     def filter_engine(self, content, bool_tag=True, filter_tag=True):
@@ -184,36 +186,36 @@ class WfsFilter(object):
     
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_equal_to(self, **kwargs):
+    def filter_comp_equal_to(self, **kwargs):
         return PropertyIsEqualTo(**kwargs)
 
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_not_equal_to(self, **kwargs):
+    def filter_comp_not_equal_to(self, **kwargs):
         return PropertyIsNotEqualTo(**kwargs)
 
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_greater_than(self, **kwargs):
+    def filter_comp_greater_than(self, **kwargs):
         return PropertyIsGreaterThan(**kwargs)
 
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_graater_than_or_equal_to(self, **kwargs):
+    def filter_comp_graater_than_or_equal_to(self, **kwargs):
         return PropertyIsGreaterThanOrEqualTo(**kwargs)
 
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_less_than(self, **kwargs):
+    def filter_comp_less_than(self, **kwargs):
         return PropertyIsLessThan(**kwargs)
 
     @dec_test_propertiname
     @dec_filters_literal_opts 
-    def filter_opt_less_than_or_equal_to(self, **kwargs):
+    def filter_comp_less_than_or_equal_to(self, **kwargs):
         return PropertyIsLessThanOrEqualTo(**kwargs)
 
     @dec_test_propertiname
-    def filter_opt_beetwen(self, propertyname=None, lower=None, upper=None):
+    def filter_comp_beetwen(self, propertyname=None, lower=None, upper=None):
         if propertyname and lower and upper:
             tag = PropertyIsBetween(
                 propertyname=self.data2literal(propertyname), 
@@ -230,7 +232,7 @@ class WfsFilter(object):
             raise Exception("Filter error")
 
     @dec_test_propertiname
-    def filter_opt_null(self, propertyname=None):
+    def filter_comp_null(self, propertyname=None):
         if propertyname:
             tag = PropertyIsNull(
                 propertyname=self.data2literal(propertyname), 
@@ -240,7 +242,7 @@ class WfsFilter(object):
             return None
 
     @dec_test_propertiname
-    def filter_opt_like(self, propertyname=None, literal=None):
+    def filter_comp_like(self, propertyname=None, literal=None):
         if propertyname and literal:
             tag = PropertyIsLike(
                 propertyname=self.data2literal(propertyname), 
@@ -269,9 +271,22 @@ class WfsFilter(object):
                 kwargs["epsg_code"] = self.epsg_code_use
             return method(self, propertyname=None, **kwargs)
         return wrapper
+    
+    def dec_epsg_code_gjon(method):
+        def wrapper(self, propertyname=None, **kwargs):
+            kwargs["epsg_code"] = {
+                "crs": {
+                    "type": "EPSG",
+                    "properties": {
+                            "code": kwargs["epsg_code"], 
+                        },
+                    }
+                }
+            return method(self, propertyname=None, **kwargs)
+        return wrapper
 
     @dec_test_epsg_code
-    def filter_opt_bbox(self, propertyname=None, coord=None, epsg_code=None):
+    def filter_spat_bbox(self, propertyname=None, coord=None, epsg_code=None):
         if coord:
             tag = BBox(
                 bbox=coord, 
@@ -291,6 +306,40 @@ class WfsFilter(object):
         else:
             raise Exception("Filter bbox: error")
 
+    @dec_test_epsg_code
+    @dec_epsg_code_gjon
+    def filter_spat_buffer(self, propertyname=None, coord=None, radius=None, epsg_code=None):
+        if coord and radius:
+            json_geom = {
+                "type": "Point",
+                "coordinates": coord
+            }
+            json_geom.update(epsg_code)
+            ogr_geom = ogr.CreateGeometryFromJson(
+                json.dumps(
+                    json_geom, 
+                    ensure_ascii=False
+                )
+            ).Buffer(radius)
+            gml_geom = ogr_geom.ExportToGML()
+            prop_name = u"<ogc:PropertyName>{}</ogc:PropertyName>".format(
+                self.geom_property_cap
+            )
+            return u"<ogc:Intersects>{0}{1}</ogc:Intersects>".format(
+                prop_name, 
+                gml_geom
+            )
+        elif not propertyname and not coord and not radius:
+            return {
+                "coord": [
+                    "Latitude point", 
+                    "Longitude point", 
+                    ],
+                "radius": "radius meters",
+                "epsg_code": "epsg code projection",
+            }
+        else:
+            raise Exception("Filter buffer: error")
 
 ########################################################################
 class GeoCoder(WfsFilter):
@@ -310,9 +359,10 @@ class GeoCoder(WfsFilter):
         
     def _set_def_resp_params(self):
         self.epsg_code_cap = self.capabilities["epsg_code"]
-        self.epsg_code_use = self.capabilities["epsg_code"][0]
+        self.epsg_code_use = None
         self.layer_property_cap = self.capabilities["layer_property"]
-        self.layer_property_use = self.capabilities["layer_property"]
+        self.layer_property_use = None
+        self.geom_property_cap = None
         self.response = []
         
     def echo2json(self, dict_):
@@ -619,6 +669,7 @@ class GeoCoder(WfsFilter):
                 "layer_property", 
                 capabilities["layers"][layer]["layer_property"]
             )
+            self.geom_property_cap = self.layer_property_cap[0]
             # return gjson & merge
             self.merge_gjson(
                 self.get_feature(**com_opts)

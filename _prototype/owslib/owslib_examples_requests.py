@@ -143,20 +143,24 @@ if __name__ == "__main__":
             "name",
             "msGeometry"
         ],
-        "max_features": 1,
-        "filter": {
-            "name": {
-              "null": None
+        "max_features": 10,
+        "layers": {
+            "buildings": None,
             },
+        "filter": {
             "coord1": {
-                "bbox": {
+                "buffer": {
+                    #"coord": [
+                        #59.93903,
+                        #30.31589,
+                    #],
                     "coord": [
-                        59.97111801186481728,
-                        30.21720754623224181,
-                        59.97569926211409097,
-                        30.22404557000332304, 
+                        3374749.506,
+                        8386175.766,
                     ],
-                    "epsg_code": 4326
+                    "radius": 122,
+                    #"epsg_code": 4326, 
+                    "epsg_code": 3857, 
                 },
             }, 
         }, 
@@ -167,20 +171,20 @@ if __name__ == "__main__":
     print "*" * 30
     get_response(request_)
     
-    print "*" * 30
-    print "GetCapabilites"
-    print "*" * 30
-    get_response("GetCapabilites")
+    #print "*" * 30
+    #print "GetCapabilites"
+    #print "*" * 30
+    #get_response("GetCapabilites")
 
     #print "*" * 30
     #print "GetInfo"
     #print "*" * 30
     #get_response("GetInfo")
 
-    #print "*" * 30
-    #print "GetHelp"
-    #print "*" * 30
-    #get_response("GetHelp")
+    print "*" * 30
+    print "GetHelp"
+    print "*" * 30
+    get_response("GetHelp")
     
     #print "*" * 30
     #print "GetPropperties"
