@@ -150,17 +150,19 @@ if __name__ == "__main__":
         "filter": {
             "coord1": {
                 "buffer": {
-                    "coord": [
-                        59.93903,
-                        30.31589,
-                    ],
                     #"coord": [
-                        #3374749.506,
-                        #8386175.766,
+                        #59.93903,
+                        #30.31589,
                     #],
-                    "radius": 0.001,
-                    "epsg_code": 4326, 
-                    #"epsg_code": 3857, 
+                    "coord": [
+                        8386175.766,
+                        3374749.506,
+                    ],
+                    "radius": 105,
+                    #"epsg_code": 4326, 
+                    #"epsg_code_measure": 900913, 
+                    #"epsg_code_measure": 4326, 
+                    "epsg_code": 3857, 
                 },
             }, 
         }, 

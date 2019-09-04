@@ -3,6 +3,7 @@
 
 import os
 import ogr
+import osr
 import json
 import copy
 
@@ -308,20 +309,41 @@ class WfsFilter(object):
 
     @dec_test_epsg_code
     @dec_epsg_code_gjon
-    def filter_spat_buffer(self, propertyname=None, coord=None, radius=None, epsg_code=None):
-        if coord and radius:
+    def filter_spat_buffer(self, 
+                           propertyname=None, 
+                           coord=None, 
+                           radius=None, 
+                           epsg_code=None, 
+                           epsg_code_measure=3857):
+        if isinstance(coord, (list, tuple)) and isinstance(radius, (int, float)):
+            # lat <-> lon
+            coord = [
+                coord[-1], 
+                coord[0]
+            ]
+            in_srs = osr.SpatialReference()
+            in_srs.ImportFromEPSG(int(epsg_code["crs"]["properties"]["code"]))
+            out_srs = osr.SpatialReference()
+            out_srs.ImportFromEPSG(int(epsg_code_measure))
+            # detect type coordinate system
+            if out_srs.ExportToPCI()[1] != "METRE":
+                raise Exception("'epsg_code_measure' is not geometric coordinate system")
             json_geom = {
                 "type": "Point",
                 "coordinates": coord
             }
             json_geom.update(epsg_code)
+            # transform to measure epsg code 
+            transform = osr.CoordinateTransformation(in_srs, out_srs)
             ogr_geom = ogr.CreateGeometryFromJson(
                 json.dumps(
                     json_geom, 
                     ensure_ascii=False
                 )
-            ).Buffer(radius)
-            gml_geom = ogr_geom.ExportToGML()
+            )
+            ogr_geom.Transform(transform)
+            # create buffer
+            gml_geom = ogr_geom.Buffer(radius*2).ExportToGML()
             prop_name = u"<ogc:PropertyName>{}</ogc:PropertyName>".format(
                 self.geom_property_cap
             )
@@ -335,7 +357,8 @@ class WfsFilter(object):
                     "Latitude point", 
                     "Longitude point", 
                     ],
-                "radius": "radius meters",
+                "radius": "radius in meters",
+                "epsg_code_measure": "epsg code for radius measuring, default 3857",
                 "epsg_code": "epsg code projection",
             }
         else:
