@@ -113,7 +113,7 @@ class WfsFilter(object):
                             "Error: filter option '{}' not found".format(f_opt)
                         )
         if bool_tag:
-            if len(content) != 1:
+            if len(content) != 1 or (len(content) == 1 and len(content.values()[0]) != 1):
                 all_filter = self.filter_tags['and'](all_filter)
         if filter_tag:
             all_filter = self.filter_tags['filter'](all_filter)

@@ -167,6 +167,37 @@ if __name__ == "__main__":
             }, 
         }, 
     }
+    
+    request_ = {
+        "filter": {
+            #"and": {
+                "name": {
+                    "like": "*Пет*", 
+                    "bbox": {
+                        "coord": [
+                            59.97,
+                            30.21,
+                            59.98,
+                            30.22
+                        ],
+                        "epsg_code": 4326
+                    },
+                    "buffer": {
+                        "radius": 2000.0,
+                        "epsg_code": 4326,
+                        "coord": [
+                            59.97,
+                            30.21
+                        ],
+                        "epsg_code_measure": 3857
+                    }
+                #}
+            }
+        },
+        "layer_property": [
+            "name"
+        ]
+    }    
 
     print "*" * 30
     print "HZ"
