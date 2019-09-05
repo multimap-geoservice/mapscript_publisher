@@ -172,7 +172,7 @@ if __name__ == "__main__":
         "filter": {
             #"and": {
                 "name": {
-                    "like": "*Пет*", 
+                    "like": "*Сев*", 
                     "bbox": {
                         "coord": [
                             59.97,

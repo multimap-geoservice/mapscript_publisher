@@ -316,6 +316,7 @@
             }, 
             {
                 "wms_layer_temp": "wms_waterways",
+                "wfs_layer_temp": "wfs_waterways",
                 "name": "waterways",
                 "abstract": "waterways",
                 "data": {
@@ -414,6 +415,7 @@
             }, 
             {
                 "wms_layer_temp": "wms_roads",
+                "wfs_layer_temp": "wfs_roads",
                 "name": "roads",
                 "abstract": "roads",
                 "data5to7": {
@@ -1506,6 +1508,35 @@
                 }
             }
         ],
+        "wfs_waterways":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "OBJ": "mapscript.layerObj",
+                "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                "status": {"OBJ": "mapscript.MS_ON"}, 
+                "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                "units": {"OBJ": "mapscript.MS_METERS"},
+                "tileitem": "location",
+                "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                "connection": {"VAR": "db_connection"},
+                "data": {"TEMP": "\"{{layer_var['data']}}\""},
+                "metadata.set": [
+                    [
+                        "wfs_abstract",
+                        {"TEMP": "\"{{layer_var['abstract']}}\""}
+                    ],
+                    [
+                        "wfs_title",
+                        {"TEMP": "\"{{layer_var['title']}}\""}
+                    ],
+                    ["gml_include_items", "all"],
+                    ["gml_featureid", "osm_id"],
+                    ["wfs_enable_request", "*"]
+                ],
+                "labelitem": "name"
+            }
+        ],
         "wms_waterways":[
             { "TEMP": "{% import 'macros' as macros %}"},
             {    
@@ -1757,6 +1788,35 @@
                         }
                     ]
                 }
+            }
+        ],
+        "wfs_roads":[
+            { "TEMP": "{% import 'macros' as macros %}"},
+            {    
+                "OBJ": "mapscript.layerObj",
+                "name": {"TEMP": "\"{{layer_var['name']}}\""},
+                "status": {"OBJ": "mapscript.MS_ON"}, 
+                "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+                "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+                "units": {"OBJ": "mapscript.MS_METERS"},
+                "tileitem": "location",
+                "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+                "connection": {"VAR": "db_connection"},
+                "data": {"TEMP": "\"{{layer_var['data14to20']}}\""},
+                "metadata.set": [
+                    [
+                        "wfs_abstract",
+                        {"TEMP": "\"{{layer_var['abstract']}}\""}
+                    ],
+                    [
+                        "wfs_title",
+                        {"TEMP": "\"{{layer_var['title']}}\""}
+                    ],
+                    ["gml_include_items", "all"],
+                    ["gml_featureid", "osm_id"],
+                    ["wfs_enable_request", "*"]
+                ],
+                "labelitem": "name"
             }
         ],
         "wms_roads":[
