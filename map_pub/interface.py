@@ -125,7 +125,7 @@ class gdal2pg(gdal2db):
 
 class lst2str(object):
     """
-    str construction(str|unicode):
+    str construction(str|unicode|list):
     -----------------
     pre_str - start string
     meso_lst
@@ -155,8 +155,24 @@ class lst2str(object):
         " ", 
     ]
     
+    def args2list(self, args_):
+        for arg in args_:
+            if isinstance(arg, (str, unicode, int, float)):
+                self.lst.append(arg)
+            elif isinstance(arg, (list, tuple)):
+                self.args2list(arg)
+            else:
+                raise Exception(
+                    u"lst2str.args2list PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        u'\n'.join(self.lst),
+                        arg, 
+                        u"not str or unicode or int or float or list or tuple type"
+                    )
+                )
+    
     def __init__(self, *args):
-        self.lst = args
+        self.lst = []
+        self.args2list(args) 
         
     def create_str(self):
         all_str = "{0}{1}".format(self.post_str, self.meso_lst)
@@ -183,7 +199,7 @@ class lst2str(object):
                     else:
                         end_indent = False
                 # create all line string        
-                all_str = "{0}{1}{2}{3}{4}".format(
+                all_str = u"{0}{1}{2}{3}{4}".format(
                     all_str, 
                     self.pre_lst, 
                     line, 
@@ -192,13 +208,13 @@ class lst2str(object):
                 )
             else:
                 raise Exception(
-                    "lst2str PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
-                        '\n'.join(self.lst),
-                        "{%s}"%string[line], 
-                        "not srr or unicode type"
+                    u"lst2str PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        u'\n'.join(self.lst),
+                        string[line], 
+                        u"not str or unicode or int or float type"
                     )
                 )
-        all_str = "{0}{1}".format(all_str, self.post_str)
+        all_str = u"{0}{1}".format(all_str, self.post_str)
         return all_str
     
     def __call__(self):

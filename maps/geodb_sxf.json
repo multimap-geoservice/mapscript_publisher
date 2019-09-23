@@ -1,0 +1,348 @@
+{
+    "IMODS":["interface"],
+    "VARS":{
+        "name": "",
+        "data": "",
+        "title": "",
+        "imagecolor": [153, 179, 204], 
+        "extent": [
+            -180,
+            -90,
+            180,
+            90
+        ],
+        "size": [800, 800],
+        "db_connection": "",
+        "epsg_id": 4326,
+        "query_start":[
+            "geometry from",
+            "(",
+            "with",
+            "    ids as (",
+            "        select map_id",
+            "        from sxf_common_loaded_maps",
+            {
+                "VAR": "data_query_str",
+                "{}": {
+                    "VAR":"data"
+                }
+            },
+            "    ),",
+            "    objs as (",
+            "        select code as id,",
+            "               name as type,",
+            "               array[",
+            "                   (regexp_split_to_array(attr1, ':'))[1],",
+            "                   (regexp_split_to_array(attr2, ':'))[1],",
+            "                   (regexp_split_to_array(attr3, ':'))[1],",
+            "                   (regexp_split_to_array(attr4, ':'))[1],",
+            "                   (regexp_split_to_array(attr5, ':'))[1]",
+            "               ] as attr_keys,",
+            "               array[",
+            "                   (regexp_split_to_array(attr1, ':'))[2],",
+            "                   (regexp_split_to_array(attr2, ':'))[2],",
+            "                   (regexp_split_to_array(attr3, ':'))[2],",
+            "                   (regexp_split_to_array(attr4, ':'))[2],",
+            "                   (regexp_split_to_array(attr5, ':'))[2]",
+            "               ] as attr_vals,",
+            "               wkb_geometry as geometry",
+            "        from ("
+        ],
+        "query_meso":[
+            "        ) as unions",
+            "        group by code,",
+            "            name,",
+            "            attr1,",
+            "            attr2,",
+            "            attr3,",
+            "            attr4,",
+            "            attr5,",
+            "            wkb_geometry",
+            "    )",
+            "select id,",
+            "       type,"
+        ],
+        "query_end":[
+            "       geometry",
+            "from objs",
+            ")",
+            {
+                "VAR": "end_query_str",
+                "{}": {
+                    "VAR":"epsg_id"
+                }
+            }
+        ],
+        "end_query_str": "as foo using unique id using srid={}",
+        "data_query_str": "        where external_id in {}",
+        "layer_dicts": [
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "gidrografiya_polygon",
+                "abstract": "Гидрография (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_polygon_gidrografiya",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_polygon_gidrografiya",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_polygon_gidrografiya",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case ",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')]",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'ПРИЗНАК СУДОХОДСТВА') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ПРИЗНАК СУДОХОДСТВА')],'КОД'))[1]",
+                            "           else null",
+                            "       end as shipping,",
+                            "       case",
+                            "           when array_position(attr_keys,'ТИП ВОДОТОКА,БЕРЕГОВОЙ ЛИНИИ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ТИП ВОДОТОКА,БЕРЕГОВОЙ ЛИНИИ')],'КОД'))[1]",
+                            "           when array_position(attr_keys,'ТИП ВОДОТОКА (ВОДОЕМА)') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ТИП ВОДОТОКА (ВОДОЕМА)')],'КОД'))[1]          ",
+                            "           else null",
+                            "       end as watercourse,",
+                            "       case",
+                            "           when array_position(attr_keys,'КАЧЕСТВЕННЫЕ ОСОБЕННОСТИ ВОДЫ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'КАЧЕСТВЕННЫЕ ОСОБЕННОСТИ ВОДЫ')],'КОД'))[1]",
+                            "           else null",
+                            "       end as quality,",
+                            {"VAR": "query_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_line",
+                "name": "dorozhnaya_set_line",
+                "abstract": "Дорожная сеть (линия)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_line_dorozhnaya_set",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_line_dorozhnaya_set",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_line_dorozhnaya_set",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case ",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')]",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'НОМЕР ДОРОГИ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'НОМЕР ДОРОГИ')],'НОМЕР'))[1]",
+                            "           else null",
+                            "       end as number,",
+                            "       case",
+                            "           when array_position(attr_keys,'МАТЕРИАЛ ПОКРЫТИЯ') > 0 then attr_vals[array_position(attr_keys,'МАТЕРИАЛ ПОКРЫТИЯ')]",
+                            "           else null",
+                            "       end as paving,",
+                            "       case",
+                            "           when array_position(attr_keys,'ТЕРРИТОР./ГОСУД.ПРИНАДЛЕЖНОСТ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ТЕРРИТОР./ГОСУД.ПРИНАДЛЕЖНОСТ')],'КОД'))[1]",
+                            "           when array_position(attr_keys,'ТЕРРИТОРИАЛЬНАЯ ПРИНАДЛЕЖНОСТЬ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ТЕРРИТОРИАЛЬНАЯ ПРИНАДЛЕЖНОСТЬ')],'КОД'))[1]",          
+                            "           else null",
+                            "       end as state,",
+                            "       case",
+                            "           when array_position(attr_keys,'ШИРИНА') > 0 then attr_vals[array_position(attr_keys,'ШИРИНА')]",
+                            "           when array_position(attr_keys,'ШИРИНА ПОКРЫТИЯ ДОРОГИ,ПРОЕЗДА') > 0 then attr_vals[array_position(attr_keys,'ШИРИНА ПОКРЫТИЯ ДОРОГИ,ПРОЕЗДА')]",
+                            "           when array_position(attr_keys,'ШИРИНА ПОКРЫТИЯ,ПРОЕЗДА И Т.Д.') > 0 then attr_vals[array_position(attr_keys,'ШИРИНА ПОКРЫТИЯ,ПРОЕЗДА И Т.Д.')]",
+                            "           when array_position(attr_keys,'ШИРИНА ПО ШКАЛЕ') > 0 then attr_vals[array_position(attr_keys,'ШИРИНА ПО ШКАЛЕ')]",
+                            "           else null",
+                            "       end as width,",
+                            "       case",
+                            "           when array_position(attr_keys,'КОЛИЧЕСТВО ПРОЕЗЖИХ ЧАСТЕЙ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ПРОЕЗЖИХ ЧАСТЕЙ')],'ЕДИН'))[1]",
+                            "           when array_position(attr_keys,'ЧИСЛО ПУТЕЙ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ЧИСЛО ПУТЕЙ')],'ЕДИН'))[1]",
+                            "           else null",
+                            "       end as phats,",
+                            "       case",
+                            "           when array_position(attr_keys,'СОСТОЯНИЕ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'СОСТОЯНИЕ')],'КОД'))[1]",
+                            "           else null",
+                            "       end as condition,",                            
+                            {"VAR": "query_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "gidrografiya_relef_point",
+                "abstract": "Гидрографический рельеф (точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_gidrografiya_relef_",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_gidrografiya_relef_",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_gidrografiya_relef_",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case ",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')]",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')]",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'ГЛУБИНА') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ГЛУБИНА')],'М'))[1]",
+                            "           when array_position(attr_keys,'ГЛУБИНА ОТНОСИТЕЛЬНАЯ') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ГЛУБИНА ОТНОСИТЕЛЬНАЯ')],'М'))[1]",
+                            "           else null",
+                            "       end as depth,",
+                            "       case",
+                            "           when array_position(attr_keys,'АБСОЛЮТНАЯ ВЫСОТА') > 0 then attr_vals[array_position(attr_keys,'АБСОЛЮТНАЯ ВЫСОТА')]",
+                            "           else null",
+                            "       end as height,",
+                            "       case",
+                            "           when array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОТНОС.ЗЕМЛИ(ВОДЫ)') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОТНОС.ЗЕМЛИ(ВОДЫ)')],'КОД'))[1]",
+                            "           when array_position(attr_keys,'ХАРАКТЕР РАСП.ОТН.ЗЕМЛИ (ВОДЫ)') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ХАРАКТЕР РАСП.ОТН.ЗЕМЛИ (ВОДЫ)')],'КОД'))[1]",           
+                            "           when array_position(attr_keys,'ХАР.РАСПОЛ.ОБ''ЕКТА(отн.з/воды') > 0 then (regexp_split_to_array(attr_vals[array_position(attr_keys,'ХАР.РАСПОЛ.ОБ''ЕКТА(отн.з/воды')],'КОД'))[1]",
+                            "           else null",
+                            "       end as location,",                     
+                            {"VAR": "query_end"}
+                        ]
+                    }
+                }
+            } 
+        ]
+    },
+    "TEMPS":{
+        "wfs_polygon":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "wfs_line":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "wfs_point":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_POINT"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "map_temp":{
+            "OBJ": "mapscript.mapObj",
+            "name": {"VAR": "name"},
+            "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
+            "setExtent": [{"VAR": "extent"}],
+            "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},
+            "setSize": [{"VAR": "size"}],
+            "units": {
+                "OBJ": "mapscript.MS_DD"
+            },
+            "web.metadata.set": [
+                ["labelcache_map_edge_buffer", "-10"],
+                ["wms_title", {"VAR": "title"}],
+                ["wms_srs", "EPSG:4326 EPSG:32638 EPSG:3857 EPSG:900913"],
+                ["wfs_title", {"VAR": "title"}],
+                ["wfs_srs", "EPSG:4326 EPSG:32638 EPSG:3857 EPSG:900913"]
+            ],
+            "SUB_OBJ": [
+                {"TEMP": [
+                        "{% for layer_var in layer_dicts %}",
+                        "    {% if layer_var['wfs_layer_temp'] is defined %}",
+                        "        {% include layer_var['wfs_layer_temp'] %},",
+                        "    {% endif %}",
+                        "    {% if layer_var['wms_layer_temp'] is defined %}",
+                        "        {% include layer_var['wms_layer_temp'] %},",
+                        "    {% endif %}",
+                        "{% endfor %}"
+                    ]
+                }
+            ]
+        }
+    },
+    "MAP":{
+        "TEMP":"map_temp"
+    }
+}

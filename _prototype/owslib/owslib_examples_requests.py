@@ -169,10 +169,11 @@ if __name__ == "__main__":
     }
     
     request_ = {
+        "max_features": 10,
         "filter": {
             #"and": {
                 "name": {
-                    "like": "*Сев*", 
+                    #"like": "*Сев*", 
                     "bbox": {
                         "coord": [
                             59.97,
@@ -194,9 +195,9 @@ if __name__ == "__main__":
                 #}
             }
         },
-        "layer_property": [
-            "name"
-        ]
+        #"layer_property": [
+            #"name"
+        #]
     }    
 
     print "*" * 30
