@@ -927,6 +927,191 @@
                         ]
                     }
                 }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "planovo_vysotnaya_osnova_point",
+                "abstract": "Планово-высотная основа(точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_planovo_vysotnaya_osnova",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_planovo_vysotnaya_osnova",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_planovo_vysotnaya_osnova",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'АБСОЛЮТНАЯ ВЫСОТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'АБСОЛЮТНАЯ ВЫСОТА')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as height,",
+                            "       case",
+                            "           when array_position(attr_keys,'ЗНАЧЕНИЕ(СТЕПЕНЬ ГОСПОДСТВА)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ЗНАЧЕНИЕ(СТЕПЕНЬ ГОСПОДСТВА)')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'СТЕПЕНЬ ВЫСОТ.ГОСПОД.ЗНАЧ.ОР-А') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СТЕПЕНЬ ВЫСОТ.ГОСПОД.ЗНАЧ.ОР-А')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'СТЕПЕНЬ ВЫСОТНОГО ГОСПОДСТВА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СТЕПЕНЬ ВЫСОТНОГО ГОСПОДСТВА')], E''||sym_bug||'КОД','', 'g')",
+                            "           else null",
+                            "       end as domination,",
+                            "       case",
+                            "           when array_position(attr_keys,'МЕСТО РАСПОЛОЖЕНИЯ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'МЕСТО РАСПОЛОЖЕНИЯ')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'ХАРАКТЕР РАСПОЛОЖЕНИЯ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ХАРАКТЕР РАСПОЛОЖЕНИЯ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as location,",                            
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "promyshlen_sotsialnye_obekty_point",
+                "abstract": "Промышленные и социальные объекты(точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_promyshlen_i_sotsialnye_ob_ekt",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_promyshlen_i_sotsialnye_obekty",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_promyshlennye_sotsialn_ob_ekty",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_promyshlennye_sotsialn_ob_ekty",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'ВЫСОТА ОТНОСИТЕЛЬНАЯ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ВЫСОТА ОТНОСИТЕЛЬНАЯ')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as height,",
+                            "       case",
+                            "           when array_position(attr_keys,'ГЛУБИНА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ГЛУБИНА')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as depth,",
+                            "       case",
+                            "           when array_position(attr_keys,'НАЗНАЧЕНИЕ ОБЪЕКТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'НАЗНАЧЕНИЕ ОБЪЕКТА')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'ФУНКЦИОНАЛЬНОЕ НАЗНАЧЕНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ФУНКЦИОНАЛЬНОЕ НАЗНАЧЕНИЕ')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'ФУНКЦИОНАЛЬНОЕ НАЗНАЧЕНИЕ ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ФУНКЦИОНАЛЬНОЕ НАЗНАЧЕНИЕ ')], E''||sym_bug||'КОД','', 'g')",
+                            "           else null",
+                            "       end as function,",
+                            "       case",
+                            "           when array_position(attr_keys,'СОСТОЯНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОСТОЯНИЕ')], E''||sym_bug||'КОД','', 'g')",
+                            "           else null",
+                            "       end as status,",
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "relef_sushi_point",
+                "abstract": "Рельеф суши(точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_relef_sushi",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_relef_sushi",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_relef_sushi",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'ВЫСОТА ОТНОСИТЕЛЬНАЯ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ВЫСОТА ОТНОСИТЕЛЬНАЯ')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ОТНОСИТЕЛЬНАЯ ВЫСОТА ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as height,",
+                            "       case",
+                            "           when array_position(attr_keys,'ГЛУБИНА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ГЛУБИНА')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as depth,",                            
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "gidrografiya_point",
+                "abstract": "Гидрография (точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_gidrografiya",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_gidrografiya",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as name,",
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
             } 
         ]
     },
