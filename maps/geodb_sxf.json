@@ -231,9 +231,11 @@
                             "            union",
                             "            select *",
                             "            from wfs.sxf_common_100000_polygon_naselenn_p_kvart_neodnorodnye_",
+                            "            where map_id in (select map_id from ids)",
                             "            union ",
                             "            select *",
                             "            from wfs.sxf_common_100000_polygon_naselennye_punkty_stroeniya_",
+                            "            where map_id in (select map_id from ids)",
                             "            union",       
                             "            select *",
                             "            from wfs.sxf_common_200000_polygon_naselennye_punkty_kvartaly_",
@@ -241,6 +243,7 @@
                             "            union",
                             "            select *",
                             "            from wfs.sxf_common_1000000_polygon_naselennye_punkty_kvartaly_",
+                            "            where map_id in (select map_id from ids)",
                             {"VAR": "query_meso"},
                             "        case",
                             "            when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
@@ -283,7 +286,7 @@
             },
             {
                 "wfs_layer_temp": "wfs_polygon",
-                "name": "promyshlen_i_sotsialnye_objecty_polygon",
+                "name": "promyshlen_sotsialnye_objecty_polygon",
                 "abstract": "Промышленные и социальные объекты (полигон)",
                 "data": {
                     "RUN":{
@@ -1112,6 +1115,103 @@
                         ]
                     }
                 }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "naselennye_punkty_point",
+                "abstract": "Населённые пункты (точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_naselennye_punkty",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_naselennye_punkty_kvartaly_",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_naselennye_punkty",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_1000000_point_naselennye_punkty_kvartaly_",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "        case",
+                            "            when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "            when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "            when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "            when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "            when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "            else null",
+                            "        end as name,",
+                            "        case",
+                            "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ')], E''||sym_bug,'', 'g')",
+                            "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ')], E''||sym_bug,'', 'g')",
+                            "            else null",
+                            "        end as citizens,",
+                            "        case",
+                            "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ')], E''||sym_bug||'КОД','', 'g')",
+                            "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ')], E''||sym_bug||'КОД','', 'g')",
+                            "            else null",
+                            "        end as administration,",
+                            "        case",
+                            "            when array_position(attr_keys,'ПРИНАДЛЕЖН.НАСЕЛЕННОМУ ПУНКТУ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ПРИНАДЛЕЖН.НАСЕЛЕННОМУ ПУНКТУ')], E''||sym_bug||'КОД','', 'g')",
+                            "            when array_position(attr_keys,'ПРИНАДЛЕЖНОСТЬ НАСЕЛЕН.ПУНКТУ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ПРИНАДЛЕЖНОСТЬ НАСЕЛЕН.ПУНКТУ')], E''||sym_bug||'КОД','', 'g')",
+                            "            else null",
+                            "        end as affilation,",
+                            "        case",
+                            "            when array_position(attr_keys,'СОСТОЯНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОСТОЯНИЕ')], E''||sym_bug||'КОД','', 'g')",
+                            "            else null",
+                            "        end as state,",
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            },
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "dorozhnye_sooruzheniya_point",
+                "abstract": "Дорожные сооружения (точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            {"VAR": "query_start"},
+                            "            select *",
+                            "            from wfs.sxf_common_100000_point_dorozhnye_sooruzheniya",
+                            "            where map_id in (select map_id from ids)",
+                            "            union",
+                            "            select *",
+                            "            from wfs.sxf_common_200000_point_dorozhnye_sooruzheniya",
+                            "            where map_id in (select map_id from ids)",
+                            {"VAR": "query_meso"},
+                            "       case",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВ.(ТЕКСТ ПОДПИСИ)')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕН.НАЗВАН.,ТЕКСТ ПОДПИС')], E''||sym_bug,'', 'g')",
+                            "           when array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'СОБСТВЕННОЕ НАЗВАНИЕ')], E''||sym_bug,'', 'g')",
+                            "           else null",
+                            "       end as name,",
+                            "       case",
+                            "           when array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОБ''ЕКТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОБ''ЕКТА')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОБЪЕКТА') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОБЪЕКТА')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'МЕСТО РАСПОЛОЖЕНИЯ') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'МЕСТО РАСПОЛОЖЕНИЯ')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОТНОС.ЗЕМЛИ(ВОДЫ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'РАСПОЛОЖЕНИЕ ОТНОС.ЗЕМЛИ(ВОДЫ)')], E''||sym_bug||'КОД','', 'g')",
+                            "           when array_position(attr_keys,'ХАРАКТЕР РАСП.ОТН.ЗЕМЛИ (ВОДЫ)') > 0 then regexp_replace(attr_vals[array_position(attr_keys,'ХАРАКТЕР РАСП.ОТН.ЗЕМЛИ (ВОДЫ)')], E''||sym_bug||'КОД','', 'g')",    
+                            "           else null",
+                            "       end as location,",            
+                            {"VAR": "query_end"},
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
             } 
         ]
     },
@@ -1119,6 +1219,7 @@
         "wfs_polygon":{
             "OBJ": "mapscript.layerObj",
             "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
             "status": {"OBJ": "mapscript.MS_ON"}, 
             "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
             "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
@@ -1145,6 +1246,7 @@
         "wfs_line":{
             "OBJ": "mapscript.layerObj",
             "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
             "status": {"OBJ": "mapscript.MS_ON"}, 
             "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
             "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
@@ -1171,6 +1273,7 @@
         "wfs_point":{
             "OBJ": "mapscript.layerObj",
             "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
             "status": {"OBJ": "mapscript.MS_ON"}, 
             "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
             "type": {"OBJ": "mapscript.MS_LAYER_POINT"}, 
