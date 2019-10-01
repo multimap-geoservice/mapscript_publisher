@@ -2,8 +2,8 @@
 DROP FUNCTION sxf_union(text,text[],integer[]);
 create or replace function sxf_union(
     geom_type text,
-    layer_name text[],
-    map_ids int[]
+    layer_name text[] default null,
+    map_ids int[] default null
     )
 returns table (
     gid integer,
@@ -25,6 +25,9 @@ returns table (
     declare
         all_tables text[];
         table_name text;
+        query_layername text;
+        ids_head text;
+        query_ids text;
         query_array text[];
         query_str text;
     begin
@@ -36,18 +39,33 @@ returns table (
             and (regexp_split_to_array(table_name, ''_''))[4] = '''||geom_type||''';'
         into all_tables;
 
+        if layer_name is null then
+            query_layername := '';
+            ids_head := 'where';
+        else
+            query_layername := 'where layername = any(array['''||array_to_string(layer_name,''',''')||'''])';
+            ids_head := 'and';
+        end if;
+
+        if map_ids is null then
+            query_ids := '';
+        else
+            query_ids := '
+                '||ids_head||' map_id in (
+                    select map_id 
+                    from sxf_common_loaded_maps 
+                    where external_id = any(array['||array_to_string(map_ids,',')||'])
+                )';
+        end if;
+
         foreach table_name in array all_tables
         loop
             query_array := array_append(
                 query_array,'
                 select *
                 from '||table_name||' as geodata
-                where layername = any(array['''||array_to_string(layer_name,''',''')||'''])
-                and map_id in (
-                    select map_id 
-                    from sxf_common_loaded_maps 
-                    where external_id = any(array['||array_to_string(map_ids,',')||'])
-                )
+                '||query_layername||'
+                '||query_ids||'
                 '
             );
         end loop;
