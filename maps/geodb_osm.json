@@ -1,0 +1,574 @@
+{
+    "IMODS":["interface"],
+    "VARS":{
+        "name": "",
+        "title": "",
+        "imagecolor": [153, 179, 204], 
+        "extent": [
+            -20000000,
+            -20000000,
+            20000000,
+            20000000
+        ],
+        "size": [800, 800],
+        "db_connection": "",
+        "epsg_id": 3857,
+        "end_query_str": "as foo using unique id using srid={}",
+        "layer_dicts": [
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "naselennye_punkty_polygon",
+                "abstract": "Населённые пункты (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "place as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where place is not null",
+                            "and boundary is null",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "dorozhnye_sooruzheniya_polygon",
+                "abstract": "Дорожные сооружения (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "concat(",
+                            "    railway,",
+                            "    place",
+                            ") as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where railway = 'station'",
+                            "or place = 'square'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "rastitelnost_polygon",
+                "abstract": "Растительность (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "concat(",
+                            "    landuse,",
+                            "    leisure,",
+                            "    \"natural\"",
+                            ") as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'forest',",
+                            "    'grass',",
+                            "    'meadow',",
+                            "    'greenfield',",
+                            "    'brownfield'",
+                            ")",
+                            "or leisure in",
+                            "(",
+                            "    'park',",
+                            "    'pitch'",
+                            ")",
+                            "or \"natural\" in",
+                            "(",
+                            "    'wood',",
+                            "    'scrub',",
+                            "    'grassland',",
+                            "    'beach',",
+                            "    'sand',",
+                            "    'heath',",
+                            "    'wetland'",
+                            ")",
+                            "or highway = 'pedestrian'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "promyshlen_sotsialnye_objecty_polygon",
+                "abstract": "Промышленные и социальные объекты (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "concat(",
+                            "    landuse,",
+                            "    leisure,",
+                            "    highway,",
+                            "    amenity,",
+                            "    aeroway",
+                            ") as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'cemetery',",
+                            "    'industrial',",
+                            "    'garages',",
+                            "    'construction',",
+                            "    'commercial',",
+                            "    'quarry',",
+                            "    'military'",
+                            ")",
+                            "or leisure in",
+                            "(",
+                            "    'golf_course',",
+                            "    'playground',",
+                            "    'stadium',",
+                            "    'sports_center'",
+                            ")",
+                            "or amenity in",
+                            "(",
+                            "    'hospital',",
+                            "    'school',",
+                            "    'college',",
+                            "    'university',",
+                            "    'parking'",
+                            ")",
+                            "or aeroway in",
+                            "(",
+                            "    'aerodrome',",
+                            "    'terminal',",
+                            "    'helipad',",
+                            "    'apron'",
+                            ")",
+                            "or highway = 'pedestrian'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "voennie_objecty_polygon",
+                "abstract": "Военные объекты (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "landuse as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'military'",
+                            ")",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "gidrografiya_polygon",
+                "abstract": "Гидрография (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "concat(",
+                            "    landuse,",
+                            "    \"natural\",",
+                            "    waterway,",
+                            "    amenity",
+                            ") as type,",
+                            "case",
+                            "     when \"name\" in (",
+                            "         select name",
+                            "         from planet_osm_line",
+                            "         where waterway in (",
+                            "             'stream',",
+                            "             'river',",
+                            "             'canal',",
+                            "             'drain'",
+                            "         )",
+                            "     )",
+                            "     then NULL",
+                            "     else \"name\"",
+                            "end \"name\"",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'basin',",
+                            "    'reservoir'",
+                            ")",
+                            "or \"natural\" in",
+                            "(",
+                            "    'water',",
+                            "    'bay'",
+                            ")",
+                            "or waterway = 'riverbank'",
+                            "or amenity = 'fountain'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "gidrotehnicheskie_sooruzheniya_polygon",
+                "abstract": "Гидрографические сооружения (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "man_made as type,",
+                            "name as name",
+                            "from planet_osm_polygon",
+                            "where man_made = 'pier'",
+                            "order by way_area desc",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_line",
+                "name": "gidrografiya_line",
+                "abstract": "Гидрография (линия)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "waterway as type,",
+                            "name as name,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where waterway in",
+                            "(",
+                            "    'stream',",
+                            "    'river',",
+                            "    'canal',",
+                            "    'drain'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_line",
+                "name": "dorozhnaya_set_line",
+                "abstract": "Дорожная сеть (линия)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "concat(",
+                            "    highway,",
+                            "    railway,",
+                            "    aeroway",
+                            ") as type,",
+                            "name as name,",
+                            "ref as number,",
+                            "z_order",
+                            "from planet_osm_line",
+                            "where highway in",
+                            "(",
+                            "    'trunk',",
+                            "    'trunk_link',",
+                            "    'motorway',",
+                            "    'motorway_link',",
+                            "    'primary',",
+                            "    'primary_link',",
+                            "    'secondary',",
+                            "    'secondary_link',",
+                            "    'tertiary',",
+                            "    'tertiary_link',",
+                            "    'road',",
+                            "    'path',",
+                            "    'track',",
+                            "    'service',",
+                            "    'footway',",
+                            "    'bridleway',",
+                            "    'cycleway',",
+                            "    'steps',",
+                            "    'pedestrian',",
+                            "    'living_street',",
+                            "    'unclassified',",
+                            "    'residential'",
+                            ")",
+                            "or railway in",
+                            "(",
+                            "    'rail',",
+                            "    'light_rail',",
+                            "    'subway',",
+                            "    'narrow_gauge',",
+                            "    'preserved',",
+                            "    'funicular',",
+                            "    'monorail'",
+                            ")",
+                            "or aeroway in",
+                            "(",
+                            "    'runway',",
+                            "    'taxiway'",
+                            ")",
+                            "order by z_order",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_point",
+                "name": "naselennye_punkty_point",
+                "abstract": "Населённые пункты (точка)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            "geometry from",
+                            "(",
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "name as name,",
+                            "place as type,",
+                            "z_order,",
+                            "population",
+                            "from planet_osm_point",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'state',",
+                            "    'region',",
+                            "    'county',",
+                            "    'city',",
+                            "    'town',",
+                            "    'village',",
+                            "    'hamlet',",
+                            "    'suburb'",
+                            ")",
+                            "and name is not null",
+                            "order by population asc nulls first",
+                            ")",
+                            {
+                                "VAR": "end_query_str",
+                                "{}": {
+                                    "VAR":"epsg_id"
+                                }
+                            }
+                        ]
+                    }
+                }
+            } 
+        ]
+    },
+    "TEMPS":{
+        "wfs_polygon":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_POLYGON"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "wfs_line":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_LINE"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "wfs_point":{
+            "OBJ": "mapscript.layerObj",
+            "name": {"TEMP": "\"{{layer_var['name']}}\""},
+            "setExtent": [{"VAR": "extent"}],
+            "status": {"OBJ": "mapscript.MS_ON"}, 
+            "setProjection": {"TEMP":"\"init=epsg:{{epsg_id}}\""},
+            "type": {"OBJ": "mapscript.MS_LAYER_POINT"}, 
+            "units": {"OBJ": "mapscript.MS_METERS"},
+            "tileitem": "location",
+            "connectiontype": {"OBJ": "mapscript.MS_POSTGIS"},
+            "connection": {"VAR": "db_connection"},
+            "data": {"TEMP": "\"{{layer_var['data']}}\""},
+            "metadata.set": [
+                [
+                    "wfs_abstract",
+                    {"TEMP": "\"{{layer_var['abstract']}}\""}
+                ],
+                [
+                    "wfs_title",
+                    {"TEMP": "\"{{layer_var['title']}}\""}
+                ],
+                ["gml_include_items", "all"],
+                ["gml_featureid", "id"],
+                ["wfs_enable_request", "*"]
+            ],
+            "labelitem": "name"
+        },
+        "map_temp":{
+            "OBJ": "mapscript.mapObj",
+            "name": {"VAR": "name"},
+            "imagecolor.setRGB": [{"TEMP": "{{imagecolor}}"}],
+            "setExtent": [{"VAR": "extent"}],
+            "setProjection": {"TEMP":"'init=epsg:{{epsg_id}}'"},
+            "setSize": [{"VAR": "size"}],
+            "units": {
+                "OBJ": "mapscript.MS_DD"
+            },
+            "web.metadata.set": [
+                ["labelcache_map_edge_buffer", "-10"],
+                ["wms_title", {"VAR": "title"}],
+                ["wms_srs", "EPSG:4326 EPSG:32638 EPSG:3857 EPSG:900913"],
+                ["wfs_title", {"VAR": "title"}],
+                ["wfs_srs", "EPSG:4326 EPSG:32638 EPSG:3857 EPSG:900913"]
+            ],
+            "SUB_OBJ": [
+                {"TEMP": [
+                        "{% for layer_var in layer_dicts %}",
+                        "    {% if layer_var['wfs_layer_temp'] is defined %}",
+                        "        {% include layer_var['wfs_layer_temp'] %},",
+                        "    {% endif %}",
+                        "    {% if layer_var['wms_layer_temp'] is defined %}",
+                        "        {% include layer_var['wms_layer_temp'] %},",
+                        "    {% endif %}",
+                        "{% endfor %}"
+                    ]
+                }
+            ]
+        }
+    },
+    "MAP":{
+        "TEMP":"map_temp"
+    }
+}
