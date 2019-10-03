@@ -127,7 +127,7 @@
             {
                 "wfs_layer_temp": "wfs_polygon",
                 "name": "gidrografiya_relef_polygon",
-                "abstract": "Гидрография рельеф(полигон)",
+                "abstract": "Гидрография рельеф (полигон)",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -157,7 +157,7 @@
             {
                 "wfs_layer_temp": "wfs_polygon",
                 "name": "grunti_polygon",
-                "abstract": "Грунты",
+                "abstract": "Грунты (полигон)",
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
@@ -217,7 +217,7 @@
                             "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ')], E''||sym_bug,'', 'g'))",
                             "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ')], E''||sym_bug,'', 'g'))",
                             "            else null",
-                            "        end as citizens,",
+                            "        end as population,",
                             "        case",
                             "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ')], E''||sym_bug||'КОД','', 'g'))",
                             "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ')], E''||sym_bug||'КОД','', 'g'))",
@@ -979,7 +979,7 @@
                             "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ')], E''||sym_bug,'', 'g'))",
                             "            when array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'КОЛИЧЕСТВО ЖИТЕЛЕЙ ПО ШКАЛЕ')], E''||sym_bug,'', 'g'))",
                             "            else null",
-                            "        end as citizens,",
+                            "        end as population,",
                             "        case",
                             "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТРАТИВ.ДЕЛЕНИ')], E''||sym_bug||'КОД','', 'g'))",
                             "            when array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ') > 0 then lower(regexp_replace(attr_vals[array_position(attr_keys,'ПОЛИТИКО-АДМИНИСТР.ЗНАЧЕНИЕ')], E''||sym_bug||'КОД','', 'g'))",

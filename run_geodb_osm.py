@@ -12,7 +12,7 @@ if __name__ == "__main__":
     db_host = sys.argv[1]
     #db_host = "localhost"
     debug_path = "{}/GIS/mapserver/debug".format(os.environ["HOME"])
-    db_connection = "host={0} dbname=RU-SPE user=gis password=gis port=5432".format(
+    db_connection = "host={0} dbname=RU-LEN user=gis password=gis port=5432".format(
         db_host 
     )
     

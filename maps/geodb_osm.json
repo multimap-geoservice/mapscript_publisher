@@ -14,6 +14,19 @@
         "db_connection": "",
         "epsg_id": 3857,
         "end_query_str": "as foo using unique id using srid={}",
+        "data_start":[
+            "geometry from",
+            "("
+        ],
+        "data_end":[
+            ")",
+            {
+                "VAR": "end_query_str",
+                "{}": {
+                    "VAR":"epsg_id"
+                }
+            }
+        ],
         "layer_dicts": [
             {
                 "wfs_layer_temp": "wfs_polygon",
@@ -22,22 +35,45 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "place as type,",
-                            "name as name",
+                            "lower(place) as type,",
+                            "lower(name) as name,",
+                            "case",
+                            "    when population is Null then (",
+                            "            select sum(population::int)",
+                            "            from planet_osm_point",
+                            "            where place in",
+                            "            (",
+                            "                'country',",
+                            "                'state',",
+                            "                'region',",
+                            "                'county',",
+                            "                'city',",
+                            "                'town',",
+                            "                'village',",
+                            "                'hamlet',",
+                            "                'suburb'",
+                            "            )",
+                            "            and st_within(planet_osm_point.way,planet_osm_polygon.way)",
+                            "        )::text",
+                            "    else population",
+                            "end",
                             "from planet_osm_polygon",
-                            "where place is not null",
-                            "and boundary is null",
+                            "where place in",
+                            "(",
+                            "    'country',",
+                            "    'state',",
+                            "    'region',",
+                            "    'county',",
+                            "    'city',",
+                            "    'town',",
+                            "    'village',",
+                            "    'hamlet',",
+                            "    'suburb'",
                             ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -49,26 +85,19 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "concat(",
+                            "lower(concat(",
                             "    railway,",
                             "    place",
-                            ") as type,",
-                            "name as name",
+                            ")) as type,",
+                            "lower(name) as name",
                             "from planet_osm_polygon",
                             "where railway = 'station'",
                             "or place = 'square'",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -80,24 +109,19 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "concat(",
+                            "lower(concat(",
                             "    landuse,",
                             "    leisure,",
                             "    \"natural\"",
-                            ") as type,",
-                            "name as name",
+                            ")) as type,",
+                            "lower(name) as name",
                             "from planet_osm_polygon",
                             "where landuse in",
                             "(",
-                            "    'forest',",
-                            "    'grass',",
-                            "    'meadow',",
-                            "    'greenfield',",
-                            "    'brownfield'",
+                            "    'forest'",
                             ")",
                             "or leisure in",
                             "(",
@@ -107,22 +131,48 @@
                             "or \"natural\" in",
                             "(",
                             "    'wood',",
-                            "    'scrub',",
+                            "    'scrub'",
+                            ")",
+                            "or highway = 'pedestrian'",
+                            "order by way_area desc",
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_polygon",
+                "name": "grunti_polygon",
+                "abstract": "Грунты (полигон)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "lower(concat(",
+                            "    landuse,",
+                            "    \"natural\"",
+                            ")) as type,",
+                            "lower(name) as name",
+                            "from planet_osm_polygon",
+                            "where landuse in",
+                            "(",
+                            "    'grass',",
+                            "    'meadow',",
+                            "    'greenfield',",
+                            "    'brownfield'",
+                            ")",
+                            "or \"natural\" in",
+                            "(",
                             "    'grassland',",
                             "    'beach',",
                             "    'sand',",
                             "    'heath',",
                             "    'wetland'",
                             ")",
-                            "or highway = 'pedestrian'",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -134,18 +184,17 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "concat(",
+                            "lower(concat(",
                             "    landuse,",
                             "    leisure,",
                             "    highway,",
                             "    amenity,",
                             "    aeroway",
-                            ") as type,",
-                            "name as name",
+                            ")) as type,",
+                            "lower(name) as name",
                             "from planet_osm_polygon",
                             "where landuse in",
                             "(",
@@ -154,8 +203,7 @@
                             "    'garages',",
                             "    'construction',",
                             "    'commercial',",
-                            "    'quarry',",
-                            "    'military'",
+                            "    'quarry'",
                             ")",
                             "or leisure in",
                             "(",
@@ -181,13 +229,7 @@
                             ")",
                             "or highway = 'pedestrian'",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -199,25 +241,18 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "landuse as type,",
-                            "name as name",
+                            "lower(landuse) as type,",
+                            "lower(name) as name",
                             "from planet_osm_polygon",
                             "where landuse in",
                             "(",
                             "    'military'",
                             ")",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -229,16 +264,16 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "concat(",
+                            "lower(concat(",
                             "    landuse,",
                             "    \"natural\",",
+                            "    place,",
                             "    waterway,",
                             "    amenity",
-                            ") as type,",
+                            ")) as type,",
                             "case",
                             "     when \"name\" in (",
                             "         select name",
@@ -251,7 +286,7 @@
                             "         )",
                             "     )",
                             "     then NULL",
-                            "     else \"name\"",
+                            "     else lower(\"name\")",
                             "end \"name\"",
                             "from planet_osm_polygon",
                             "where landuse in",
@@ -264,16 +299,15 @@
                             "    'water',",
                             "    'bay'",
                             ")",
+                            "or place in",
+                            "(",
+                            "    'sea',",
+                            "    'ocean'",
+                            ")",
                             "or waterway = 'riverbank'",
                             "or amenity = 'fountain'",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -285,22 +319,15 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "man_made as type,",
-                            "name as name",
+                            "lower(man_made) as type,",
+                            "lower(name) as name",
                             "from planet_osm_polygon",
                             "where man_made = 'pier'",
                             "order by way_area desc",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -312,13 +339,11 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "waterway as type,",
-                            "name as name,",
-                            "z_order",
+                            "lower(waterway) as type,",
+                            "lower(name) as name",
                             "from planet_osm_line",
                             "where waterway in",
                             "(",
@@ -327,14 +352,7 @@
                             "    'canal',",
                             "    'drain'",
                             ")",
-                            "order by z_order",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -346,18 +364,16 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "concat(",
+                            "lower(concat(",
                             "    highway,",
                             "    railway,",
                             "    aeroway",
-                            ") as type,",
-                            "name as name,",
-                            "ref as number,",
-                            "z_order",
+                            ")) as type,",
+                            "lower(name) as name,",
+                            "lower(ref) as number",
                             "from planet_osm_line",
                             "where highway in",
                             "(",
@@ -399,14 +415,35 @@
                             "    'runway',",
                             "    'taxiway'",
                             ")",
-                            "order by z_order",
+                            {"VAR": "data_end"}
+                        ]
+                    }
+                }
+            }, 
+            {
+                "wfs_layer_temp": "wfs_line",
+                "name": "granitsy_line",
+                "abstract": "Границы (линия)",
+                "data": {
+                    "RUN":{
+                        "interface.lst2str":[
+                            {"VAR": "data_start"},
+                            "select way as geometry,",
+                            "osm_id as id,",
+                            "admin_level as type,",
+                            "lower(name) as name,",
+                            "lower(ref) as number",
+                            "from planet_osm_line",
+                            "where boundary = 'administrative'",
+                            "and admin_level in",
+                            "(",
+                            "    '1',",
+                            "    '2',",
+                            "    '3',",
+                            "    '4',",
+                            "    '6'",
                             ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
@@ -418,14 +455,12 @@
                 "data": {
                     "RUN":{
                         "interface.lst2str":[
-                            "geometry from",
-                            "(",
+                            {"VAR": "data_start"},
                             "select way as geometry,",
                             "osm_id as id,",
-                            "name as name,",
-                            "place as type,",
-                            "z_order,",
-                            "population",
+                            "lower(name) as name,",
+                            "lower(place) as type,",
+                            "population as population",
                             "from planet_osm_point",
                             "where place in",
                             "(",
@@ -440,14 +475,7 @@
                             "    'suburb'",
                             ")",
                             "and name is not null",
-                            "order by population asc nulls first",
-                            ")",
-                            {
-                                "VAR": "end_query_str",
-                                "{}": {
-                                    "VAR":"epsg_id"
-                                }
-                            }
+                            {"VAR": "data_end"}
                         ]
                     }
                 }
