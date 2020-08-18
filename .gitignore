@@ -1,2 +1,6 @@
 *.pyc
 
+debug/*.json
+debug/*.map
+debug/*.py
+

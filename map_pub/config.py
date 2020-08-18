@@ -1,10 +1,10 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
-import os, sys
+import os
+import sys
 import importlib
 import types
-from multiprocessing import cpu_count
 
 
 """

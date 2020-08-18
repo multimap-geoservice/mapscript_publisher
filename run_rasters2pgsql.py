@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
-import os, sys
+import sys
 from map_pub import BuildMapRes, PubMapWEB
 
 if __name__ == "__main__":
@@ -10,7 +8,7 @@ if __name__ == "__main__":
     """
     mapjsonfile = "./maps/rasters2pgsql.json"
     db_host = sys.argv[1]
-    debug_path = "{}/GIS/mapserver/debug".format(os.environ["HOME"])
+    debug_path = "./debug"
     
     # build map
     builder = BuildMapRes()

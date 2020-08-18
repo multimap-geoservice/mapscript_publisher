@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
 import psycopg2
 from subprocess import Popen, PIPE
 
-import config
+from . import config
 
 
 class pgsqldb(object):
@@ -21,7 +19,7 @@ class pgsqldb(object):
         self.connString = ''
         str_temp = '{0}{1}=\'{2}\' ' 
         for _key in self.pg_defaults:
-            if kwargs.has_key(_key):
+            if _key in kwargs.keys():
                 self.connString= str_temp.format(
                     self.connString,
                     _key,
@@ -125,7 +123,7 @@ class gdal2pg(gdal2db):
 
 class lst2str(object):
     """
-    str construction(str|unicode|list):
+    str construction(str|list):
     -----------------
     pre_str - start string
     meso_lst
@@ -157,16 +155,16 @@ class lst2str(object):
     
     def args2list(self, args_):
         for arg in args_:
-            if isinstance(arg, (str, unicode, int, float)):
+            if isinstance(arg, (str, int, float)):
                 self.lst.append(arg)
             elif isinstance(arg, (list, tuple)):
                 self.args2list(arg)
             else:
                 raise Exception(
-                    u"lst2str.args2list PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
-                        u'\n'.join(self.lst),
+                    "lst2str.args2list PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        '\n'.join(self.lst),
                         arg, 
-                        u"not str or unicode or int or float or list or tuple type"
+                        "not str or int or float or list or tuple type"
                     )
                 )
     
@@ -177,7 +175,7 @@ class lst2str(object):
     def create_str(self):
         all_str = "{0}{1}".format(self.post_str, self.meso_lst)
         for line in self.lst:
-            if isinstance(line, (str, unicode, int, float)):
+            if isinstance(line, (str, int, float)):
                 if isinstance(line, (int, float)):
                     line = str(line)
                 # fix hooks
@@ -199,7 +197,7 @@ class lst2str(object):
                     else:
                         end_indent = False
                 # create all line string        
-                all_str = u"{0}{1}{2}{3}{4}".format(
+                all_str = "{0}{1}{2}{3}{4}".format(
                     all_str, 
                     self.pre_lst, 
                     line, 
@@ -208,13 +206,13 @@ class lst2str(object):
                 )
             else:
                 raise Exception(
-                    u"lst2str PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
-                        u'\n'.join(self.lst),
+                    "lst2str PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        '\n'.join(self.lst),
                         string[line], 
-                        u"not str or unicode or int or float type"
+                        "not str or int or float type"
                     )
                 )
-        all_str = u"{0}{1}".format(all_str, self.post_str)
+        all_str = "{0}{1}".format(all_str, self.post_str)
         return all_str
     
     def __call__(self):
@@ -273,12 +271,12 @@ class comstring(object):
         _res = _proc.communicate()
         _proc.wait()
         if _proc.returncode:
-            print "ERR"
+            print ("ERR")
             if self.stderr_echo:
-                print _res[1]
+                print (_res[1])
             return False
         else:
             if self.stdout_echo:
-                print _res[0]
-            print "OK"
+                print (_res[0])
+            print ("OK")
             return True

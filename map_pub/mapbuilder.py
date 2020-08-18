@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
-#import mapscript
 import os
 import json
 from jinja2 import Environment, DictLoader
@@ -10,7 +7,7 @@ import inspect
 import copy
 import codecs
 
-from interface import pgsqldb
+from .interface import pgsqldb
 
 
 ########################################################################
@@ -32,7 +29,7 @@ class BuildMap(object):
     {'VAR':str, 'arg1':'foo1', 'arg2':'foo2' }-variable in VARS declare(MAP|VARS|TEMPS): 
         VAR - variable name (in VARS)
         'arg' - argument for VARS[VAR] as var in format (var - arg:foo):
-            str|unicode - '{}':str|list|dict text format, as: var.format(str|*list|**dict)
+            str - '{}':str|list|dict text format, as: var.format(str|*list|**dict)
             int|float - '=':'str' math axpression as: '(1+{})/2'.format(var)
             dict - 'key':data - all data for dict, as: var['key'] = data
                    '-': key|[key] - delete key from dict as: del(var[key])
@@ -80,12 +77,12 @@ class BuildMap(object):
                 separators=(',', ': '), 
                 ensure_ascii=False
             )
-        log = u"\n{0}\nSTEP: {1}\n{0}\n{2}".format(
+        log = "\n{0}\nSTEP: {1}\n{0}\n{2}".format(
             "-"*60, 
             description, 
             log
         )
-        if isinstance(self.debug, (str, unicode)):
+        if isinstance(self.debug, str):
             if first:
                 write_mode = 'w'
             else:
@@ -107,11 +104,8 @@ class BuildMap(object):
         if args == {}:
             args = None
         #proc
-        if self.VARS.has_key(var):
-            if isinstance(var, (str, unicode)):
-                # fix unicode & load var_data
-                if isinstance(self.VARS[var], str):
-                    self.VARS[var] = u'{}'.format(self.VARS[var].decode('utf-8'))
+        if var in self.VARS.keys():
+            if isinstance(var, str):
                 var_data = copy.deepcopy(self.VARS[var])
                 # init arguments
                 if args is not None:
@@ -120,11 +114,11 @@ class BuildMap(object):
                         self.recurs_proc(args, argkey, 'VAR')
                         self.recurs_proc(args, argkey, 'RUN')
                     # string args processing
-                    if isinstance(var_data, (str, unicode)):
+                    if isinstance(var_data, str):
                         args_key = '{}'
                         format_data = args[args_key]
                         try:
-                            if isinstance(format_data, (str, unicode, int, float)):
+                            if isinstance(format_data, (str, int, float)):
                                 var_data = var_data.format(format_data)
                             elif isinstance(format_data, list):
                                 var_data = var_data.format(*format_data)
@@ -132,7 +126,7 @@ class BuildMap(object):
                                 var_data = var_data.format(**format_data)
                         except Exception as err:
                             raise Exception( 
-                                u"STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
+                                "STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
                                     var_data,
                                     format_data, 
                                     err
@@ -146,7 +140,7 @@ class BuildMap(object):
                             formula = formula.format(var_data)
                         except Exception as err:
                             raise Exception( 
-                                u"STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
+                                "STR FORMAT\nFOR:\n{0}\nFORMAT:\n{1}\nERROR:\n{2}".format(
                                     formula,
                                     var_data, 
                                     err
@@ -156,7 +150,7 @@ class BuildMap(object):
                             var_data = eval(formula)
                         except Exception as err:
                             raise Exception( 
-                                u"MATH\nFORMULA:\n{0}\nERROR:\n{1}".format(
+                                "MATH\nFORMULA:\n{0}\nERROR:\n{1}".format(
                                     formula,
                                     err
                                 )
@@ -165,16 +159,16 @@ class BuildMap(object):
                     elif isinstance(var_data, dict):
                         # delete dict key
                         args_key = '-'
-                        if args.has_key(args_key):
+                        if args_key in args.keys():
                             keys_to_del = args[args_key]
                             if not isinstance(keys_to_del, list):
                                 keys_to_del = [keys_to_del]
                             for del_key in keys_to_del:
-                                if var_data.has_key(del_key):
+                                if del_key in var_data.keys():
                                     del(var_data[del_key])
                                 else:
                                     raise Exception( 
-                                        u"FOR DICT:\n{0}\nKEY:\n{1}\nnot found".format(
+                                        "FOR DICT:\n{0}\nKEY:\n{1}\nnot found".format(
                                             var_data,
                                             del_key 
                                         )
@@ -185,7 +179,7 @@ class BuildMap(object):
                             var_data.update(args)
                         except Exception as err:
                             raise Exception( 
-                                u"UPDATE\nDICT:\n{0}\nUPD DICT:\n{1}\nERROR:\n{2}".format(
+                                "UPDATE\nDICT:\n{0}\nUPD DICT:\n{1}\nERROR:\n{2}".format(
                                     var_data,
                                     args, 
                                     err
@@ -199,7 +193,7 @@ class BuildMap(object):
                                 var_data[args_key] = args[args_key]
                             except Exception as err:
                                 raise Exception( 
-                                    u"LIST\nLIST:\n{0}\nINDEX:\n{1}\nERROR:\n{2}".format(
+                                    "LIST\nLIST:\n{0}\nINDEX:\n{1}\nERROR:\n{2}".format(
                                         var_data,
                                         args_key, 
                                         err
@@ -207,7 +201,7 @@ class BuildMap(object):
                                 )
                         # '-' args_key
                         args_key = '-'
-                        if args.has_key(args_key):
+                        if args_key in args.keys():
                             list_data = args[args_key]
                             if not isinstance(list_data, list):
                                 list_data = [list_data]
@@ -215,7 +209,7 @@ class BuildMap(object):
                                 if isinstance(next_data, int):
                                     if next_data >= len(var_data) or next_data < 0:
                                         raise Exception( 
-                                            u"FOR:\n{0}\nINDEX:\n{1}\nout of range".format(
+                                            "FOR:\n{0}\nINDEX:\n{1}\nout of range".format(
                                                 var_data,
                                                 next_data 
                                             )
@@ -225,7 +219,7 @@ class BuildMap(object):
                                 else:
                                     if next_data not in var_data:
                                         raise Exception( 
-                                            u"IN:\n{0}\nDATA:\n{1}\nnot found".format(
+                                            "IN:\n{0}\nDATA:\n{1}\nnot found".format(
                                                 var_data,
                                                 next_data 
                                             )
@@ -234,7 +228,7 @@ class BuildMap(object):
                                         var_data.remove(next_data)
                         # '+' args_key
                         args_key = '+'
-                        if args.has_key(args_key):
+                        if args_key in args.keys():
                             list_data = args[args_key]
                             if not isinstance(list_data, list):
                                 list_data = [list_data]
@@ -243,7 +237,7 @@ class BuildMap(object):
                                     var_data.append(next_data)
                                 except Exception as err:
                                     raise Exception( 
-                                        u"APPEND\nLIST:\n{0}\nDATA:\n{1}\nERROR:\n{2}".format(
+                                        "APPEND\nLIST:\n{0}\nDATA:\n{1}\nERROR:\n{2}".format(
                                             var_data,
                                             next_data, 
                                             err
@@ -252,12 +246,12 @@ class BuildMap(object):
                 # return var_data
                 return var_data
             else:
-                raise Exception(u'VAR:{} is not str or unicode'.format(var))
+                raise Exception('VAR:{} is not str'.format(var))
         else:
-            raise Exception(u'VAR:{} not found'.format(var))
+            raise Exception('VAR:{} not found'.format(var))
 
     def run_proc_item(self, item):
-        if isinstance(item, (dict, str, unicode)):
+        if isinstance(item, (dict, str)):
             if isinstance(item, dict):
                 if len(item) == 1:
                     # obj
@@ -277,14 +271,14 @@ class BuildMap(object):
                     )
                 else:
                     raise Exception(
-                        u'All keys RUN:{} > 1, accesable 1 only'.format(item.keys())
+                        'All keys RUN:{} > 1, accesable 1 only'.format(item.keys())
                     )
             else:
                 eval_item = item
             return eval_item
         else:
             raise Exception(
-                u'VAR:{} is not dict or str or unicode type'.format(item)
+                'VAR:{} is not dict or str type'.format(item)
             )
         
     def run_proc(self, proc_data):
@@ -306,15 +300,15 @@ class BuildMap(object):
                     data = [data, "__call__()"]
                 else:
                     data = [data]
-            elif isinstance(data, (str, unicode)):
+            elif isinstance(data, str):
                 data = [data]
             else:
-                raise Exception(u'RUN data is not correct (dict or srt or unicode)')
+                raise Exception('RUN data is not correct (dict or srt)')
         # RUN list
         separator = ''
         eval_data = ''
         for item in data:
-            eval_data += u'{0}{1}'.format(separator, self.run_proc_item(item))
+            eval_data += '{0}{1}'.format(separator, self.run_proc_item(item))
             separator = '.'
         return eval(eval_data)
 
@@ -326,22 +320,17 @@ class BuildMap(object):
         if isinstance(data, (list, tuple)):
             out_str = []
             for line in data:
-                if isinstance(line, (str, unicode)):
+                if isinstance(line, str):
                     out_str.append(line)
                 elif isinstance(line, dict):
                     out_str.append(self.temp_str_parser(line))
                 else:
                     out_str.append("{}".format(line))
             out_str='\n'.join(out_str)
-        elif isinstance(data, (str, unicode)):
-            if isinstance(data, str):
-                out_str = u'{}'.format(data.decode('utf-8'))
-            else:
-                out_str = data
         elif isinstance(data, dict):
             out_str = self.temp_str_parser(data)
         else:
-            out_str = u"{}".format(data)
+            out_str = data
         return {"TEMP":out_str}
     
     def recurs_proc(self, val, key, proc):
@@ -349,7 +338,7 @@ class BuildMap(object):
             for new_key in range(len(val[key])):
                 self.recurs_proc(val[key], new_key, proc)
         elif isinstance(val[key], dict):
-            if isinstance(proc, int) and val[key].has_key('VAR'):
+            if isinstance(proc, int) and 'VAR' in val[key].keys():
                 # create vars_queue
                 next_var = val[key]['VAR']
                 if next_var == self.vars_queue[proc][0]:
@@ -363,7 +352,7 @@ class BuildMap(object):
                 elif next_var not in self.vars_queue[proc]:
                     # find list var
                     self.vars_queue[proc].append(next_var)
-            elif val[key].has_key(proc):
+            elif proc in val[key].keys():
                 # all key
                 val[key] = self.procs[proc](val[key])
             else: 
@@ -392,7 +381,7 @@ class BuildMap(object):
                     # find subvar in VARS
                     if subvar not in sort_queue:
                         raise Exception(
-                            u'sub-VARS:{0} for VARS:{1} is not found'.format(
+                            'sub-VARS:{0} for VARS:{1} is not found'.format(
                                 subvar, 
                                 var[0]
                             )
@@ -402,7 +391,7 @@ class BuildMap(object):
                     # test fro cross depends in VARS
                     if var[0] in self.vars_queue[subvar_index]:
                         raise Exception(
-                            u'Found cross depends for sub-VARS:{0} to VARS:{1}'.format(
+                            'Found cross depends for sub-VARS:{0} to VARS:{1}'.format(
                                 subvar, 
                                 var[0]
                             )
@@ -426,7 +415,7 @@ class BuildMap(object):
     def temp_str_parser(self, in_dict):
         if not isinstance(in_dict, dict):
             raise Exception( 
-                u"TEMP PARSER\nFOR:\n{}\nERROR:\nis not dict".format(in_dict)
+                "TEMP PARSER\nFOR:\n{}\nERROR:\nis not dict".format(in_dict)
             )
         temp2json = json.dumps(
                 in_dict,
@@ -460,7 +449,7 @@ class BuildMap(object):
                         )['TEMP'].split("\n")
                 except Exception as err:
                     raise Exception( 
-                        u"TEMP PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
+                        "TEMP PARSER\nFOR:\n{0}\nPOS:\n{1}\n\nERROR:\n{2}".format(
                             '\n'.join(temp2json),
                             "{%s}"%string[temp_pos:], 
                             err
@@ -526,7 +515,7 @@ class BuildMap(object):
                         temp2text = self.temp_str_parser(block)
                     else:
                         temp2text = block
-                    full_template = u"{0}\n{1}".format(full_template, temp2text)
+                    full_template = "{0}\n{1}".format(full_template, temp2text)
             self.TEMPS[key] = full_template
                     
             
@@ -537,10 +526,10 @@ class BuildMap(object):
                       MAP: VAR
                       MAP: {}
         """
-        if self.MAP.has_key('TEMP'):
+        if 'TEMP' in self.MAP.keys():
             # MAP from section TEMPS
             maptemp = self.MAP['TEMP']
-            if self.TEMPS.has_key(maptemp):
+            if maptemp in self.TEMPS.keys():
                 env = Environment(
                     loader=DictLoader(self.TEMPS)
                 )
@@ -552,16 +541,16 @@ class BuildMap(object):
                 )
             else:
                 raise Exception(
-                    u'TEMPS: "{}" for MAP not found'.format(maptemp)
+                    'TEMPS: "{}" for MAP not found'.format(maptemp)
                 )
-        elif self.MAP.has_key('VAR'):
+        elif 'VAR' in self.MAP.keys():
             # MAP from section VAR
             mapvar = self.MAP['VAR']
-            if self.TEMPS.has_key(mapvar):
+            if mapvar in self.TEMPS.keys():
                 self.MAP = self.VARS[mapvar].copy()
             else:
                 raise Exception(
-                    u'VARS: "{}" for MAP not found'.format(mapvar)
+                    'VARS: "{}" for MAP not found'.format(mapvar)
                 )
         # init VAR
         for key in self.MAP:
@@ -587,13 +576,13 @@ class BuildMap(object):
         else:
             raise Exception('Map JSON is not loaded')
         # init import modules  
-        if self.mapjson.has_key('IMODS'):
+        if 'IMODS' in self.mapjson.keys():
             if isinstance(self.mapjson['IMODS'], list):
                 self.IMODS = self.mapjson['IMODS'][:]
                 if self.debug:
                     self.debug_out(self.IMODS, 'List import Modules')
         # VARS build - etap 1
-        if self.mapjson.has_key('VARS'):
+        if 'VARS' in self.mapjson.keys():
             if isinstance(self.mapjson['VARS'], dict):
                 self.VARS = copy.deepcopy(self.mapjson['VARS'])
                 if self.debug:
@@ -602,7 +591,7 @@ class BuildMap(object):
                 if self.debug:
                     self.debug_out(self.VARS, 'Output VARS')
         # TEMPS build - etap 2
-        if self.mapjson.has_key('TEMPS'):
+        if 'TEMPS'in self.mapjson.keys():
             if isinstance(self.mapjson['TEMPS'], dict):
                 self.TEMPS = copy.deepcopy(self.mapjson['TEMPS'])
                 if self.debug:
@@ -612,7 +601,7 @@ class BuildMap(object):
                     for temp in self.TEMPS:
                         self.debug_out(self.TEMPS[temp], 'Output TEMP: {}'.format(temp))
         # MAP build - etap 3
-        if self.mapjson.has_key('MAP'):
+        if 'MAP' in self.mapjson.keys():
             if isinstance(self.mapjson['MAP'], dict):
                 self.MAP = copy.deepcopy(self.mapjson['MAP'])
                 if self.debug:
@@ -691,7 +680,7 @@ class BuildMapRes(BuildMap):
                 with codecs.open(path, 'w', encoding='utf-8') as file_:
                     file_.write(json_)
             else:
-                raise Exception(u'Dir {} not found'.format(dir_))
+                raise Exception('Dir {} not found'.format(dir_))
         else:
             print(json_)
         
@@ -711,13 +700,13 @@ class BuildMapRes(BuildMap):
             {
                 "cilumn_name": "column_data(::column_type)"
             }
-            column_type - if str or unicode to type
+            column_type - if str to type
         kwargs[all next keys] - connect **dict as interface.pgsqldb.pg_defaults
         """
 
         # kwargs
-        if kwargs.has_key('path'):
-            cont = kwargs.pop('path').decode('utf-8')
+        if 'path' in kwargs.keys():
+            cont = kwargs.pop('path')
             cont_type = 'text'
             self.save2file(path=cont)
         else:
@@ -727,19 +716,19 @@ class BuildMapRes(BuildMap):
         
         # SQL data
         SQL = {
-            'create_table': u"""
+            'create_table': """
                 create table if not exists "{0}" (
                     "id" serial primary key,
                     "{1}" text unique,
                     "{2}" text
                 )
                 """,
-            'find_name': u"""
+            'find_name': """
                 select *
                 from "{0}"
                 where "{1}" = '{2}'; 
                 """,
-            'insert_all': u"""
+            'insert_all': """
                 insert into "{0}" 
                 (
                     "{1}",
@@ -751,18 +740,18 @@ class BuildMapRes(BuildMap):
                     '{4}'::{5}{7}
                 );
                 """,
-            'update_all': u"""
+            'update_all': """
                 update "{0}"
                 set "{2}" = '{4}'::{5}{6}
                 where "{1}" = '{3}';            
                 """,
-            'find_extra': u"""
+            'find_extra': """
                 select *
                 from information_schema.columns
                 where table_name = '{0}'
                 and column_name = '{1}' 
                 """,
-            'alter_extra': u"""
+            'alter_extra': """
                 alter table "{0}"
                 add column "{1}" {2};
                 """,
@@ -785,7 +774,7 @@ class BuildMapRes(BuildMap):
         ins_ex_cols = ""
         ins_ex_vals = ""
         upd_ex_sets = ""
-        if kwargs.has_key('columns'):
+        if 'columns' in kwargs.keys():
             for col_extra in kwargs['columns']:
                 cont_extra = kwargs['columns'][col_extra]
                 if isinstance(cont_extra, int):
@@ -794,7 +783,7 @@ class BuildMapRes(BuildMap):
                     type_extra = 'float'
                 elif isinstance(cont_extra, (dict, list, tuple)):
                     type_extra = 'text'
-                elif isinstance(cont_extra, (str, unicode)):
+                elif isinstance(cont_extra, str):
                     if "::" in cont_extra:
                         type_extra = cont_extra.split("::")[-1]
                         cont_extra = cont_extra.split("::")[0]
@@ -813,17 +802,17 @@ class BuildMapRes(BuildMap):
                         )
                         psql.commit()
                 # text data for extra columns
-                ins_ex_cols = u'{0},\n{1}"{2}"'.format(
+                ins_ex_cols = '{0},\n{1}"{2}"'.format(
                     ins_ex_cols, 
                     " "*20, 
                     col_extra
                 )
-                ins_ex_vals = u"{0},\n{1}'{2}'".format(
+                ins_ex_vals = "{0},\n{1}'{2}'".format(
                     ins_ex_vals, 
                     " "*20, 
                     cont_extra
                 )
-                upd_ex_sets = u'{0},\n{1}"{2}" = \'{3}\''.format(
+                upd_ex_sets = '{0},\n{1}"{2}" = \'{3}\''.format(
                     upd_ex_sets, 
                     " "*20, 
                     col_extra, 

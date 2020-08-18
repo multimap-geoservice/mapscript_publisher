@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
 import mapscript
 import json
@@ -7,7 +5,6 @@ import inspect
 import copy
 import codecs
 
-#from tools import MapTools
 
 ########################################################################
 class PubMap(object):
@@ -114,27 +111,23 @@ class PubMap(object):
         self.scales.append(0)
 
     def lst2str(self, lst):
-        out = u"["
+        out = "["
         for dat in lst:
-            if isinstance(dat, (str, unicode)):
-                if isinstance(dat, str):
-                    dat = u'{}'.format(dat.decode('utf-8'))
-                out = u"{0}'{1}',".format(out, dat)
+            if isinstance(dat, str):
+                out = "{0}'{1}',".format(out, dat)
             else:
-                out = u"{0}{1},".format(out, dat)
-        return u"{}]".format(out) 
+                out = "{0}{1},".format(out, dat)
+        return "{}]".format(out) 
 
     def dct2str(self, dct):
-        out = u"{"
+        out = "{"
         for key in dct:
             dat = copy.deepcopy(dct[key])
-            if isinstance(dat, (str, unicode)):
-                if isinstance(dat, str):
-                    dat = u'{}'.format(dat.decode('utf-8'))
-                out = u"{0}{1}:'{2}',".format(out, key, dat)
+            if isinstance(dat, str):
+                out = "{0}{1}:'{2}',".format(out, key, dat)
             else:
-                out = u"{0}{1}:{2},".format(out, key, dat)
-        return u"{}}".format(out)
+                out = "{0}{1}:{2},".format(out, key, dat)
+        return "{}}".format(out)
                 
         
     def find_level_scale(self, _value, _level=False):
@@ -148,7 +141,7 @@ class PubMap(object):
         
         # test level for value operations
         if isinstance(_value, dict):
-            if len(_value.keys()) == 1 and isinstance(_value.keys()[0], (str, unicode)):
+            if len(_value.keys()) == 1 and isinstance(_value.keys()[0], str):
                 if len(_value.keys()[0].split(self.lsd)) == 2:
                     try:
                         minlevel = int(_value.keys()[0].split(self.lsd)[0]) 
@@ -194,15 +187,12 @@ class PubMap(object):
         """
 
         # tests value as type
-        if isinstance(value, (str, unicode)):
-            # fix hooks in str value
-            if isinstance(value,str):
-                value = u'{}'.format(value.decode('utf-8'))
+        if isinstance(value, str):
             hook = "'"
             fix_hook = "\\'"
             if value.find(hook) != -1 and value.find(fix_hook) == -1:
                 value = value.replace(hook, fix_hook)
-            value = u'\'{}\''.format(value)
+            value = '\'{}\''.format(value)
         elif isinstance(value, dict):
             if value.has_key('OBJ'):
                 value = 'eval(\'{}\')'.format(value['OBJ'])
@@ -210,23 +200,23 @@ class PubMap(object):
                 if isinstance(value['SUB_OBJ'], dict):
                     if not value['SUB_OBJ'].has_key('OBJ'):
                         raise Exception(
-                            u'in {} OBJ: not found'.format(value['SUB_OBJ'])
+                            'in {} OBJ: not found'.format(value['SUB_OBJ'])
                         )
                     elif value['SUB_OBJ'].has_key('OBJ_ARG'):
                         OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
                         if isinstance(OBJ_ARG, dict):
-                            OBJ_ARG = u'**{}'.format(self.dct2str(OBJ_ARG))
+                            OBJ_ARG = '**{}'.format(self.dct2str(OBJ_ARG))
                         elif isinstance(OBJ_ARG, (list, tuple)):
-                            OBJ_ARG = u'*{}'.format(self.lst2str(OBJ_ARG))
+                            OBJ_ARG = '*{}'.format(self.lst2str(OBJ_ARG))
                         else:
-                            OBJ_ARG = u'{}'.format(OBJ_ARG)
+                            OBJ_ARG = '{}'.format(OBJ_ARG)
                     else:
                         OBJ_ARG = ''
                     OBJ_VAR = self.engine(value['SUB_OBJ'], OBJ_ARG, _level)
                     value = OBJ_VAR
                 else:
                     raise Exception(
-                        u'SUB_OBJ: {} is not dict'.format(value['SUB_OBJ'])
+                        'SUB_OBJ: {} is not dict'.format(value['SUB_OBJ'])
                     )
         elif value == None:
             raise Exception('None value in Template')
@@ -236,7 +226,7 @@ class PubMap(object):
             test_assigment = eval('{0}.{1}'.format(OBJ, method))
         except Exception as err:
             raise Exception( 
-                u"ASSIGMENT METHOD\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
+                "ASSIGMENT METHOD\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
                     '{0}.{1}'.format(OBJ, method), 
                     "type({0}) = {1}".format(
                         OBJ, 
@@ -248,15 +238,15 @@ class PubMap(object):
         # test assigment
         if inspect.ismethod(test_assigment):
             if isinstance(value, dict):
-                assigment = u'(**{})'.format(self.dct2str(value))
+                assigment = '(**{})'.format(self.dct2str(value))
             elif isinstance(value, (list, tuple)):
-                assigment = u'(*{})'.format(self.lst2str(value))
+                assigment = '(*{})'.format(self.lst2str(value))
             else:
-                assigment = u'({})'.format(value)
+                assigment = '({})'.format(value)
         else:
-            assigment = u' = {}'.format(value)
+            assigment = ' = {}'.format(value)
         # create script string
-        script_str = u'{0}.{1}{2}'.format(
+        script_str = '{0}.{1}{2}'.format(
             OBJ, 
             method, 
             assigment
@@ -265,7 +255,7 @@ class PubMap(object):
         # line script debug or run line
         if self.debug_mapscript:
             self.debug_mapscript.append(
-                u'{0}{1}\n'.format(' '*8, script_str)
+                '{0}{1}\n'.format(' '*8, script_str)
             )
         else:
             # run method processing and tracking exeptions
@@ -273,7 +263,7 @@ class PubMap(object):
                 exec(script_str)
             except Exception as err:
                 raise Exception( 
-                    u"SINTAX\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
+                    "SINTAX\nFOR:\n{0}\nIN:\n{1}\nERROR:\n{2}".format(
                         script_str, 
                         "type({0}) = {1}".format(
                             OBJ, 
@@ -329,7 +319,7 @@ class PubMap(object):
                 eval_str_obj = eval(str_obj)
             except Exception as err:
                 raise Exception( 
-                    u"SYNTAX\nIN:\n{0}\nFOR:\n{1}\nERROR:\n{2}".format(
+                    "SYNTAX\nIN:\n{0}\nFOR:\n{1}\nERROR:\n{2}".format(
                         json.dumps(
                             _dict,
                             sort_keys=True,
@@ -345,7 +335,7 @@ class PubMap(object):
                 self.OBJS.append(eval_str_obj)
             except Exception as err:
                 raise Exception( 
-                    u"STRUCTURE\nFOR:\n{0}\nIN:\n{1}\nASSIGMENT:\n{2}\nERROR:\n{3}".format(
+                    "STRUCTURE\nFOR:\n{0}\nIN:\n{1}\nASSIGMENT:\n{2}\nERROR:\n{3}".format(
                         json.dumps(
                             _dict,
                             sort_keys=True,
@@ -400,7 +390,7 @@ class PubMap(object):
                                     scale_test = False
                                 if not scale_test:
                                     raise Exception( 
-                                        u"STRUCTURE\nIN:\n{}\nKEY:'name' not found".format(
+                                        "STRUCTURE\nIN:\n{}\nKEY:'name' not found".format(
                                             json.dumps(
                                                 loopline,
                                                 sort_keys=True,
@@ -502,8 +492,7 @@ class PubMap(object):
         if path = False to output to stdout
         """
         self.debug_mapscript = [
-            '#!/usr/bin/python2\n', 
-            '# -*- coding: utf-8 -*-\n', 
+            '#!/usr/bin/python3\n', 
             '\n', 
             'import mapscript\n',
             '\n',

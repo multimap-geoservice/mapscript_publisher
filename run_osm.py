@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
-import os, sys
+import sys
 from map_pub import BuildMapRes, PubMapWEB
 
 if __name__ == "__main__":
@@ -12,12 +10,13 @@ if __name__ == "__main__":
     #mapjsonfile = "./maps/osm_utf8.json"
     fontsfile = "./maps/fonts/fonts.lst"
     db_host = sys.argv[1]
-    map_name = sys.argv[2]
-    #db_host = "localhost"
-    debug_path = "{}/GIS/mapserver/debug".format(os.environ["HOME"])
-    db_connection = "host={0} dbname={1} user=gis password=gis port=5432".format(
-        db_host, 
-        map_name
+    db_port = sys.argv[2]
+    map_name = sys.argv[3]
+    debug_path = "./debug"
+    db_connection = "host={host} dbname={name} user=gis password=gis port={port}".format(
+        host=db_host,
+        port=db_port, 
+        name=map_name, 
     )
     
     # build map
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     #builder.debug = True
     builder.debug = '{}/build.log'.format(debug_path)
     builder.mapjson["VARS"]["db_connection"] = db_connection 
-    builder.mapjson["VARS"]["name"] = u"ОСМ_{}".format(map_name) 
+    builder.mapjson["VARS"]["name"] = "ОСМ_{}".format(map_name) 
     builder.mapjson["VARS"]["wms_title"] = "Open Street Map {}".format(map_name) 
     builder.mapjson["VARS"]["fontset"] = fontsfile 
     builder.build()

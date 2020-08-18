@@ -13,7 +13,7 @@ Standards-Version: 3.9.5.0
 Homepage: https://github.com/oldbay/mapscript_publisher
 X-Python-Version: 2.7
 
-Package: python-mapscript-publisher
+Package: python3-mapscript-publisher
 Architecture: all
 Section: python
 Depends: ${misc:Depends},

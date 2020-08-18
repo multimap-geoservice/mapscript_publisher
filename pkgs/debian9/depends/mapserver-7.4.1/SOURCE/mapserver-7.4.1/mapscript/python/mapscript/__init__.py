@@ -1,1 +1,0 @@
-from .mapscript import *

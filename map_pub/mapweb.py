@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-# encoding: utf-8
 
 import os
 import copy
@@ -7,7 +5,7 @@ from wsgiref.simple_server import make_server
 
 import mapscript
 
-from mapublisher import PubMap
+from .mapublisher import PubMap
 
 
 ########################################################################
@@ -43,18 +41,18 @@ class PubMapWEB(PubMap):
         }
         serv_ver = [q_str.get('SERVICE', False), q_str.get('VERSION', False)]
         
-        print "-" * 30
+        print ("-" * 30)
         for key in self.MAPSERV_ENV:
             if key in env:
                 os.environ[key] = env[key]
-                print "{0}='{1}'".format(key, env[key])
+                print ("{0}='{1}'".format(key, env[key]))
             else:
                 os.unsetenv(key)
-        print "QUERY_STRING=("
+        print ("QUERY_STRING=(")
         for key in q_str:
-            print "    {0}={1},".format(key, q_str[key])
-        print ")"
-        print "-" * 30
+            print ("    {0}={1},".format(key, q_str[key]))
+        print (")")
+        print ("-" * 30)
     
         request = mapscript.OWSRequest()
         mapscript.msIO_installStdoutToBuffer()
@@ -64,7 +62,7 @@ class PubMapWEB(PubMap):
         try:
             status_id = rec_obj.OWSDispatch(request)
         except Exception as err:
-            print "OWSDispatch Error: {}".format(err)
+            print ("OWSDispatch Error: {}".format(err))
             err_def = unicode(err).split(':')[0]
             status_id = None
         
