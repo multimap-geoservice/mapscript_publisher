@@ -255,7 +255,7 @@ class BuildMap(object):
             if isinstance(item, dict):
                 if len(item) == 1:
                     # obj
-                    obj = item.keys()[0]
+                    obj = list(item.keys())[0]
                     # options
                     options = item[obj]
                     if isinstance(options, dict):
@@ -292,11 +292,14 @@ class BuildMap(object):
         data = proc_data[proc_nam]
         # import modules IMODS    
         for module in self.IMODS:
-            exec('import {}'.format(module))
+            try:
+                exec('import {}'.format(module))
+            except ImportError:
+                exec('from . import {}'.format(module))
         # data is not list or tuple
         if not isinstance(data, (list, tuple)):
             if isinstance(data, dict):
-                if inspect.isclass(eval(data.keys()[0])):
+                if inspect.isclass(eval(list(data.keys())[0])):
                     data = [data, "__call__()"]
                 else:
                     data = [data]

@@ -1,6 +1,7 @@
 *.pyc
 
-debug/*.json
-debug/*.map
-debug/*.py
+/examples/debug/*.log
+/examples/debug/*.json
+/examplae/debug/*.map
+/examples/debug/*.py
 

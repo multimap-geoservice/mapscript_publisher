@@ -107,7 +107,7 @@ class PubMap(object):
             int(up_scale)
         ] 
         while not self.scales[-1] == 1:
-            self.scales.append(self.scales[-1]/2)
+            self.scales.append(int(self.scales[-1]/2))
         self.scales.append(0)
 
     def lst2str(self, lst):
@@ -141,11 +141,11 @@ class PubMap(object):
         
         # test level for value operations
         if isinstance(_value, dict):
-            if len(_value.keys()) == 1 and isinstance(_value.keys()[0], str):
-                if len(_value.keys()[0].split(self.lsd)) == 2:
+            if len(_value.keys()) == 1 and isinstance(list(_value.keys())[0], str):
+                if len(list(_value.keys())[0].split(self.lsd)) == 2:
                     try:
-                        minlevel = int(_value.keys()[0].split(self.lsd)[0]) 
-                        maxlevel = int(_value.keys()[0].split(self.lsd)[-1])
+                        minlevel = int(list(_value.keys())[0].split(self.lsd)[0]) 
+                        maxlevel = int(list(_value.keys())[0].split(self.lsd)[-1])
                     except:
                         pass
                     else:
@@ -194,15 +194,15 @@ class PubMap(object):
                 value = value.replace(hook, fix_hook)
             value = '\'{}\''.format(value)
         elif isinstance(value, dict):
-            if value.has_key('OBJ'):
+            if 'OBJ' in value.keys():
                 value = 'eval(\'{}\')'.format(value['OBJ'])
-            elif value.has_key('SUB_OBJ'):
+            elif 'SUB_OBJ' in value.keys():
                 if isinstance(value['SUB_OBJ'], dict):
-                    if not value['SUB_OBJ'].has_key('OBJ'):
+                    if 'OBJ' not in value['SUB_OBJ'].keys():
                         raise Exception(
                             'in {} OBJ: not found'.format(value['SUB_OBJ'])
                         )
-                    elif value['SUB_OBJ'].has_key('OBJ_ARG'):
+                    elif 'OBJ_ARG' in value['SUB_OBJ'].keys():
                         OBJ_ARG = value['SUB_OBJ']['OBJ_ARG'] 
                         if isinstance(OBJ_ARG, dict):
                             OBJ_ARG = '**{}'.format(self.dct2str(OBJ_ARG))
@@ -292,12 +292,12 @@ class PubMap(object):
         # inhert map file: _dict['MAP'] or self.mapfile    
         if SUB_OBJ is None:
             # find base obj for map
-            if _dict.has_key('MAP'):
+            if 'MAP' in _dict.keys():
                 SUB_OBJ = _dict['MAP']
             else:
                 SUB_OBJ = self.mapfile
             # find scale list
-            if _dict.has_key('SCALES'):
+            if 'SCALES' in _dict.keys():
                 if isinstance(_dict['SCALES'], list):
                     self.scales = _dict['SCALES']
                 if isinstance(_dict['SCALES'], (int, float)):
@@ -312,7 +312,7 @@ class PubMap(object):
         elif self.textOBJS not in SUB_OBJ:
                 _dict['SCALES'] = self.scales
         # object operation
-        if not _dict.has_key('OBJ_VAR'):
+        if 'OBJ_VAR' not in _dict.keys():
             # add OBJ Variable to OBJS list
             str_obj = '{0}({1})'.format(_dict['OBJ'], SUB_OBJ)
             try:
@@ -384,7 +384,7 @@ class PubMap(object):
                                 loopline = copy.deepcopy(levelline)
                                 # test scale name
                                 scale_test = True
-                                if not loopline.has_key('name'):
+                                if 'name' not in loopline.keys():
                                     scale_test = False
                                 elif loopline['name'] is None or loopline['name'] == '':
                                     scale_test = False

@@ -63,7 +63,7 @@ class PubMapWEB(PubMap):
             status_id = rec_obj.OWSDispatch(request)
         except Exception as err:
             print ("OWSDispatch Error: {}".format(err))
-            err_def = unicode(err).split(':')[0]
+            err_def = str(err).split(':')[0]
             status_id = None
         
         content_type = mapscript.msIO_stripStdoutBufferContentType()
